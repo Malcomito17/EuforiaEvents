@@ -1,0 +1,30 @@
+{
+  "name": "euforia-events",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Sistema modular de gestión de eventos",
+  "scripts": {
+    "dev": "turbo run dev",
+    "dev:api": "turbo run dev --filter=api",
+    "dev:client": "turbo run dev --filter=web-client",
+    "dev:operator": "turbo run dev --filter=web-operator",
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "db:generate": "pnpm --filter api prisma generate",
+    "db:push": "pnpm --filter api prisma db push",
+    "db:migrate": "pnpm --filter api prisma migrate dev",
+    "db:seed": "pnpm --filter api prisma db seed",
+    "db:studio": "pnpm --filter api prisma studio",
+    "clean": "turbo run clean && rm -rf node_modules"
+  },
+  "devDependencies": {
+    "prettier": "^3.2.5",
+    "turbo": "^2.0.0"
+  },
+  "packageManager": "pnpm@10.23.0",
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

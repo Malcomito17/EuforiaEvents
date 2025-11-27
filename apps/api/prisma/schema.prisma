@@ -1,0 +1,212 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ================================
+// USUARIOS Y AUTENTICACIÓN
+// ================================
+
+model User {
+  id        String   @id @default(cuid())
+  username  String   @unique
+  email     String?  @unique
+  password  String
+  role      String   @default("OPERATOR")
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  permissions UserPermission[]
+  events      Event[]          @relation("EventCreator")
+
+  @@map("users")
+}
+
+model UserPermission {
+  id         String  @id @default(cuid())
+  userId     String
+  module     String
+  canView    Boolean @default(true)
+  canOperate Boolean @default(false)
+  canExport  Boolean @default(false)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, module])
+  @@map("user_permissions")
+}
+
+// ================================
+// VENUES Y CLIENTS (REUTILIZABLES)
+// ================================
+
+model Venue {
+  id           String   @id @default(cuid())
+  name         String
+  type         String   @default("OTHER")
+  address      String?
+  city         String?
+  capacity     Int?
+  contactName  String?
+  contactPhone String?
+  instagramUrl String?
+  notes        String?
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  events Event[]
+
+  @@map("venues")
+}
+
+model Client {
+  id        String   @id @default(cuid())
+  name      String
+  company   String?
+  phone     String?
+  email     String?
+  cuit      String?
+  notes     String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  events Event[]
+
+  @@map("clients")
+}
+
+// ================================
+// EVENTOS
+// ================================
+
+model Event {
+  id           String   @id @default(cuid())
+  slug         String   @unique
+  status       String   @default("DRAFT")
+  venueId      String?
+  clientId     String?
+  clonedFromId String?
+  createdById  String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  venue      Venue?  @relation(fields: [venueId], references: [id])
+  client     Client? @relation(fields: [clientId], references: [id])
+  clonedFrom Event?  @relation("EventClones", fields: [clonedFromId], references: [id])
+  clones     Event[] @relation("EventClones")
+  createdBy  User    @relation("EventCreator", fields: [createdById], references: [id])
+
+  eventData       EventData?
+  musicadjConfig  MusicadjConfig?
+  songRequests    SongRequest[]
+  karaokeyaConfig KaraokeyaConfig?
+  karaokeRequests KaraokeRequest[]
+
+  @@map("events")
+}
+
+model EventData {
+  id              String    @id @default(cuid())
+  eventId         String    @unique
+  eventName       String
+  eventType       String    @default("OTHER")
+  startDate       DateTime
+  endDate         DateTime?
+  guestCount      Int?
+  instagramUrl    String?
+  instagramUser   String?
+  hashtag         String?
+  spotifyPlaylist String?
+  notes           String?
+  customFields    String?
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@map("event_data")
+}
+
+// ================================
+// MÓDULO MUSICADJ
+// ================================
+
+model MusicadjConfig {
+  eventId             String  @id
+  enabled             Boolean @default(true)
+  cooldownSeconds     Int     @default(300)
+  allowWithoutSpotify Boolean @default(true)
+  welcomeMessage      String?
+  showQueueToClient   Boolean @default(false)
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@map("musicadj_configs")
+}
+
+model SongRequest {
+  id                String   @id @default(cuid())
+  eventId           String
+  spotifyId         String?
+  title             String
+  artist            String
+  albumArtUrl       String?
+  requesterName     String
+  requesterLastname String?
+  requesterEmail    String?
+  requesterWhatsapp String?
+  status            String   @default("PENDING")
+  priority          Int      @default(0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([eventId, status])
+  @@index([eventId, createdAt])
+  @@map("song_requests")
+}
+
+// ================================
+// MÓDULO KARAOKEYA
+// ================================
+
+model KaraokeyaConfig {
+  eventId           String  @id
+  enabled           Boolean @default(true)
+  cooldownSeconds   Int     @default(600)
+  maxPerPerson      Int     @default(0)
+  showQueueToClient Boolean @default(true)
+  showNextSinger    Boolean @default(true)
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@map("karaokeya_configs")
+}
+
+model KaraokeRequest {
+  id             String    @id @default(cuid())
+  eventId        String
+  title          String
+  artist         String?
+  singerName     String
+  singerLastname String?
+  singerEmail    String?
+  singerWhatsapp String?
+  turnNumber     Int
+  queuePosition  Int
+  status         String    @default("QUEUED")
+  createdAt      DateTime  @default(now())
+  calledAt       DateTime?
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([eventId, status])
+  @@index([eventId, queuePosition])
+  @@map("karaoke_requests")
+}
