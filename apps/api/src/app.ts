@@ -1,6 +1,11 @@
+/**
+ * EUFORIA EVENTS - Express Application
+ */
+
 import express from 'express'
 import cors from 'cors'
 import { authRoutes } from './modules/auth'
+import { eventRoutes } from './modules/events'
 import { errorHandler } from './shared/middleware/error.middleware'
 
 const app = express()
@@ -16,18 +21,18 @@ app.get('/health', (req, res) => {
 
 // API info
 app.get('/api', (req, res) => {
-  res.json({ 
+  res.json({
     name: 'EUFORIA EVENTS API',
-    version: '0.1.0',
-    modules: ['auth', 'events', 'musicadj', 'karaokeya']
+    version: '0.2.0',
+    modules: ['auth', 'events', 'musicadj', 'karaokeya'],
   })
 })
 
-// Rutas
+// Rutas de módulos
 app.use('/api/auth', authRoutes)
+app.use('/api/events', eventRoutes)
 
 // TODO: Agregar más rutas de módulos
-// app.use('/api/events', eventRoutes)
 // app.use('/api/musicadj', musicadjRoutes)
 // app.use('/api/karaokeya', karaokeyaRoutes)
 
