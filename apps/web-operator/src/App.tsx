@@ -9,6 +9,7 @@ import { EventListPage, EventFormPage, EventDetailPage, EventQRPage } from '@/pa
 import { VenueListPage, VenueFormPage } from '@/pages/Venues'
 import { ClientListPage, ClientFormPage } from '@/pages/Clients'
 import { MusicaDJPage } from '@/pages/MusicaDJ'
+import { KaraokeyaPage } from '@/pages/KaraokeYa'
 
 function App() {
   const { checkAuth, isAuthenticated } = useAuthStore()
@@ -98,6 +99,18 @@ function App() {
           <ProtectedRoute>
             <Layout>
               <MusicaDJPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      {/* KARAOKEYA */}
+      <Route
+        path="/events/:eventId/karaokeya"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <KaraokeyaPage />
             </Layout>
           </ProtectedRoute>
         }
