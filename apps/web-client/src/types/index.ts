@@ -25,6 +25,15 @@ export interface MusicadjConfig {
   spotifyAvailable: boolean
 }
 
+export interface KaraokeyaConfig {
+  eventId: string
+  enabled: boolean
+  cooldownSeconds: number
+  maxPerPerson: number
+  showQueueToClient: boolean
+  showNextSinger: boolean
+}
+
 // ============================================
 // Spotify Types
 // ============================================
@@ -47,7 +56,7 @@ export interface SpotifySearchResult {
 }
 
 // ============================================
-// Song Request Types
+// Song Request Types (MUSICADJ)
 // ============================================
 
 export type SongRequestStatus = 
@@ -85,10 +94,60 @@ export interface CreateSongRequestInput {
 }
 
 // ============================================
+// Karaoke Request Types (KARAOKEYA)
+// ============================================
+
+export type KaraokeRequestStatus = 
+  | 'QUEUED' 
+  | 'CALLED' 
+  | 'ON_STAGE' 
+  | 'COMPLETED' 
+  | 'NO_SHOW' 
+  | 'CANCELLED'
+
+export interface KaraokeRequest {
+  id: string
+  eventId: string
+  title: string
+  artist: string | null
+  singerName: string
+  singerLastname: string | null
+  singerEmail: string | null
+  singerWhatsapp: string | null
+  turnNumber: number
+  queuePosition: number
+  status: KaraokeRequestStatus
+  createdAt: string
+  calledAt: string | null
+}
+
+export interface CreateKaraokeRequestInput {
+  title: string
+  artist?: string
+  singerName: string
+  singerLastname?: string
+  singerEmail?: string
+  singerWhatsapp?: string
+}
+
+export interface KaraokeQueueStats {
+  total: number
+  queued: number
+  called: number
+  onStage: number
+  completed: number
+  noShow: number
+  cancelled: number
+  nextTurnNumber: number
+  estimatedWaitMinutes: number | null
+}
+
+// ============================================
 // API Response Types
 // ============================================
 
 export interface ApiError {
   error: string
+  code?: string
   details?: Array<{ field: string; message: string }>
 }
