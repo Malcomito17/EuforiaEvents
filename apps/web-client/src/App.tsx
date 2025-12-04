@@ -8,6 +8,7 @@ import MusicaDJRequest from './pages/MusicaDJRequest'
 import KaraokeyaSignup from './pages/KaraokeyaSignup'
 import KaraokeyaSuccess from './pages/KaraokeyaSuccess'
 import KaraokeyaMyTurn from './pages/KaraokeyaMyTurn'
+import KaraokeyaDisplay from './pages/KaraokeyaDisplay'
 import NotFound from './pages/NotFound'
 import RequestSuccess from './pages/RequestSuccess'
 
@@ -25,6 +26,7 @@ function App() {
       <Route path="/e/:slug/karaokeya" element={<KaraokeyaSignup />} />
       <Route path="/e/:slug/karaokeya/success" element={<KaraokeyaSuccess />} />
       <Route path="/e/:slug/karaokeya/turn" element={<KaraokeyaMyTurn />} />
+      <Route path="/e/:slug/karaokeya/display" element={<KaraokeyaDisplay />} />
       
       {/* 404 */}
       <Route path="*" element={<NotFound />} />
