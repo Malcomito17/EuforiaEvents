@@ -77,9 +77,10 @@ export default function KaraokeyaSignup() {
 
     try {
       const request = await api.createKaraokeRequest(event.id, input)
-      // Navegar a página de éxito con el turno
+      // Navegar a página de éxito con el turno (incluye requestId para ver estado)
       navigate(`/e/${slug}/karaokeya/success`, { 
         state: { 
+          requestId: request.id,
           turnNumber: request.turnNumber,
           title: request.title,
           singerName: request.singerName,
