@@ -10,7 +10,7 @@ import { useEventStore } from '../stores/eventStore'
 export default function EventLanding() {
   const { slug } = useParams<{ slug: string }>()
   const navigate = useNavigate()
-  const { event, musicadjConfig, loading, error, loadEvent } = useEventStore()
+  const { event, musicadjConfig, karaokeyaConfig, loading, error, loadEvent } = useEventStore()
 
   useEffect(() => {
     if (slug) {
@@ -59,6 +59,11 @@ export default function EventLanding() {
 
   if (!event) return null
 
+  // Verificar si hay algún módulo habilitado
+  const hasMusicadj = musicadjConfig?.enabled
+  const hasKaraokeya = karaokeyaConfig?.enabled
+  const hasAnyModule = hasMusicadj || hasKaraokeya
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4">
       {/* Header */}
@@ -75,7 +80,7 @@ export default function EventLanding() {
       {/* Módulos disponibles */}
       <div className="w-full max-w-sm space-y-4">
         {/* MUSICADJ */}
-        {musicadjConfig?.enabled && (
+        {hasMusicadj && (
           <button
             onClick={() => navigate(`/e/${slug}/musicadj`)}
             className="w-full card hover:bg-white/20 transition-all flex items-center gap-4 text-left"
@@ -90,19 +95,31 @@ export default function EventLanding() {
           </button>
         )}
 
-        {/* KARAOKEYA (próximamente) */}
-        <button
-          disabled
-          className="w-full card opacity-50 cursor-not-allowed flex items-center gap-4 text-left"
-        >
-          <div className="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0">
-            <Mic2 className="w-7 h-7" />
+        {/* KARAOKEYA */}
+        {hasKaraokeya && (
+          <button
+            onClick={() => navigate(`/e/${slug}/karaokeya`)}
+            className="w-full card hover:bg-white/20 transition-all flex items-center gap-4 text-left"
+          >
+            <div className="w-14 h-14 bg-purple-600 rounded-xl flex items-center justify-center flex-shrink-0">
+              <Mic2 className="w-7 h-7" />
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold">Karaoke</h2>
+              <p className="text-white/60 text-sm">Anotate para cantar tu canción</p>
+            </div>
+          </button>
+        )}
+
+        {/* No hay módulos */}
+        {!hasAnyModule && (
+          <div className="card text-center py-8">
+            <AlertCircle className="w-12 h-12 text-white/30 mx-auto mb-3" />
+            <p className="text-white/60">
+              No hay módulos habilitados en este momento
+            </p>
           </div>
-          <div>
-            <h2 className="text-lg font-semibold">Karaoke</h2>
-            <p className="text-white/60 text-sm">Próximamente</p>
-          </div>
-        </button>
+        )}
       </div>
     </div>
   )
