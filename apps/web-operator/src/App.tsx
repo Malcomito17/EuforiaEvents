@@ -8,6 +8,7 @@ import { DashboardPage } from '@/pages/Dashboard'
 import { EventListPage, EventFormPage, EventDetailPage, EventQRPage } from '@/pages/Events'
 import { VenueListPage, VenueFormPage } from '@/pages/Venues'
 import { ClientListPage, ClientFormPage } from '@/pages/Clients'
+import { MusicaDJPage } from '@/pages/MusicaDJ'
 
 function App() {
   const { checkAuth, isAuthenticated } = useAuthStore()
@@ -85,6 +86,18 @@ function App() {
           <ProtectedRoute>
             <Layout>
               <EventQRPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      {/* MUSICADJ */}
+      <Route
+        path="/events/:eventId/musicadj"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <MusicaDJPage />
             </Layout>
           </ProtectedRoute>
         }
