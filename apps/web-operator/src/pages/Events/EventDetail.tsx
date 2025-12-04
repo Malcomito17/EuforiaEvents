@@ -3,7 +3,7 @@ import { useNavigate, useParams, Link } from 'react-router-dom'
 import { eventsApi, Event } from '@/lib/api'
 import { 
   ArrowLeft, Edit, QrCode, Copy, Play, Pause, CheckCircle, 
-  Calendar, MapPin, Users, Music, Instagram, Hash, Loader2, Mic
+  Calendar, MapPin, Users, Music, Instagram, Hash, Loader2, Mic2
 } from 'lucide-react'
 import clsx from 'clsx'
 
@@ -208,16 +208,22 @@ export function EventDetailPage() {
             </div>
           </Link>
 
-          {/* KARAOKEYA Module (disabled for now) */}
-          <div className="flex items-center gap-4 p-4 border border-gray-100 rounded-xl bg-gray-50 cursor-not-allowed opacity-60">
-            <div className="p-3 bg-gray-200 rounded-xl">
-              <Mic className="h-6 w-6 text-gray-400" />
+          {/* KARAOKEYA Module */}
+          <Link
+            to={`/events/${event.id}/karaokeya`}
+            className="flex items-center gap-4 p-4 border border-gray-200 rounded-xl hover:border-purple-300 hover:bg-purple-50 transition-all group"
+          >
+            <div className="p-3 bg-purple-100 rounded-xl group-hover:bg-purple-200 transition-colors">
+              <Mic2 className="h-6 w-6 text-purple-600" />
             </div>
             <div className="flex-1">
-              <h3 className="font-semibold text-gray-500">KARAOKEYA</h3>
-              <p className="text-sm text-gray-400">Próximamente</p>
+              <h3 className="font-semibold text-gray-900 group-hover:text-purple-700">KARAOKEYA</h3>
+              <p className="text-sm text-gray-500">Gestionar turnos de karaoke</p>
             </div>
-          </div>
+            <div className="text-gray-400 group-hover:text-purple-500">
+              →
+            </div>
+          </Link>
         </div>
       </div>
 
