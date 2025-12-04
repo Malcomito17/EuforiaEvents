@@ -16,7 +16,8 @@ import {
   Phone,
   User,
   AlertCircle,
-  GripVertical
+  GripVertical,
+  Download
 } from 'lucide-react'
 import { clsx } from 'clsx'
 import {
@@ -219,6 +220,7 @@ export function KaraokeyaPage() {
   
   // Action states
   const [callingNext, setCallingNext] = useState(false)
+  const [isExporting, setIsExporting] = useState(false)
 
   // DnD sensors
   const sensors = useSensors(
@@ -381,6 +383,23 @@ export function KaraokeyaPage() {
     }
   }
   
+  
+
+  // Export CSV
+  const handleExport = async () => {
+    if (!eventId || isExporting) return
+    
+    setIsExporting(true)
+    try {
+      await karaokeyaApi.exportCsv(eventId)
+    } catch (err: any) {
+      console.error('Error exporting:', err)
+      setError(err.response?.data?.error || 'Error al exportar')
+    } finally {
+      setIsExporting(false)
+    }
+  }
+
   // Filter requests
   const filteredRequests = requests.filter(request => {
     const tab = FILTER_TABS.find(t => t.key === activeTab)
@@ -485,6 +504,19 @@ export function KaraokeyaPage() {
             title="Actualizar"
           >
             <RefreshCw className="w-5 h-5 text-gray-500" />
+          </button>
+          
+          <button
+            onClick={handleExport}
+            disabled={isExporting}
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
+            title="Exportar CSV"
+          >
+            {isExporting ? (
+              <RefreshCw className="w-5 h-5 text-gray-500 animate-spin" />
+            ) : (
+              <Download className="w-5 h-5 text-gray-500" />
+            )}
           </button>
           
           <button
