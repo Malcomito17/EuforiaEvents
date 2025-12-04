@@ -344,3 +344,98 @@ export const musicadjApi = {
   reorderRequests: (eventId: string, orderedIds: string[]) =>
     api.post(`/events/${eventId}/musicadj/requests/reorder`, { orderedIds }),
 }
+
+// ============================================
+// KARAOKEYA
+// ============================================
+
+export type KaraokeRequestStatus = 'QUEUED' | 'CALLED' | 'ON_STAGE' | 'COMPLETED' | 'NO_SHOW' | 'CANCELLED'
+
+export interface KaraokeRequest {
+  id: string
+  eventId: string
+  title: string
+  artist: string | null
+  singerName: string
+  singerLastname: string | null
+  singerEmail: string | null
+  singerWhatsapp: string | null
+  turnNumber: number
+  queuePosition: number
+  status: KaraokeRequestStatus
+  createdAt: string
+  calledAt: string | null
+}
+
+export interface KaraokeyaConfig {
+  eventId: string
+  enabled: boolean
+  cooldownSeconds: number
+  maxPerPerson: number
+  showQueueToClient: boolean
+  showNextSinger: boolean
+}
+
+export interface KaraokeRequestFilters {
+  status?: KaraokeRequestStatus | KaraokeRequestStatus[]
+  search?: string
+  limit?: number
+  offset?: number
+}
+
+export interface UpdateKaraokeRequestInput {
+  status?: KaraokeRequestStatus
+  queuePosition?: number
+}
+
+export interface KaraokeyaStats {
+  total: number
+  queued: number
+  called: number
+  onStage: number
+  completed: number
+  noShow: number
+  cancelled: number
+  nextTurnNumber: number
+}
+
+export const karaokeyaApi = {
+  // Config
+  getConfig: (eventId: string) =>
+    api.get<KaraokeyaConfig>(`/events/${eventId}/karaokeya/config`),
+  
+  updateConfig: (eventId: string, data: Partial<KaraokeyaConfig>) =>
+    api.patch<KaraokeyaConfig>(`/events/${eventId}/karaokeya/config`, data),
+  
+  // Requests
+  listRequests: (eventId: string, filters?: KaraokeRequestFilters) =>
+    api.get<{ data: KaraokeRequest[]; total: number }>(
+      `/events/${eventId}/karaokeya/requests`,
+      { params: filters }
+    ),
+  
+  getRequest: (eventId: string, requestId: string) =>
+    api.get<KaraokeRequest>(`/events/${eventId}/karaokeya/requests/${requestId}`),
+  
+  updateRequest: (eventId: string, requestId: string, data: UpdateKaraokeRequestInput) =>
+    api.patch<KaraokeRequest>(`/events/${eventId}/karaokeya/requests/${requestId}`, data),
+  
+  deleteRequest: (eventId: string, requestId: string) =>
+    api.delete(`/events/${eventId}/karaokeya/requests/${requestId}`),
+  
+  // Queue operations
+  getQueue: (eventId: string) =>
+    api.get<{ queue: KaraokeRequest[]; currentSinger: KaraokeRequest | null }>(
+      `/events/${eventId}/karaokeya/queue`
+    ),
+  
+  getStats: (eventId: string) =>
+    api.get<KaraokeyaStats>(`/events/${eventId}/karaokeya/stats`),
+  
+  callNext: (eventId: string) =>
+    api.post<KaraokeRequest>(`/events/${eventId}/karaokeya/requests/call-next`),
+  
+  // Reorder (drag & drop)
+  reorderQueue: (eventId: string, orderedIds: string[]) =>
+    api.post(`/events/${eventId}/karaokeya/queue/reorder`, { orderedIds }),
+}
