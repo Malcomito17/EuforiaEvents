@@ -49,6 +49,10 @@ router.post('/call-next', controller.callNext)
 // Reordenar cola
 router.post('/requests/reorder', controller.reorderQueue)
 
+// Export CSV
+router.get('/export', controller.exportCsv)
+
+
 // Error handler específico del módulo
 router.use(controller.karaokeyaErrorHandler)
 
