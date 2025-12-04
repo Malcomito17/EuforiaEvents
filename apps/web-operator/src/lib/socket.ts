@@ -120,3 +120,68 @@ export function subscribeMusicadj(events: MusicadjSocketEvents): () => void {
     }
   }
 }
+
+// ============================================
+// KARAOKEYA SOCKET EVENTS
+// ============================================
+
+export interface KaraokeyaSocketEvents {
+  onNewRequest?: (request: KaraokeRequestEvent) => void
+  onStatusChanged?: (request: KaraokeRequestEvent) => void
+  onQueueReordered?: (data: { queue: KaraokeRequestEvent[] }) => void
+  onConfigUpdated?: (config: KaraokeyaConfigEvent) => void
+}
+
+export interface KaraokeRequestEvent {
+  id: string
+  eventId: string
+  title: string
+  artist: string | null
+  singerName: string
+  singerLastname: string | null
+  turnNumber: number
+  queuePosition: number
+  status: string
+  createdAt: string
+  calledAt: string | null
+}
+
+export interface KaraokeyaConfigEvent {
+  eventId: string
+  enabled: boolean
+  cooldownSeconds: number
+  maxPerPerson: number
+  showQueueToClient: boolean
+  showNextSinger: boolean
+}
+
+export function subscribeKaraokeya(events: KaraokeyaSocketEvents): () => void {
+  if (!socket) {
+    console.warn('[Socket] Not connected, cannot subscribe to KARAOKEYA events')
+    return () => {}
+  }
+
+  // Subscribe to KARAOKEYA events
+  if (events.onNewRequest) {
+    socket.on('karaokeya:new-request', events.onNewRequest)
+  }
+  if (events.onStatusChanged) {
+    socket.on('karaokeya:status-changed', events.onStatusChanged)
+  }
+  if (events.onQueueReordered) {
+    socket.on('karaokeya:queue-reordered', events.onQueueReordered)
+  }
+  if (events.onConfigUpdated) {
+    socket.on('karaokeya:config-updated', events.onConfigUpdated)
+  }
+
+  // Return cleanup function
+  return () => {
+    if (socket) {
+      socket.off('karaokeya:new-request')
+      socket.off('karaokeya:status-changed')
+      socket.off('karaokeya:queue-reordered')
+      socket.off('karaokeya:config-updated')
+    }
+  }
+}
