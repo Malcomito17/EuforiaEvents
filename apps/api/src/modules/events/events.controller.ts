@@ -5,6 +5,7 @@
 
 import { Request, Response, NextFunction } from 'express'
 import { eventService, EventError } from './events.service'
+import { generateEventQR, generateEventUrl, generateQRBuffer } from '../../shared/utils/qr-generator'
 import type { AuthenticatedRequest } from '../../shared/types'
 
 export const eventController = {
@@ -177,6 +178,136 @@ export const eventController = {
       )
 
       res.status(201).json(event)
+    } catch (error) {
+      next(error)
+    }
+  },
+
+  // ============================================
+  // QR CODE ENDPOINTS
+  // ============================================
+
+  /**
+   * GET /api/events/:id/qr
+   * Obtiene el código QR del evento en múltiples formatos
+   * Requiere: Autenticado
+   * 
+   * Query params opcionales:
+   * - width: ancho del QR (default 300)
+   * - darkColor: color oscuro (default #000000)
+   * - lightColor: color claro (default #ffffff)
+   */
+  async getQRCode(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+    try {
+      const event = await eventService.findById(req.params.id)
+
+      // Parsear opciones de query params
+      const width = req.query.width ? parseInt(req.query.width as string, 10) : 300
+      const darkColor = (req.query.darkColor as string) || '#000000'
+      const lightColor = (req.query.lightColor as string) || '#ffffff'
+
+      // Validar width
+      if (width < 100 || width > 1000) {
+        throw new EventError('El ancho debe estar entre 100 y 1000 pixels', 400)
+      }
+
+      const qrResult = await generateEventQR(event.slug, {
+        width,
+        darkColor,
+        lightColor,
+      })
+
+      console.log(`[EVENTS] QR generado para evento: ${event.id} (${event.slug})`)
+
+      res.json({
+        eventId: event.id,
+        slug: event.slug,
+        eventName: event.eventData?.eventName || null,
+        qr: {
+          url: qrResult.url,
+          dataUrl: qrResult.dataUrl,
+          svg: qrResult.svg,
+        },
+      })
+    } catch (error) {
+      next(error)
+    }
+  },
+
+  /**
+   * GET /api/events/:id/qr/download
+   * Descarga el código QR como imagen PNG
+   * Requiere: Autenticado
+   * 
+   * Query params opcionales:
+   * - width: ancho del QR (default 400 para descarga)
+   * - darkColor: color oscuro (default #000000)
+   * - lightColor: color claro (default #ffffff)
+   */
+  async downloadQR(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+    try {
+      const event = await eventService.findById(req.params.id)
+
+      // Parsear opciones (default más grande para descarga/impresión)
+      const width = req.query.width ? parseInt(req.query.width as string, 10) : 400
+      const darkColor = (req.query.darkColor as string) || '#000000'
+      const lightColor = (req.query.lightColor as string) || '#ffffff'
+
+      // Validar width
+      if (width < 100 || width > 2000) {
+        throw new EventError('El ancho debe estar entre 100 y 2000 pixels', 400)
+      }
+
+      const eventUrl = generateEventUrl(event.slug)
+      const buffer = await generateQRBuffer(eventUrl, {
+        width,
+        darkColor,
+        lightColor,
+      })
+
+      // Nombre del archivo basado en el evento
+      const eventName = event.eventData?.eventName || event.slug
+      const sanitizedName = eventName.replace(/[^a-zA-Z0-9-_]/g, '_')
+      const filename = `qr-${sanitizedName}.png`
+
+      console.log(`[EVENTS] QR descargado para evento: ${event.id} (${event.slug})`)
+
+      res.setHeader('Content-Type', 'image/png')
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`)
+      res.setHeader('Content-Length', buffer.length)
+      res.send(buffer)
+    } catch (error) {
+      next(error)
+    }
+  },
+
+  /**
+   * GET /api/events/:id/qr/preview
+   * Sirve el código QR como imagen PNG inline (para preview en browser)
+   * Requiere: Autenticado
+   */
+  async previewQR(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+    try {
+      const event = await eventService.findById(req.params.id)
+
+      const width = req.query.width ? parseInt(req.query.width as string, 10) : 300
+      const darkColor = (req.query.darkColor as string) || '#000000'
+      const lightColor = (req.query.lightColor as string) || '#ffffff'
+
+      if (width < 100 || width > 1000) {
+        throw new EventError('El ancho debe estar entre 100 y 1000 pixels', 400)
+      }
+
+      const eventUrl = generateEventUrl(event.slug)
+      const buffer = await generateQRBuffer(eventUrl, {
+        width,
+        darkColor,
+        lightColor,
+      })
+
+      res.setHeader('Content-Type', 'image/png')
+      res.setHeader('Cache-Control', 'public, max-age=3600') // Cache 1 hora
+      res.send(buffer)
     } catch (error) {
       next(error)
     }

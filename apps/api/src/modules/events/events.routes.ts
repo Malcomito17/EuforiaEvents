@@ -66,6 +66,35 @@ router.post(
   eventController.duplicate
 )
 
+// ============================================
+// QR CODE ROUTES
+// ============================================
+
+// Obtener QR data (JSON con dataUrl, svg, url)
+router.get(
+  '/:id/qr',
+  authenticate,
+  eventController.getQRCode
+)
+
+// Descargar QR como PNG (Content-Disposition: attachment)
+router.get(
+  '/:id/qr/download',
+  authenticate,
+  eventController.downloadQR
+)
+
+// Preview QR como imagen (para mostrar inline en browser)
+router.get(
+  '/:id/qr/preview',
+  authenticate,
+  eventController.previewQR
+)
+
+// ============================================
+// DANGER ZONE
+// ============================================
+
 // Eliminar evento (solo ADMIN)
 router.delete(
   '/:id',
