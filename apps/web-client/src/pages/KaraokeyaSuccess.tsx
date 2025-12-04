@@ -3,9 +3,10 @@
  */
 
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
-import { CheckCircle, ArrowLeft, Mic2, Clock, Home } from 'lucide-react'
+import { CheckCircle, ArrowLeft, Mic2, Clock, Home, Eye } from 'lucide-react'
 
 interface SuccessState {
+  requestId: string
   turnNumber: number
   title: string
   singerName: string
@@ -92,6 +93,15 @@ export default function KaraokeyaSuccess() {
 
       {/* Botones */}
       <div className="w-full max-w-sm space-y-3">
+        {/* Ver estado de mi turno */}
+        <button
+          onClick={() => navigate(`/e/${slug}/karaokeya/turn?id=${state.requestId}`)}
+          className="btn-primary w-full flex items-center justify-center gap-2"
+        >
+          <Eye className="w-5 h-5" />
+          Ver estado de mi turno
+        </button>
+
         <button
           onClick={() => navigate(`/e/${slug}/karaokeya`)}
           className="w-full py-3 px-4 bg-white/10 hover:bg-white/20 rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
