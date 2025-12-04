@@ -7,6 +7,7 @@ import { Server as HttpServer } from 'http'
 import { Server, Socket } from 'socket.io'
 import { socketAuthMiddleware } from './auth'
 import { registerMusicadjHandlers } from './handlers/musicadj.handler'
+import { registerKaraokeyaHandlers } from './handlers/karaokeya.handler'
 
 // Instancia global del servidor Socket.io
 let io: Server | null = null
@@ -42,7 +43,7 @@ export function initializeSocket(httpServer: HttpServer): Server {
 
     // Registrar handlers de cada módulo
     registerMusicadjHandlers(io!, socket)
-    // TODO: registerKaraokeyaHandlers(io!, socket)
+    registerKaraokeyaHandlers(io!, socket)
 
     // Evento de desconexión
     socket.on('disconnect', (reason) => {
@@ -74,3 +75,4 @@ export function getIO(): Server {
 export { socketAuthMiddleware, isAuthenticated, isOperator } from './auth'
 export type { AuthenticatedSocket } from './auth'
 export * from './handlers/musicadj.handler'
+export * from './handlers/karaokeya.handler'
