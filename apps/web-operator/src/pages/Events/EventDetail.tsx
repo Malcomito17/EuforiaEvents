@@ -3,7 +3,7 @@ import { useNavigate, useParams, Link } from 'react-router-dom'
 import { eventsApi, Event } from '@/lib/api'
 import { 
   ArrowLeft, Edit, QrCode, Copy, Play, Pause, CheckCircle, 
-  Calendar, MapPin, Users, Music, Instagram, Hash, Loader2
+  Calendar, MapPin, Users, Music, Instagram, Hash, Loader2, Mic
 } from 'lucide-react'
 import clsx from 'clsx'
 
@@ -149,7 +149,7 @@ export function EventDetailPage() {
 
           <Link
             to={`/events/${event.id}/qr`}
-            className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors"
           >
             <QrCode className="h-4 w-4" />
             Ver QR
@@ -157,38 +157,73 @@ export function EventDetailPage() {
 
           <button
             onClick={handleDuplicate}
-            className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors"
           >
             <Copy className="h-4 w-4" />
             Duplicar
           </button>
 
-          <div className="flex-1" />
-
-          {getStatusActions().map((action) => (
+          {/* Status change buttons */}
+          {getStatusActions().map(({ action, label, icon: Icon, color }) => (
             <button
-              key={action.action}
-              onClick={() => handleStatusChange(action.action)}
+              key={action}
+              onClick={() => handleStatusChange(action)}
               disabled={isUpdating}
               className={clsx(
-                'inline-flex items-center gap-2 px-4 py-2 text-white rounded-lg transition-colors disabled:opacity-50',
-                action.color
+                'inline-flex items-center gap-2 px-4 py-2 text-white rounded-lg transition-colors',
+                color,
+                isUpdating && 'opacity-50 cursor-not-allowed'
               )}
             >
               {isUpdating ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
-                <action.icon className="h-4 w-4" />
+                <Icon className="h-4 w-4" />
               )}
-              {action.label}
+              {label}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Info Cards */}
+      {/* Modules Section */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Módulos del Evento</h2>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* MUSICADJ Module */}
+          <Link
+            to={`/events/${event.id}/musicadj`}
+            className="flex items-center gap-4 p-4 border border-gray-200 rounded-xl hover:border-primary-300 hover:bg-primary-50 transition-all group"
+          >
+            <div className="p-3 bg-primary-100 rounded-xl group-hover:bg-primary-200 transition-colors">
+              <Music className="h-6 w-6 text-primary-600" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-semibold text-gray-900 group-hover:text-primary-700">MUSICADJ</h3>
+              <p className="text-sm text-gray-500">Gestionar pedidos musicales</p>
+            </div>
+            <div className="text-gray-400 group-hover:text-primary-500">
+              →
+            </div>
+          </Link>
+
+          {/* KARAOKEYA Module (disabled for now) */}
+          <div className="flex items-center gap-4 p-4 border border-gray-100 rounded-xl bg-gray-50 cursor-not-allowed opacity-60">
+            <div className="p-3 bg-gray-200 rounded-xl">
+              <Mic className="h-6 w-6 text-gray-400" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-semibold text-gray-500">KARAOKEYA</h3>
+              <p className="text-sm text-gray-400">Próximamente</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Event Info */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        {/* Datos del Evento */}
+        {/* Datos del evento */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Datos del Evento</h2>
           
