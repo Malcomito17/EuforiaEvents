@@ -53,6 +53,27 @@
 
 ---
 
+## BACKLOG - Mejoras Pendientes
+
+### 🎨 Eventos - Mejoras de UX
+
+| ID | Tarea | Prioridad | Notas |
+|----|-------|-----------|-------|
+| B1.1 | **Imagen/Flyer del evento** | ALTA | Agregar campo `imageUrl` o `flyerUrl` a EventData para identificar visualmente eventos (útil para bares/comerciales con flyers de publicidad). Requiere: campo en schema Prisma, upload de imagen, preview en listados y detalle. |
+| B1.2 | Thumbnails en listado de eventos | MEDIA | Mostrar miniatura del flyer en la lista de eventos |
+
+### 🔧 MUSICADJ - Pendientes
+
+| ID | Tarea | Prioridad | Notas |
+|----|-------|-----------|-------|
+| B2.1 | Drag & drop para reordenar cola | MEDIA | T2.10 - Usar react-beautiful-dnd o similar |
+| B2.2 | Cooldown por cliente (localStorage) | BAJA | T2.13 - Evitar spam de pedidos |
+| B2.3 | Export CSV de pedidos | BAJA | T2.14 |
+| B2.4 | Página config MUSICADJ | MEDIA | T2.15 - Editar welcomeMessage, cooldown, etc. |
+| B2.5 | Búsqueda offline/fallback | BAJA | T2.3 - Base local de tracks |
+
+---
+
 ## ARQUITECTURA ACTUAL
 
 ```
@@ -90,16 +111,16 @@ euforia-events/
 │       ├── src/
 │       │   ├── pages/
 │       │   │   ├── Events/     # List, Detail, Form, QR
-│       │   │   ├── MusicaDJ/   # MusicaDJPage.tsx ← NUEVO
+│       │   │   ├── MusicaDJ/   # MusicaDJPage.tsx
 │       │   │   ├── Venues/
 │       │   │   ├── Clients/
 │       │   │   ├── Dashboard.tsx
 │       │   │   └── Login.tsx
 │       │   ├── lib/
 │       │   │   ├── api.ts      # API + MUSICADJ functions
-│       │   │   └── socket.ts   # Socket.io client ← NUEVO
+│       │   │   └── socket.ts   # Socket.io client
 │       │   └── stores/
-│       └── package.json        # +socket.io-client
+│       └── package.json
 │
 └── package.json                # Monorepo root
 ```
@@ -211,13 +232,6 @@ npx pnpm dev
 ---
 
 ## PRÓXIMAS TAREAS
-
-### Pendientes MUSICADJ
-- T2.3: Fallback búsqueda offline
-- T2.10: Drag & drop para reordenar
-- T2.13: Control de cooldown
-- T2.14: Exportación CSV
-- T2.15: Página de configuración del módulo
 
 ### Fase 3: KARAOKEYA (Próxima)
 - T3.1: API endpoints CRUD karaoke requests
