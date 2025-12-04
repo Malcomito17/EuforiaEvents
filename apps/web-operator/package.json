@@ -1,6 +1,6 @@
 {
   "name": "web-operator",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -17,7 +17,8 @@
     "react-hook-form": "^7.51.5",
     "zustand": "^4.5.2",
     "lucide-react": "^0.378.0",
-    "clsx": "^2.1.1"
+    "clsx": "^2.1.1",
+    "socket.io-client": "^4.7.5"
   },
   "devDependencies": {
     "@types/react": "^18.3.3",
