@@ -9,6 +9,7 @@ import { AuthError } from '../../modules/auth/auth.service'
 import { EventError } from '../../modules/events/events.service'
 import { VenueError } from '../../modules/venues/venues.service'
 import { ClientError } from '../../modules/clients/clients.service'
+import { MusicadjError } from '../../modules/musicadj/musicadj.service'
 
 export function errorHandler(
   err: Error,
@@ -41,6 +42,13 @@ export function errorHandler(
 
   // Errores de clients
   if (err instanceof ClientError) {
+    return res.status(err.statusCode).json({
+      error: err.message,
+    })
+  }
+
+  // Errores de MUSICADJ
+  if (err instanceof MusicadjError) {
     return res.status(err.statusCode).json({
       error: err.message,
     })
