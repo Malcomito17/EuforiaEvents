@@ -7,29 +7,26 @@ import { Router } from 'express'
 import { authenticate, requireModuleAccess } from '../auth'
 import * as controller from './musicadj.controller'
 
-const router = Router({ mergeParams: true }) // mergeParams para acceder a :eventId
+const router = Router({ mergeParams: true })
 
 // ============================================
 // Rutas Públicas (Cliente QR)
 // ============================================
 
-/**
- * POST /api/events/:eventId/musicadj/requests
- * Cualquiera con el link del evento puede crear solicitudes
- */
-router.post('/requests', controller.createRequest)
-
-/**
- * GET /api/events/:eventId/musicadj/config
- * Para mostrar mensaje de bienvenida, etc.
- */
+// Config (para mensaje de bienvenida, etc.)
 router.get('/config', controller.getConfig)
+
+// Búsqueda de Spotify
+router.get('/search', controller.searchSpotify)
+router.get('/track/:trackId', controller.getSpotifyTrack)
+
+// Crear solicitud
+router.post('/requests', controller.createRequest)
 
 // ============================================
 // Rutas Protegidas (Operador)
 // ============================================
 
-// Aplicar auth a todas las rutas siguientes
 router.use(authenticate)
 router.use(requireModuleAccess('MUSICADJ'))
 
