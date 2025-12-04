@@ -257,3 +257,90 @@ export const clientsApi = {
   reactivate: (id: string) =>
     api.post(`/clients/${id}/reactivate`),
 }
+
+// ============================================
+// MUSICADJ
+// ============================================
+
+export type SongRequestStatus = 'PENDING' | 'HIGHLIGHTED' | 'URGENT' | 'PLAYED' | 'DISCARDED'
+
+export interface SongRequest {
+  id: string
+  eventId: string
+  spotifyId: string | null
+  title: string
+  artist: string
+  albumArtUrl: string | null
+  requesterName: string
+  requesterLastname: string | null
+  requesterEmail: string | null
+  requesterWhatsapp: string | null
+  status: SongRequestStatus
+  priority: number
+  createdAt: string
+  updatedAt: string
+}
+
+export interface MusicadjConfig {
+  eventId: string
+  enabled: boolean
+  cooldownSeconds: number
+  allowWithoutSpotify: boolean
+  welcomeMessage: string | null
+  showQueueToClient: boolean
+  spotifyAvailable: boolean
+}
+
+export interface SongRequestFilters {
+  status?: SongRequestStatus | SongRequestStatus[]
+  search?: string
+  limit?: number
+  offset?: number
+}
+
+export interface UpdateSongRequestInput {
+  status?: SongRequestStatus
+  priority?: number
+}
+
+export interface MusicadjStats {
+  total: number
+  pending: number
+  highlighted: number
+  urgent: number
+  played: number
+  discarded: number
+}
+
+export const musicadjApi = {
+  // Config
+  getConfig: (eventId: string) =>
+    api.get<MusicadjConfig>(`/events/${eventId}/musicadj/config`),
+  
+  updateConfig: (eventId: string, data: Partial<MusicadjConfig>) =>
+    api.patch<MusicadjConfig>(`/events/${eventId}/musicadj/config`, data),
+  
+  // Requests
+  listRequests: (eventId: string, filters?: SongRequestFilters) =>
+    api.get<{ requests: SongRequest[]; total: number; stats: MusicadjStats }>(
+      `/events/${eventId}/musicadj/requests`,
+      { params: filters }
+    ),
+  
+  getRequest: (eventId: string, requestId: string) =>
+    api.get<SongRequest>(`/events/${eventId}/musicadj/requests/${requestId}`),
+  
+  updateRequest: (eventId: string, requestId: string, data: UpdateSongRequestInput) =>
+    api.patch<SongRequest>(`/events/${eventId}/musicadj/requests/${requestId}`, data),
+  
+  deleteRequest: (eventId: string, requestId: string) =>
+    api.delete(`/events/${eventId}/musicadj/requests/${requestId}`),
+  
+  // Bulk operations
+  updateManyRequests: (eventId: string, requestIds: string[], data: UpdateSongRequestInput) =>
+    api.patch(`/events/${eventId}/musicadj/requests/bulk`, { requestIds, ...data }),
+  
+  // Reorder (drag & drop)
+  reorderRequests: (eventId: string, orderedIds: string[]) =>
+    api.post(`/events/${eventId}/musicadj/requests/reorder`, { orderedIds }),
+}
