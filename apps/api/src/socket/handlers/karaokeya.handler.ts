@@ -16,7 +16,7 @@ export const KARAOKEYA_EVENTS = {
   
   // Servidor -> Cliente(s)
   REQUEST_NEW: 'karaokeya:request:new',
-  STATUS_CHANGED: 'karaokeya:request:status',
+  STATUS_CHANGED: 'karaokeya:status:changed',
   QUEUE_REORDERED: 'karaokeya:queue:reordered',
   NEXT_CALLED: 'karaokeya:next:called',
   
@@ -59,7 +59,7 @@ export function registerKaraokeyaHandlers(io: Server, socket: Socket): void {
 }
 
 // ============================================
-// Funciones de emisión para usar desde controllers
+// Funciones de emisión (llamadas desde controllers)
 // ============================================
 
 /**
@@ -115,18 +115,5 @@ export function emitKaraokeConfigUpdated(req: Request, eventId: string, config: 
     console.log(`[KARAOKEYA] Emitted config update to room ${roomName}`)
   } catch (error) {
     console.error('[KARAOKEYA] Error emitting config update:', error)
-  }
-}
-
-/**
- * Emite actualización de estadísticas
- */
-export function emitKaraokeStatsUpdated(eventId: string, stats: unknown): void {
-  try {
-    const io = getIO()
-    const roomName = `karaokeya:${eventId}`
-    io.to(roomName).emit(KARAOKEYA_EVENTS.STATS_UPDATED, stats)
-  } catch (error) {
-    console.error('[KARAOKEYA] Error emitting stats update:', error)
   }
 }
