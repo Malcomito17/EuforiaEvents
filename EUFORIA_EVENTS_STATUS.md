@@ -1,5 +1,5 @@
 # EUFORIA EVENTS - Estado del Proyecto
-## Actualizado: 2025-12-04
+## Actualizado: 2025-12-04 (sesión 2)
 
 ---
 
@@ -61,11 +61,11 @@
 | T3.4 | Interfaz cliente: ver mi turno | ✅ DONE | 2025-12-04 |
 | T3.5 | Interfaz operador: cola de turnos | ✅ DONE | 2025-12-04 |
 | T3.6 | Interfaz operador: llamar siguiente | ✅ DONE | 2025-12-04 |
-| T3.7 | Interfaz operador: reordenar cola | ⏳ PENDIENTE | - |
+| T3.7 | Interfaz operador: reordenar cola (drag & drop) | ✅ DONE | 2025-12-04 |
 | T3.8 | Interfaz operador: marcar estados | ✅ DONE | 2025-12-04 |
 | T3.9 | Display público (pantalla sala) | ⏳ PENDIENTE | - |
 | T3.10 | Notificaciones realtime | ✅ DONE | 2025-12-04 |
-| T3.11 | Exportación CSV | ⏳ PENDIENTE | - |
+| T3.11 | Exportación CSV | ✅ DONE | 2025-12-04 |
 | T3.12 | Configuración módulo por evento | ⏳ PENDIENTE | - |
 
 ---
@@ -104,6 +104,9 @@
 │   ├── types/
 │   ├── middleware/
 │   └── utils/
+│       ├── password.ts
+│       ├── qr-generator.ts
+│       └── csv-export.ts    # ✨ NUEVO
 ├── app.ts                  # v0.5.0
 └── server.ts
 ```
@@ -171,7 +174,8 @@
 | PATCH | `/events/:eventId/karaokeya/requests/:id` | Cambiar estado |
 | DELETE | `/events/:eventId/karaokeya/requests/:id` | Eliminar |
 | POST | `/events/:eventId/karaokeya/requests/call-next` | Llamar siguiente |
-| POST | `/events/:eventId/karaokeya/queue/reorder` | Reordenar cola |
+| POST | `/events/:eventId/karaokeya/requests/reorder` | Reordenar cola |
+| GET | `/events/:eventId/karaokeya/export` | Exportar CSV ✨ |
 
 ---
 
@@ -214,22 +218,14 @@ Login → Dashboard → Eventos → EventDetail → "KARAOKEYA"
 
 ## PRÓXIMAS TAREAS
 
-### T3.7: Reordenar cola (drag & drop)
-- Implementar `@dnd-kit/core` o similar
-- Endpoint POST `/queue/reorder` ya existe
-- Emit `karaokeya:queue-reordered`
-
 ### T3.9: Display público (opcional)
 - Pantalla para proyectar en el salón
 - Muestra: actual cantando, próximos 3-5, cola total
 - Solo lectura, sin controles
 
-### T3.11: Exportación CSV
-- Endpoint GET `/requests/export`
-- Campos: turno, nombre, canción, estado, hora
-
 ### T3.12: Modal configuración
 - Editar: enabled, cooldownSeconds, maxPerPerson, showQueueToClient
+- Botón Settings ya existe, falta implementar modal
 
 ---
 
