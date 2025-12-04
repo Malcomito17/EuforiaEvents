@@ -1,16 +1,16 @@
 # EUFORIA EVENTS - Estado del Proyecto
-## Actualizado: 2025-12-03
+## Actualizado: 2025-12-04
 
 ---
 
 ## RESUMEN EJECUTIVO
 
-| Fase | Estado | Progreso |
-|------|--------|----------|
-| Fase 0: Foundation | ✅ COMPLETADA | 100% |
-| Fase 1: Event Management | 🔄 EN PROGRESO | 60% |
-| Fase 2: MUSICADJ | ⏳ PENDIENTE | 0% |
-| Fase 3: KARAOKEYA | ⏳ PENDIENTE | 0% |
+| Fase | Progreso | Estado |
+|------|----------|--------|
+| Fase 0: Foundation | 100% | ✅ Completada |
+| Fase 1: Event Management | 80% | 🔄 En progreso |
+| Fase 2: MUSICADJ | 0% | ⏳ Pendiente |
+| Fase 3: KARAOKEYA | 0% | ⏳ Pendiente |
 
 ---
 
@@ -29,72 +29,18 @@
 | T0.7 | Setup Socket.io para realtime | ⏳ PENDIENTE | - |
 | T0.8 | Frontend base React + routing | ✅ DONE | 2025-11 |
 
----
-
-### 🔄 Fase 1: Event Management (EN PROGRESO)
+### 🔄 Fase 1: Event Management (EN PROGRESO - 80%)
 
 | ID | Tarea | Estado | Fecha |
 |----|-------|--------|-------|
 | T1.1 | CRUD de eventos | ✅ DONE | 2025-12-03 |
 | T1.2 | CRUD de venues | ✅ DONE | 2025-12-03 |
 | T1.3 | CRUD de clients | ✅ DONE | 2025-12-03 |
-| T1.4 | Formulario datos evento (frontend) | ⏳ PENDIENTE | - |
-| T1.5 | Generación código QR por evento | ⏳ PENDIENTE | - |
-| T1.6 | Estados de evento (transiciones) | ✅ DONE | 2025-12-03 |
-| T1.7 | Listado de eventos con filtros | ✅ DONE | 2025-12-03 |
-| T1.8 | Duplicación de eventos | ✅ DONE | 2025-12-03 |
-
-**Entregables T1.1-T1.3:**
-- CRUD completo de eventos con validación Zod
-- Generación automática de slug (formato: nombre-MMYY)
-- Transiciones de estado controladas (DRAFT → ACTIVE → PAUSED → FINISHED)
-- Duplicación de eventos con copia de configs (sin datos operativos)
-- Filtros: status, tipo, venue, client, fechas, búsqueda
-- Paginación en listados
-- CRUD de venues (salones, hoteles, quintas, etc.)
-- CRUD de clients (datos de contratantes)
-- Entidades reutilizables entre eventos
-
----
-
-### ⏳ Fase 2: MUSICADJ (PENDIENTE)
-
-| ID | Tarea | Prioridad | Estimación |
-|----|-------|-----------|------------|
-| T2.1 | API endpoints CRUD song requests | CRÍTICA | 4h |
-| T2.2 | Integración Spotify Web API (búsqueda) | CRÍTICA | 6h |
-| T2.3 | Fallback búsqueda offline (base local) | ALTA | 4h |
-| T2.4 | Interfaz cliente: landing QR | CRÍTICA | 3h |
-| T2.5 | Interfaz cliente: formulario pedido | CRÍTICA | 4h |
-| T2.6 | Interfaz cliente: búsqueda temas | CRÍTICA | 4h |
-| T2.7 | Interfaz cliente: confirmación envío | ALTA | 2h |
-| T2.8 | Interfaz operador: lista de pedidos | CRÍTICA | 6h |
-| T2.9 | Interfaz operador: cambio de estados | CRÍTICA | 3h |
-| T2.10 | Interfaz operador: drag&drop reordenar | ALTA | 4h |
-| T2.11 | Interfaz operador: filtros y búsqueda | ALTA | 3h |
-| T2.12 | Notificaciones realtime (Socket.io) | CRÍTICA | 4h |
-| T2.13 | Control de cooldown por cliente | ALTA | 3h |
-| T2.14 | Exportación CSV | ALTA | 2h |
-| T2.15 | Configuración módulo por evento | ALTA | 3h |
-
----
-
-### ⏳ Fase 3: KARAOKEYA (PENDIENTE)
-
-| ID | Tarea | Prioridad | Estimación |
-|----|-------|-----------|------------|
-| T3.1 | API endpoints CRUD karaoke requests | CRÍTICA | 4h |
-| T3.2 | Sistema de turnos y cola | CRÍTICA | 4h |
-| T3.3 | Interfaz cliente: anotarse | CRÍTICA | 4h |
-| T3.4 | Interfaz cliente: ver mi turno | ALTA | 3h |
-| T3.5 | Interfaz operador: cola de turnos | CRÍTICA | 5h |
-| T3.6 | Interfaz operador: llamar siguiente | CRÍTICA | 2h |
-| T3.7 | Interfaz operador: reordenar cola | ALTA | 3h |
-| T3.8 | Interfaz operador: marcar estados | ALTA | 2h |
-| T3.9 | Display público (pantalla sala) | MEDIA | 4h |
-| T3.10 | Notificaciones realtime | CRÍTICA | 3h |
-| T3.11 | Exportación CSV | ALTA | 2h |
-| T3.12 | Configuración módulo por evento | ALTA | 3h |
+| T1.4 | Formularios frontend | ⏳ PENDIENTE | - |
+| T1.5 | Generación código QR | ✅ DONE | 2025-12-04 |
+| T1.6 | Estados de evento | ✅ DONE (en T1.1) | 2025-12-03 |
+| T1.7 | Listado con filtros | ✅ DONE (en T1.1) | 2025-12-03 |
+| T1.8 | Duplicación de eventos | ✅ DONE (en T1.1) | 2025-12-03 |
 
 ---
 
@@ -103,7 +49,7 @@
 ```
 apps/api/src/
 ├── config/
-│   ├── env.ts              # Variables de entorno tipadas (Zod)
+│   ├── env.ts              # Variables de entorno (Zod)
 │   └── database.ts         # Cliente Prisma singleton
 ├── modules/
 │   ├── auth/
@@ -116,7 +62,7 @@ apps/api/src/
 │   │   ├── index.ts
 │   │   ├── events.types.ts
 │   │   ├── events.service.ts
-│   │   ├── events.controller.ts
+│   │   ├── events.controller.ts  # Incluye endpoints QR
 │   │   └── events.routes.ts
 │   ├── venues/
 │   │   ├── index.ts
@@ -134,7 +80,9 @@ apps/api/src/
 │   ├── middleware/
 │   │   └── error.middleware.ts
 │   └── utils/
-│       └── password.ts
+│       ├── index.ts
+│       ├── password.ts
+│       └── qr-generator.ts     # ✨ NUEVO - Generador QR
 ├── app.ts
 └── server.ts
 ```
@@ -157,67 +105,145 @@ apps/api/src/
 | Método | Ruta | Auth | Rol | Descripción |
 |--------|------|------|-----|-------------|
 | GET | `/slug/:slug` | No | - | Acceso público (QR) |
-| GET | `/` | Sí | Any | Listar con filtros |
-| GET | `/:id` | Sí | Any | Obtener por ID |
+| GET | `/` | Sí | - | Listar con filtros |
+| GET | `/:id` | Sí | - | Obtener por ID |
 | POST | `/` | Sí | ADMIN/MANAGER | Crear evento |
 | PATCH | `/:id` | Sí | ADMIN/MANAGER | Actualizar evento |
 | PATCH | `/:id/data` | Sí | ADMIN/MANAGER | Actualizar eventData |
 | PATCH | `/:id/status` | Sí | ADMIN/MANAGER | Cambiar estado |
 | POST | `/:id/duplicate` | Sí | ADMIN/MANAGER | Duplicar evento |
-| DELETE | `/:id` | Sí | ADMIN | Eliminar (soft) |
+| GET | `/:id/qr` | Sí | - | QR data (JSON) |
+| GET | `/:id/qr/download` | Sí | - | Descargar QR (PNG) |
+| GET | `/:id/qr/preview` | Sí | - | Preview QR (imagen) |
+| DELETE | `/:id` | Sí | ADMIN | Eliminar evento |
 
 ### Venues (`/api/venues`)
 
 | Método | Ruta | Auth | Rol | Descripción |
 |--------|------|------|-----|-------------|
-| GET | `/` | Sí | Any | Listar venues |
-| GET | `/:id` | Sí | Any | Obtener por ID |
+| GET | `/` | Sí | - | Listar venues |
+| GET | `/:id` | Sí | - | Obtener por ID |
 | POST | `/` | Sí | ADMIN/MANAGER | Crear venue |
 | PATCH | `/:id` | Sí | ADMIN/MANAGER | Actualizar venue |
+| POST | `/:id/reactivate` | Sí | ADMIN | Reactivar venue |
 | DELETE | `/:id` | Sí | ADMIN | Desactivar venue |
 
 ### Clients (`/api/clients`)
 
 | Método | Ruta | Auth | Rol | Descripción |
 |--------|------|------|-----|-------------|
-| GET | `/` | Sí | Any | Listar clientes |
-| GET | `/:id` | Sí | Any | Obtener por ID |
+| GET | `/` | Sí | - | Listar clientes |
+| GET | `/:id` | Sí | - | Obtener por ID |
 | POST | `/` | Sí | ADMIN/MANAGER | Crear cliente |
 | PATCH | `/:id` | Sí | ADMIN/MANAGER | Actualizar cliente |
+| POST | `/:id/reactivate` | Sí | ADMIN | Reactivar cliente |
 | DELETE | `/:id` | Sí | ADMIN | Desactivar cliente |
 
 ---
 
-## MODELO DE DATOS (RESUMEN)
+## FUNCIONALIDAD QR (T1.5) ✨
 
-### Entidades Core
-- **User**: Usuarios del sistema (admin, manager, operator)
-- **UserPermission**: Permisos por módulo
-- **Event**: Contenedor principal de evento
-- **EventData**: Datos específicos del evento (nombre, fecha, tipo, etc.)
-- **Venue**: Salones/lugares (reutilizables)
-- **Client**: Clientes/contratantes (reutilizables)
+### Endpoints
 
-### Módulo MUSICADJ
-- **MusicadjConfig**: Configuración por evento
-- **SongRequest**: Pedidos de canciones
+```bash
+# Obtener QR data (JSON con dataUrl, svg, url)
+GET /api/events/:id/qr
+GET /api/events/:id/qr?width=500&darkColor=%23ff0000
 
-### Módulo KARAOKEYA
-- **KaraokeyaConfig**: Configuración por evento
-- **KaraokeRequest**: Inscripciones de karaoke
+# Descargar QR como PNG (para imprimir)
+GET /api/events/:id/qr/download
+GET /api/events/:id/qr/download?width=800
+
+# Preview QR inline (para mostrar en browser)
+GET /api/events/:id/qr/preview
+```
+
+### Opciones de Personalización
+
+| Parámetro | Default | Rango | Descripción |
+|-----------|---------|-------|-------------|
+| `width` | 300 (400 para download) | 100-2000 | Ancho en pixels |
+| `darkColor` | #000000 | Hex color | Color del código |
+| `lightColor` | #ffffff | Hex color | Color de fondo |
+
+### Respuesta JSON (`/:id/qr`)
+
+```json
+{
+  "eventId": "clxxx...",
+  "slug": "fiesta-martina-0125",
+  "eventName": "Fiesta de Martina",
+  "qr": {
+    "url": "http://localhost:5173/e/fiesta-martina-0125",
+    "dataUrl": "data:image/png;base64,iVBORw0KGgo...",
+    "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\"..."
+  }
+}
+```
+
+---
+
+## MODELO DE DATOS
+
+### Entidades Principales
+
+```
+User (usuarios del sistema)
+├── id, username, email, password, role
+├── isActive, createdAt, updatedAt
+└── → UserPermission[], Event[]
+
+Event (eventos)
+├── id, slug (único), status
+├── venueId?, clientId?, clonedFromId?
+├── createdById, createdAt, updatedAt
+└── → EventData, Venue?, Client?, MusicadjConfig?, KaraokeyaConfig?
+
+EventData (datos del evento)
+├── id, eventId
+├── eventName, eventType, startDate, endDate
+├── guestCount, instagramUrl, instagramUser
+├── hashtag, spotifyPlaylist, notes, customFields
+└── → Event
+
+Venue (salones/lugares)
+├── id, name, type, address, city
+├── capacity, contactName, contactPhone
+├── instagramUrl, notes, isActive
+└── → Event[]
+
+Client (clientes)
+├── id, name, company, phone, email
+├── cuit, notes, isActive
+└── → Event[]
+```
+
+### Estados de Evento
+
+```
+DRAFT → ACTIVE → FINISHED
+  │       │
+  │       ↓
+  │    PAUSED → ACTIVE
+  │       │
+  ↓       ↓
+FINISHED ←┘
+```
 
 ---
 
 ## PRÓXIMOS PASOS
 
-### Inmediato (T1.4-T1.5)
-1. **T1.4**: Formularios frontend para crear/editar eventos
-2. **T1.5**: Generación y visualización de QR
+### Inmediato (Fase 1)
+- [ ] T1.4: Formularios frontend React para crear/editar eventos
 
-### Corto plazo (Fase 2)
-1. Setup Socket.io (T0.7)
-2. Iniciar módulo MUSICADJ
-3. Integración Spotify API
+### Fase 2: MUSICADJ
+- [ ] T2.1: API endpoints CRUD song requests
+- [ ] T2.2: Integración Spotify Web API
+- [ ] T2.3-T2.15: Interfaces cliente y operador
+
+### Fase 3: KARAOKEYA
+- [ ] T3.1-T3.12: Sistema de turnos y cola
 
 ---
 
@@ -228,22 +254,52 @@ apps/api/src/
 cd ~/Projects/euforia-events/apps/api
 npx pnpm dev
 
-# Base de datos
-npx pnpm db:generate   # Regenerar cliente Prisma
-npx pnpm db:push       # Aplicar schema
-npx pnpm db:seed       # Seed inicial
-npx pnpm db:studio     # GUI de Prisma
+# Instalar dependencia qrcode (después de pull)
+npx pnpm install
 
-# Git
-git pull origin main   # Actualizar desde remoto
+# Base de datos
+npx pnpm db:generate
+npx pnpm db:push
+npx pnpm db:seed
+npx pnpm db:studio
+
+# Test endpoints
+TOKEN=$(curl -s http://localhost:3000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin","password":"admin123"}' | grep -o '"token":"[^"]*"' | cut -d'"' -f4)
+
+# Crear evento y obtener QR
+curl -s http://localhost:3000/api/events \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{"eventData":{"eventName":"Test QR","eventType":"BIRTHDAY","startDate":"2025-03-15T20:00:00Z"}}'
+
+# Obtener QR (cambiar EVENT_ID)
+curl -s "http://localhost:3000/api/events/EVENT_ID/qr" \
+  -H "Authorization: Bearer $TOKEN"
+
+# Descargar QR como PNG
+curl -s "http://localhost:3000/api/events/EVENT_ID/qr/download" \
+  -H "Authorization: Bearer $TOKEN" \
+  -o qr-evento.png
 ```
+
+---
+
+## NOTAS TÉCNICAS
+
+- **Node:** v20.x
+- **Package Manager:** pnpm
+- **Dependencia QR:** qrcode v1.5.3 + @types/qrcode
+- **Base de datos:** SQLite en `apps/api/dev.db`
+- **JWT Secret:** Configurado en `apps/api/.env`
 
 ---
 
 ## GITHUB
 
 - **Repo:** https://github.com/Malcomito17/EuforiaEvents
-- **Último commit:** feat(events): implementar CRUD completo de eventos (T1.1)
+- **Último commit:** feat(events): implementar generación de códigos QR (T1.5)
 
 ---
 
