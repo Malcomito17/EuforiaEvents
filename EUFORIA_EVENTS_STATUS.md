@@ -63,7 +63,7 @@
 | T3.6 | Interfaz operador: llamar siguiente | ✅ DONE | 2025-12-04 |
 | T3.7 | Interfaz operador: reordenar cola (drag & drop) | ✅ DONE | 2025-12-04 |
 | T3.8 | Interfaz operador: marcar estados | ✅ DONE | 2025-12-04 |
-| T3.9 | Display público (pantalla sala) | ⏳ PENDIENTE | - |
+| T3.9 | Display público (pantalla sala) | ✅ DONE | 2025-12-04 |
 | T3.10 | Notificaciones realtime | ✅ DONE | 2025-12-04 |
 | T3.11 | Exportación CSV | ✅ DONE | 2025-12-04 |
 | T3.12 | Configuración módulo por evento | ✅ DONE | 2025-12-04 |
