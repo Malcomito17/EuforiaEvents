@@ -86,8 +86,11 @@ export async function createKaraokeRequest(
   return data
 }
 
-export async function getKaraokeRequestById(requestId: string): Promise<KaraokeRequest> {
-  const { data } = await api.get(`/events/_/karaokeya/requests/${requestId}`)
+export async function getKaraokeRequestById(
+  eventId: string,
+  requestId: string
+): Promise<KaraokeRequest> {
+  const { data } = await api.get(`/events/${eventId}/karaokeya/requests/${requestId}`)
   return data
 }
 
