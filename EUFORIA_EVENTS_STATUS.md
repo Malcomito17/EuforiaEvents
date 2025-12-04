@@ -3,200 +3,237 @@
 
 ---
 
-## PROGRESO GENERAL
+## ROADMAP ACTUALIZADO
 
-| Fase | Descripción | Estado | Progreso |
-|------|-------------|--------|----------|
-| Fase 0 | Foundation | ✅ COMPLETADA | 100% |
-| Fase 1 | Event Management | ✅ COMPLETADA | 100% |
-| Fase 2 | Módulo MUSICADJ | 🔄 PRÓXIMA | 0% |
-| Fase 3 | Módulo KARAOKEYA | ⏳ Pendiente | 0% |
-| Fase 4 | Gestión de Usuarios | ⏳ Pendiente | 0% |
-| Fase 5 | Modo Offline | ⏳ Pendiente | 0% |
-
----
-
-## ✅ FASE 0: FOUNDATION (COMPLETADA)
+### ✅ Fase 0: Foundation (COMPLETADA)
 
 | ID | Tarea | Estado | Fecha |
 |----|-------|--------|-------|
-| T0.1 | Setup proyecto (monorepo structure) | ✅ DONE | 2025-11 |
-| T0.2 | Configuración Docker Compose | ✅ DONE | 2025-11 |
-| T0.3 | Setup base de datos SQLite + migraciones | ✅ DONE | 2025-11 |
-| T0.4 | API base con Express + estructura de rutas | ✅ DONE | 2025-11 |
+| T0.1 | Setup proyecto (monorepo structure) | ✅ DONE | - |
+| T0.2 | Configuración Docker Compose | ✅ DONE | - |
+| T0.3 | Setup base de datos SQLite + migraciones | ✅ DONE | - |
+| T0.4 | API base con Express + estructura de rutas | ✅ DONE | - |
 | T0.5 | Sistema de autenticación JWT | ✅ DONE | 2025-12-01 |
 | T0.6 | Middleware de permisos por módulo | ✅ DONE | 2025-12-01 |
-| T0.7 | Setup Socket.io para realtime | ⏳ PENDIENTE | - |
-| T0.8 | Frontend base React + routing | ✅ DONE | 2025-12-04 |
+| T0.7 | Setup Socket.io para realtime | ✅ DONE | 2025-12-04 |
+| T0.8 | Frontend base React + routing | ✅ DONE | - |
 
----
-
-## ✅ FASE 1: EVENT MANAGEMENT (COMPLETADA)
+### ✅ Fase 1: Event Management (COMPLETADA)
 
 | ID | Tarea | Estado | Fecha |
 |----|-------|--------|-------|
-| T1.1 | CRUD de eventos | ✅ DONE | 2025-12-01 |
-| T1.2 | Formulario datos venue | ✅ DONE | 2025-12-02 |
-| T1.3 | Formulario datos cliente | ✅ DONE | 2025-12-02 |
-| T1.4 | Formulario datos evento + Frontend completo | ✅ DONE | 2025-12-04 |
-| T1.5 | Generación código QR por evento | ✅ DONE | 2025-12-01 |
-| T1.6 | Estados de evento (draft/activo/finalizado) | ✅ DONE | 2025-12-01 |
-| T1.7 | Listado de eventos con filtros | ✅ DONE | 2025-12-01 |
-| T1.8 | Duplicación de eventos | ✅ DONE | 2025-12-01 |
+| T1.1 | CRUD de eventos | ✅ DONE | - |
+| T1.2 | Formulario datos venue | ✅ DONE | - |
+| T1.3 | Formulario datos cliente | ✅ DONE | - |
+| T1.4 | Formulario datos evento | ✅ DONE | - |
+| T1.5 | Generación código QR por evento | ✅ DONE | - |
+| T1.6 | Estados de evento (draft/activo/finalizado) | ✅ DONE | - |
+| T1.7 | Listado de eventos con filtros | ✅ DONE | - |
+| T1.8 | Duplicación de eventos | ✅ DONE | - |
 
-**Entregables Fase 1:**
-- Backend API completo para Events, Venues, Clients
-- Frontend Operador con todas las vistas:
-  - Dashboard con estadísticas
-  - CRUD completo de Eventos (list, create, edit, detail, QR)
-  - CRUD completo de Venues
-  - CRUD completo de Clients
-- Generación de QR con descarga PNG
-- Slug amigable para URLs de eventos
-- Sistema de estados con transiciones controladas
+### ✅ Fase 2: Módulo MUSICADJ (COMPLETADA)
 
----
-
-## 🔄 FASE 2: MÓDULO MUSICADJ (PRÓXIMA)
-
-| ID | Tarea | Prioridad | Estimación |
-|----|-------|-----------|------------|
-| T0.7 | Setup Socket.io para realtime | CRÍTICA | 3h |
-| T2.1 | API endpoints CRUD song requests | CRÍTICA | 4h |
-| T2.2 | Integración Spotify Web API (búsqueda) | CRÍTICA | 6h |
-| T2.3 | Fallback búsqueda offline (base local) | ALTA | 4h |
-| T2.4 | Interfaz cliente: landing QR | CRÍTICA | 3h |
-| T2.5 | Interfaz cliente: formulario pedido | CRÍTICA | 4h |
-| T2.6 | Interfaz cliente: búsqueda temas | CRÍTICA | 4h |
-| T2.7 | Interfaz cliente: confirmación envío | ALTA | 2h |
-| T2.8 | Interfaz operador: lista de pedidos | CRÍTICA | 6h |
-| T2.9 | Interfaz operador: cambio de estados | CRÍTICA | 3h |
-| T2.10 | Interfaz operador: drag&drop reordenar | ALTA | 4h |
-| T2.11 | Interfaz operador: filtros y búsqueda | ALTA | 3h |
-| T2.12 | Notificaciones realtime (Socket.io) | CRÍTICA | 4h |
-| T2.13 | Control de cooldown por cliente | ALTA | 3h |
-| T2.14 | Exportación CSV | ALTA | 2h |
-| T2.15 | Configuración módulo por evento | ALTA | 3h |
-
-**Dependencia:** T0.7 (Socket.io) es prerequisito para T2.12 (realtime)
+| ID | Tarea | Estado | Fecha |
+|----|-------|--------|-------|
+| T2.1 | API endpoints CRUD song requests | ✅ DONE | 2025-12-04 |
+| T2.2 | Integración Spotify Web API (búsqueda) | ✅ DONE | 2025-12-04 |
+| T2.3 | Fallback búsqueda offline (base local) | ⏳ PENDIENTE | - |
+| T2.4 | Interfaz cliente: landing QR | ✅ DONE | 2025-12-04 |
+| T2.5 | Interfaz cliente: formulario pedido | ✅ DONE | 2025-12-04 |
+| T2.6 | Interfaz cliente: búsqueda temas | ✅ DONE | 2025-12-04 |
+| T2.7 | Interfaz cliente: confirmación envío | ✅ DONE | 2025-12-04 |
+| T2.8 | Interfaz operador: lista de pedidos | ✅ DONE | 2025-12-04 |
+| T2.9 | Interfaz operador: cambio de estados | ✅ DONE | 2025-12-04 |
+| T2.10 | Interfaz operador: drag&drop reordenar | ⏳ PENDIENTE | - |
+| T2.11 | Interfaz operador: filtros y búsqueda | ✅ DONE | 2025-12-04 |
+| T2.12 | Notificaciones realtime (Socket.io) | ✅ DONE | 2025-12-04 |
+| T2.13 | Control de cooldown por cliente | ⏳ PENDIENTE | - |
+| T2.14 | Exportación CSV | ⏳ PENDIENTE | - |
+| T2.15 | Configuración módulo por evento | ⏳ PENDIENTE | - |
 
 ---
 
 ## ARQUITECTURA ACTUAL
 
 ```
-apps/
-├── api/                    # Backend Express ✅
-│   ├── src/
-│   │   ├── config/         # env, database
-│   │   ├── modules/
-│   │   │   ├── auth/       # ✅ Login, JWT, permisos
-│   │   │   ├── events/     # ✅ CRUD completo
-│   │   │   ├── venues/     # ✅ CRUD completo
-│   │   │   └── clients/    # ✅ CRUD completo
-│   │   └── shared/         # middleware, utils, types
-│   └── prisma/             # Schema + migrations
+euforia-events/
+├── apps/
+│   ├── api/                    # Backend Express + Socket.io + Prisma
+│   │   ├── src/
+│   │   │   ├── config/         # env.ts, database.ts
+│   │   │   ├── modules/
+│   │   │   │   ├── auth/       # Login, JWT, permisos
+│   │   │   │   ├── events/     # CRUD eventos, QR
+│   │   │   │   ├── musicadj/   # Song requests, Spotify
+│   │   │   │   ├── venues/     # CRUD venues
+│   │   │   │   └── clients/    # CRUD clientes
+│   │   │   ├── socket/         # WebSocket handlers
+│   │   │   │   ├── index.ts
+│   │   │   │   ├── auth.ts
+│   │   │   │   └── handlers/musicadj.handler.ts
+│   │   │   └── shared/         # Types, middleware, utils
+│   │   └── prisma/             # Schema + seed
+│   │
+│   ├── web-client/             # Frontend Cliente (Puerto 5173)
+│   │   ├── src/
+│   │   │   ├── pages/
+│   │   │   │   ├── EventLanding.tsx
+│   │   │   │   ├── MusicaDJRequest.tsx
+│   │   │   │   ├── RequestSuccess.tsx
+│   │   │   │   └── NotFound.tsx
+│   │   │   ├── services/api.ts
+│   │   │   ├── stores/eventStore.ts
+│   │   │   └── types/index.ts
+│   │   └── package.json
+│   │
+│   └── web-operator/           # Frontend Operador (Puerto 5174)
+│       ├── src/
+│       │   ├── pages/
+│       │   │   ├── Events/     # List, Detail, Form, QR
+│       │   │   ├── MusicaDJ/   # MusicaDJPage.tsx ← NUEVO
+│       │   │   ├── Venues/
+│       │   │   ├── Clients/
+│       │   │   ├── Dashboard.tsx
+│       │   │   └── Login.tsx
+│       │   ├── lib/
+│       │   │   ├── api.ts      # API + MUSICADJ functions
+│       │   │   └── socket.ts   # Socket.io client ← NUEVO
+│       │   └── stores/
+│       └── package.json        # +socket.io-client
 │
-├── web-operator/           # Frontend Operador ✅
-│   └── src/
-│       ├── components/     # Layout, ProtectedRoute
-│       ├── pages/
-│       │   ├── Dashboard   # ✅
-│       │   ├── Events/     # ✅ List, Form, Detail, QR
-│       │   ├── Venues/     # ✅ List, Form
-│       │   └── Clients/    # ✅ List, Form
-│       ├── stores/         # authStore (Zustand)
-│       └── lib/            # api client (Axios)
-│
-└── web-client/             # Frontend Cliente (QR) ⏳
-    └── (pendiente)
+└── package.json                # Monorepo root
 ```
 
 ---
 
-## ENDPOINTS API DISPONIBLES
+## ENDPOINTS DISPONIBLES
 
 ### Auth (`/api/auth`)
+
 | Método | Ruta | Auth | Descripción |
 |--------|------|------|-------------|
-| POST | `/login` | No | Login (JWT) |
+| POST | `/login` | No | Login (devuelve JWT) |
 | GET | `/me` | Sí | Usuario actual |
-| POST | `/register` | Admin | Crear usuario |
+| POST | `/register` | Sí (ADMIN) | Crear usuario |
 | POST | `/change-password` | Sí | Cambiar password |
 
 ### Events (`/api/events`)
-| Método | Ruta | Descripción |
-|--------|------|-------------|
-| GET | `/` | Listar (filtros: status, search, limit, offset) |
-| POST | `/` | Crear evento |
-| GET | `/:id` | Obtener evento |
-| PATCH | `/:id` | Actualizar evento |
-| DELETE | `/:id` | Soft delete (FINISHED) |
-| PATCH | `/:id/status` | Cambiar estado |
-| POST | `/:id/duplicate` | Duplicar evento |
-| GET | `/:id/qr` | Obtener QR (JSON) |
-| GET | `/:id/qr/download` | Descargar QR (PNG) |
 
-### Venues (`/api/venues`)
-| Método | Ruta | Descripción |
-|--------|------|-------------|
-| GET | `/` | Listar |
-| POST | `/` | Crear |
-| GET | `/:id` | Obtener |
-| PATCH | `/:id` | Actualizar |
-| DELETE | `/:id` | Soft delete |
-| POST | `/:id/reactivate` | Reactivar |
+| Método | Ruta | Auth | Descripción |
+|--------|------|------|-------------|
+| GET | `/` | Sí | Listar eventos |
+| POST | `/` | Sí | Crear evento |
+| GET | `/:id` | Sí | Obtener evento |
+| PATCH | `/:id` | Sí | Actualizar evento |
+| DELETE | `/:id` | Sí | Eliminar evento |
+| PATCH | `/:id/status` | Sí | Cambiar estado |
+| POST | `/:id/duplicate` | Sí | Duplicar evento |
+| GET | `/:id/qr` | Sí | Obtener QR (JSON) |
+| GET | `/slug/:slug` | No | Obtener por slug (público) |
 
-### Clients (`/api/clients`)
-| Método | Ruta | Descripción |
-|--------|------|-------------|
-| GET | `/` | Listar |
-| POST | `/` | Crear |
-| GET | `/:id` | Obtener |
-| PATCH | `/:id` | Actualizar |
-| DELETE | `/:id` | Soft delete |
-| POST | `/:id/reactivate` | Reactivar |
+### MUSICADJ (`/api/events/:eventId/musicadj`)
+
+| Método | Ruta | Auth | Descripción |
+|--------|------|------|-------------|
+| GET | `/config` | No | Configuración del módulo |
+| PATCH | `/config` | Sí | Actualizar config |
+| GET | `/requests` | Sí | Listar pedidos |
+| POST | `/requests` | No | Crear pedido (cliente) |
+| GET | `/requests/:id` | Sí | Obtener pedido |
+| PATCH | `/requests/:id` | Sí | Actualizar pedido |
+| DELETE | `/requests/:id` | Sí | Eliminar pedido |
+| GET | `/search` | No | Buscar en Spotify |
+| GET | `/track/:trackId` | No | Obtener track de Spotify |
 
 ---
 
-## COMANDOS DE DESARROLLO
+## SOCKET.IO EVENTS
+
+### MUSICADJ Events
+
+| Event | Dirección | Payload | Descripción |
+|-------|-----------|---------|-------------|
+| `musicadj:new-request` | Server → Client | `SongRequest` | Nuevo pedido creado |
+| `musicadj:request-updated` | Server → Client | `SongRequest` | Pedido actualizado |
+| `musicadj:request-deleted` | Server → Client | `{ requestId }` | Pedido eliminado |
+| `musicadj:queue-reordered` | Server → Client | `{ requests }` | Cola reordenada |
+
+---
+
+## COMANDOS ÚTILES
 
 ```bash
-# Levantar API (Terminal 1)
-cd ~/Projects/euforia-events/apps/api
+# Actualizar código
+cd ~/Projects/euforia-events
+git pull origin main
+npx pnpm install
+
+# Terminal 1 - API (puerto 3000)
+cd apps/api
+NODE_TLS_REJECT_UNAUTHORIZED=0 npx pnpm dev
+
+# Terminal 2 - Frontend Cliente (puerto 5173)
+cd apps/web-client
 npx pnpm dev
 
-# Levantar Frontend Operador (Terminal 2)
-cd ~/Projects/euforia-events/apps/web-operator
+# Terminal 3 - Frontend Operador (puerto 5174)
+cd apps/web-operator
 npx pnpm dev
 
-# URLs
-# API: http://localhost:3000
-# Frontend: http://localhost:5174
-
-# Base de datos
-npx pnpm db:studio     # GUI Prisma
-
-# Usuario test
-# admin / admin123
+# URLs de prueba
+# Landing Cliente: http://localhost:5173/e/evento-demo-2501
+# MUSICADJ Cliente: http://localhost:5173/e/evento-demo-2501/musicadj
+# Operador Login: http://localhost:5174/login
+# Operador MUSICADJ: http://localhost:5174/events/{eventId}/musicadj
 ```
 
 ---
 
-## GITHUB
+## CREDENCIALES
 
-- **Repo:** https://github.com/Malcomito17/EuforiaEvents
-- **Branch:** main
+### Usuarios
+
+| Usuario | Password | Rol |
+|---------|----------|-----|
+| admin | admin123 | ADMIN |
+| operador | admin123 | OPERATOR |
+
+### Spotify API
+
+- Client ID: `4b5dd84006a74b5a88379c5d12a08335`
+- Client Secret: `e811dcf747e245078883fb4c654d296a`
+
+### GitHub
+
+- Repo: https://github.com/Malcomito17/EuforiaEvents
+- Token PAT: `github_pat_11A6DBHQQ09ZKAr5SSy2Sr_...`
 
 ---
 
-## PRÓXIMOS PASOS
+## PRÓXIMAS TAREAS
 
-1. **T0.7** - Setup Socket.io (prerequisito para realtime)
-2. **T2.1-T2.3** - Backend MUSICADJ + Spotify
-3. **T2.4-T2.7** - Frontend Cliente (web-client)
-4. **T2.8-T2.15** - Frontend Operador MUSICADJ
+### Pendientes MUSICADJ
+- T2.3: Fallback búsqueda offline
+- T2.10: Drag & drop para reordenar
+- T2.13: Control de cooldown
+- T2.14: Exportación CSV
+- T2.15: Página de configuración del módulo
+
+### Fase 3: KARAOKEYA (Próxima)
+- T3.1: API endpoints CRUD karaoke requests
+- T3.2: Sistema de turnos y cola
+- T3.3-T3.12: Interfaces cliente y operador
 
 ---
 
-*Documento actualizado automáticamente - EUFORIA EVENTS*
+## NOTAS TÉCNICAS
+
+- **Node:** v20.x
+- **Package Manager:** pnpm (ejecutar con `npx pnpm`)
+- **SSL npm:** `npm config set strict-ssl false`
+- **SSL Node:** `NODE_TLS_REJECT_UNAUTHORIZED=0` (para Spotify API en macOS)
+- **Base de datos:** SQLite en `apps/api/dev.db`
+
+---
+
+*Documento generado automáticamente - EUFORIA EVENTS*
