@@ -12,7 +12,9 @@ import {
   emitKaraokeConfigUpdated,
 } from '../../socket'
 import * as service from './karaokeya.service'
+import { generateCsv, formatDateForCsv, generateCsvFilename, CsvColumn } from "../../shared/utils"
 import {
+import { generateCsv, formatDateForCsv, generateCsvFilename, CsvColumn } from '../../shared/utils'
   createKaraokeRequestSchema,
   updateKaraokeRequestStatusSchema,
   karaokeyaConfigSchema,
@@ -243,6 +245,44 @@ export async function reorderQueue(req: Request, res: Response, next: NextFuncti
     emitKaraokeQueueReordered(req, eventId)
 
     res.json({ message: 'Cola reordenada' })
+  } catch (error) {
+    next(error)
+  }
+}
+
+
+
+// ============================================
+// Export CSV
+// ============================================
+
+const KARAOKE_CSV_COLUMNS: CsvColumn<service.KaraokeExportData>[] = [
+  { header: 'Turno', accessor: 'turnNumber' },
+  { header: 'Nombre', accessor: 'singerName' },
+  { header: 'Apellido', accessor: (r) => r.singerLastname || '' },
+  { header: 'Email', accessor: (r) => r.singerEmail || '' },
+  { header: 'WhatsApp', accessor: (r) => r.singerWhatsapp || '' },
+  { header: 'Canción', accessor: 'title' },
+  { header: 'Artista', accessor: (r) => r.artist || '' },
+  { header: 'Estado', accessor: 'status' },
+  { header: 'Creado', accessor: (r) => formatDateForCsv(r.createdAt) },
+  { header: 'Llamado', accessor: (r) => formatDateForCsv(r.calledAt) },
+]
+
+/**
+ * GET /api/events/:eventId/karaokeya/export
+ */
+export async function exportCsv(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { eventId } = req.params
+    const data = await service.getAllForExport(eventId)
+
+    const csv = generateCsv(data, KARAOKE_CSV_COLUMNS)
+    const filename = generateCsvFilename('karaokeya', eventId)
+
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8')
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`)
+    res.send(csv)
   } catch (error) {
     next(error)
   }
