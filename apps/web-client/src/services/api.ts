@@ -8,7 +8,11 @@ import type {
   MusicadjConfig, 
   SpotifySearchResult, 
   SongRequest,
-  CreateSongRequestInput 
+  CreateSongRequestInput,
+  KaraokeyaConfig,
+  KaraokeRequest,
+  CreateKaraokeRequestInput,
+  KaraokeQueueStats,
 } from '../types'
 
 const api = axios.create({
@@ -52,6 +56,38 @@ export async function createSongRequest(
   input: CreateSongRequestInput
 ): Promise<SongRequest> {
   const { data } = await api.post(`/events/${eventId}/musicadj/requests`, input)
+  return data
+}
+
+// ============================================
+// KARAOKEYA API
+// ============================================
+
+export async function getKaraokeyaConfig(eventId: string): Promise<KaraokeyaConfig> {
+  const { data } = await api.get(`/events/${eventId}/karaokeya/config`)
+  return data
+}
+
+export async function getKaraokeQueue(eventId: string): Promise<KaraokeRequest[]> {
+  const { data } = await api.get(`/events/${eventId}/karaokeya/queue`)
+  return data
+}
+
+export async function getKaraokeStats(eventId: string): Promise<KaraokeQueueStats> {
+  const { data } = await api.get(`/events/${eventId}/karaokeya/stats`)
+  return data
+}
+
+export async function createKaraokeRequest(
+  eventId: string,
+  input: CreateKaraokeRequestInput
+): Promise<KaraokeRequest> {
+  const { data } = await api.post(`/events/${eventId}/karaokeya/requests`, input)
+  return data
+}
+
+export async function getKaraokeRequestById(requestId: string): Promise<KaraokeRequest> {
+  const { data } = await api.get(`/events/_/karaokeya/requests/${requestId}`)
   return data
 }
 
