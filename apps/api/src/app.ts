@@ -8,6 +8,7 @@ import { authRoutes } from './modules/auth'
 import { eventRoutes } from './modules/events'
 import { venueRoutes } from './modules/venues'
 import { clientRoutes } from './modules/clients'
+import { musicadjRoutes } from './modules/musicadj'
 import { errorHandler } from './shared/middleware/error.middleware'
 
 const app = express()
@@ -25,7 +26,7 @@ app.get('/health', (req, res) => {
 app.get('/api', (req, res) => {
   res.json({
     name: 'EUFORIA EVENTS API',
-    version: '0.3.0',
+    version: '0.4.0',
     modules: ['auth', 'events', 'venues', 'clients', 'musicadj', 'karaokeya'],
   })
 })
@@ -36,9 +37,11 @@ app.use('/api/events', eventRoutes)
 app.use('/api/venues', venueRoutes)
 app.use('/api/clients', clientRoutes)
 
+// MUSICADJ - rutas anidadas bajo eventos
+app.use('/api/events/:eventId/musicadj', musicadjRoutes)
+
 // TODO: Agregar más rutas de módulos
-// app.use('/api/musicadj', musicadjRoutes)
-// app.use('/api/karaokeya', karaokeyaRoutes)
+// app.use('/api/events/:eventId/karaokeya', karaokeyaRoutes)
 
 // Manejo de errores (debe ir al final)
 app.use(errorHandler)
