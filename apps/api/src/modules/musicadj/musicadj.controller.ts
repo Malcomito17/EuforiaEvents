@@ -1,10 +1,11 @@
 /**
  * MUSICADJ Controller
- * Handlers HTTP con integración Socket.io
+ * Handlers HTTP con integración Socket.io y Spotify
  */
 
 import { Request, Response, NextFunction } from 'express'
-import { getIOFromRequest, AuthenticatedRequest } from '../../shared/types'
+import { z } from 'zod'
+import { getIOFromRequest } from '../../shared/types'
 import { 
   emitNewRequest, 
   emitRequestUpdated, 
@@ -13,6 +14,7 @@ import {
   emitConfigUpdated
 } from '../../socket'
 import * as service from './musicadj.service'
+import * as spotify from './spotify.service'
 import { 
   createSongRequestSchema,
   updateSongRequestSchema,
@@ -27,13 +29,17 @@ import {
 
 /**
  * GET /api/events/:eventId/musicadj/config
- * Obtiene configuración del módulo
  */
 export async function getConfig(req: Request, res: Response, next: NextFunction) {
   try {
     const { eventId } = req.params
     const config = await service.getOrCreateConfig(eventId)
-    res.json(config)
+    
+    // Incluir info de si Spotify está disponible
+    res.json({
+      ...config,
+      spotifyAvailable: spotify.isSpotifyConfigured(),
+    })
   } catch (error) {
     next(error)
   }
@@ -41,7 +47,6 @@ export async function getConfig(req: Request, res: Response, next: NextFunction)
 
 /**
  * PATCH /api/events/:eventId/musicadj/config
- * Actualiza configuración del módulo
  */
 export async function updateConfig(req: Request, res: Response, next: NextFunction) {
   try {
@@ -50,11 +55,69 @@ export async function updateConfig(req: Request, res: Response, next: NextFuncti
     
     const config = await service.updateConfig(eventId, input)
     
-    // Emitir cambio via Socket.io
     const io = getIOFromRequest(req)
     emitConfigUpdated(io, eventId, config)
     
     res.json(config)
+  } catch (error) {
+    next(error)
+  }
+}
+
+// ============================================
+// Spotify Search Endpoints
+// ============================================
+
+const searchQuerySchema = z.object({
+  q: z.string().min(1).max(100),
+  limit: z.coerce.number().int().min(1).max(20).default(10),
+})
+
+/**
+ * GET /api/events/:eventId/musicadj/search
+ * Busca tracks en Spotify (público)
+ */
+export async function searchSpotify(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { q, limit } = searchQuerySchema.parse(req.query)
+    
+    // Verificar si Spotify está configurado
+    if (!spotify.isSpotifyConfigured()) {
+      return res.status(503).json({
+        error: 'Búsqueda de Spotify no disponible',
+        spotifyAvailable: false,
+      })
+    }
+    
+    const result = await spotify.searchTracks(q, limit)
+    res.json(result)
+  } catch (error) {
+    next(error)
+  }
+}
+
+/**
+ * GET /api/events/:eventId/musicadj/track/:trackId
+ * Obtiene info de un track específico
+ */
+export async function getSpotifyTrack(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { trackId } = req.params
+    
+    if (!spotify.isSpotifyConfigured()) {
+      return res.status(503).json({
+        error: 'Spotify no disponible',
+        spotifyAvailable: false,
+      })
+    }
+    
+    const track = await spotify.getTrackById(trackId)
+    
+    if (!track) {
+      return res.status(404).json({ error: 'Track no encontrado' })
+    }
+    
+    res.json(track)
   } catch (error) {
     next(error)
   }
@@ -66,7 +129,6 @@ export async function updateConfig(req: Request, res: Response, next: NextFuncti
 
 /**
  * POST /api/events/:eventId/musicadj/requests
- * Crea nueva solicitud (endpoint público para clientes QR)
  */
 export async function createRequest(req: Request, res: Response, next: NextFunction) {
   try {
@@ -75,7 +137,6 @@ export async function createRequest(req: Request, res: Response, next: NextFunct
     
     const request = await service.createRequest(eventId, input)
     
-    // Emitir a operadores via Socket.io
     const io = getIOFromRequest(req)
     emitNewRequest(io, eventId, request)
     
@@ -87,7 +148,6 @@ export async function createRequest(req: Request, res: Response, next: NextFunct
 
 /**
  * GET /api/events/:eventId/musicadj/requests
- * Lista solicitudes (operador)
  */
 export async function listRequests(req: Request, res: Response, next: NextFunction) {
   try {
@@ -103,7 +163,6 @@ export async function listRequests(req: Request, res: Response, next: NextFuncti
 
 /**
  * GET /api/events/:eventId/musicadj/requests/:requestId
- * Obtiene una solicitud específica
  */
 export async function getRequest(req: Request, res: Response, next: NextFunction) {
   try {
@@ -117,7 +176,6 @@ export async function getRequest(req: Request, res: Response, next: NextFunction
 
 /**
  * PATCH /api/events/:eventId/musicadj/requests/:requestId
- * Actualiza solicitud (estado, prioridad)
  */
 export async function updateRequest(req: Request, res: Response, next: NextFunction) {
   try {
@@ -126,7 +184,6 @@ export async function updateRequest(req: Request, res: Response, next: NextFunct
     
     const request = await service.updateRequest(eventId, requestId, input)
     
-    // Emitir actualización via Socket.io
     const io = getIOFromRequest(req)
     emitRequestUpdated(io, eventId, request)
     
@@ -138,7 +195,6 @@ export async function updateRequest(req: Request, res: Response, next: NextFunct
 
 /**
  * DELETE /api/events/:eventId/musicadj/requests/:requestId
- * Elimina solicitud
  */
 export async function deleteRequest(req: Request, res: Response, next: NextFunction) {
   try {
@@ -146,7 +202,6 @@ export async function deleteRequest(req: Request, res: Response, next: NextFunct
     
     await service.deleteRequest(eventId, requestId)
     
-    // Emitir eliminación via Socket.io
     const io = getIOFromRequest(req)
     emitRequestDeleted(io, eventId, requestId)
     
@@ -158,7 +213,6 @@ export async function deleteRequest(req: Request, res: Response, next: NextFunct
 
 /**
  * POST /api/events/:eventId/musicadj/requests/reorder
- * Reordena la cola de solicitudes
  */
 export async function reorderQueue(req: Request, res: Response, next: NextFunction) {
   try {
@@ -167,7 +221,6 @@ export async function reorderQueue(req: Request, res: Response, next: NextFuncti
     
     const result = await service.reorderQueue(eventId, requestIds)
     
-    // Emitir nuevo orden via Socket.io
     const io = getIOFromRequest(req)
     emitQueueReordered(io, eventId, requestIds)
     
@@ -179,7 +232,6 @@ export async function reorderQueue(req: Request, res: Response, next: NextFuncti
 
 /**
  * GET /api/events/:eventId/musicadj/stats
- * Obtiene estadísticas del módulo
  */
 export async function getStats(req: Request, res: Response, next: NextFunction) {
   try {
