@@ -3,13 +3,14 @@
  */
 
 import { create } from 'zustand'
-import type { Event, MusicadjConfig } from '../types'
+import type { Event, MusicadjConfig, KaraokeyaConfig } from '../types'
 import * as api from '../services/api'
 
 interface EventState {
   // Estado
   event: Event | null
   musicadjConfig: MusicadjConfig | null
+  karaokeyaConfig: KaraokeyaConfig | null
   loading: boolean
   error: string | null
   
@@ -21,6 +22,7 @@ interface EventState {
 export const useEventStore = create<EventState>((set) => ({
   event: null,
   musicadjConfig: null,
+  karaokeyaConfig: null,
   loading: false,
   error: null,
 
@@ -31,18 +33,27 @@ export const useEventStore = create<EventState>((set) => ({
       // Cargar evento
       const event = await api.getEventBySlug(slug)
       
-      // Cargar config de MUSICADJ si el evento está activo
+      // Cargar configs de módulos si el evento está activo
       let musicadjConfig: MusicadjConfig | null = null
+      let karaokeyaConfig: KaraokeyaConfig | null = null
+      
       if (event.status === 'ACTIVE') {
+        // MUSICADJ
         try {
           musicadjConfig = await api.getMusicadjConfig(event.id)
         } catch {
-          // Si falla, el módulo puede no estar habilitado
           console.log('[STORE] MUSICADJ no disponible')
+        }
+        
+        // KARAOKEYA
+        try {
+          karaokeyaConfig = await api.getKaraokeyaConfig(event.id)
+        } catch {
+          console.log('[STORE] KARAOKEYA no disponible')
         }
       }
       
-      set({ event, musicadjConfig, loading: false })
+      set({ event, musicadjConfig, karaokeyaConfig, loading: false })
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error al cargar evento'
       set({ error: message, loading: false })
@@ -50,6 +61,12 @@ export const useEventStore = create<EventState>((set) => ({
   },
 
   reset: () => {
-    set({ event: null, musicadjConfig: null, loading: false, error: null })
+    set({ 
+      event: null, 
+      musicadjConfig: null, 
+      karaokeyaConfig: null,
+      loading: false, 
+      error: null 
+    })
   },
 }))
