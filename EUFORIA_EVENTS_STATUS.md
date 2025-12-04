@@ -1,5 +1,5 @@
 # EUFORIA EVENTS - Estado del Proyecto
-## Actualizado: 2025-12-04 (sesión 2)
+## Actualizado: 2025-12-04 (sesión 3)
 
 ---
 
@@ -51,7 +51,7 @@
 
 ---
 
-### 🔄 Fase 3: Módulo KARAOKEYA (EN PROGRESO)
+### ✅ Fase 3: Módulo KARAOKEYA (COMPLETADA)
 
 | ID | Tarea | Estado | Fecha |
 |----|-------|--------|-------|
@@ -66,7 +66,7 @@
 | T3.9 | Display público (pantalla sala) | ⏳ PENDIENTE | - |
 | T3.10 | Notificaciones realtime | ✅ DONE | 2025-12-04 |
 | T3.11 | Exportación CSV | ✅ DONE | 2025-12-04 |
-| T3.12 | Configuración módulo por evento | ⏳ PENDIENTE | - |
+| T3.12 | Configuración módulo por evento | ✅ DONE | 2025-12-04 |
 
 ---
 
@@ -218,14 +218,23 @@ Login → Dashboard → Eventos → EventDetail → "KARAOKEYA"
 
 ## PRÓXIMAS TAREAS
 
-### T3.9: Display público (opcional)
-- Pantalla para proyectar en el salón
-- Muestra: actual cantando, próximos 3-5, cola total
-- Solo lectura, sin controles
+### Fase 3 COMPLETADA ✅
+- T3.1-T3.8, T3.10-T3.12: Todas las tareas core completadas
+- T3.9 (Display público) es OPCIONAL para futuro
 
-### T3.12: Modal configuración
-- Editar: enabled, cooldownSeconds, maxPerPerson, showQueueToClient
-- Botón Settings ya existe, falta implementar modal
+### Fase 4: Gestión de Usuarios
+| ID | Tarea | Prioridad |
+|----|-------|-----------|
+| T4.1 | CRUD usuarios (admin) | CRÍTICA |
+| T4.2 | Asignación de roles | CRÍTICA |
+| T4.3 | Asignación de permisos por módulo | CRÍTICA |
+| T4.4 | Cambio de contraseña | ALTA |
+| T4.5 | Login/logout con sesión | CRÍTICA |
+
+### Fase 5: Modo Offline (Post-MVP)
+- PWA con Service Worker
+- IndexedDB para cache local
+- Sincronización al reconectar
 
 ---
 
