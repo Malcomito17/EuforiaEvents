@@ -437,5 +437,31 @@ export const karaokeyaApi = {
   
   // Reorder (drag & drop)
   reorderQueue: (eventId: string, orderedIds: string[]) =>
-    api.post(`/events/${eventId}/karaokeya/queue/reorder`, { orderedIds }),
+    api.post(`/events/${eventId}/karaokeya/requests/reorder`, { orderedIds }),
+  
+  // Export CSV - descarga como blob
+  exportCsv: async (eventId: string) => {
+    const response = await api.get(`/events/${eventId}/karaokeya/export`, {
+      responseType: 'blob',
+    })
+    
+    // Obtener filename del header o generar uno
+    const contentDisposition = response.headers['content-disposition']
+    let filename = 'karaokeya_export.csv'
+    if (contentDisposition) {
+      const match = contentDisposition.match(/filename="?([^"]+)"?/)
+      if (match) filename = match[1]
+    }
+    
+    // Crear link de descarga
+    const blob = new Blob([response.data], { type: 'text/csv;charset=utf-8' })
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = filename
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    window.URL.revokeObjectURL(url)
+  },
 }
