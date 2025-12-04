@@ -17,7 +17,10 @@ import {
   User,
   AlertCircle,
   GripVertical,
-  Download
+  Download,
+  X,
+  ToggleLeft,
+  ToggleRight
 } from 'lucide-react'
 import { clsx } from 'clsx'
 import {
@@ -221,6 +224,9 @@ export function KaraokeyaPage() {
   // Action states
   const [callingNext, setCallingNext] = useState(false)
   const [isExporting, setIsExporting] = useState(false)
+  const [showConfigModal, setShowConfigModal] = useState(false)
+  const [configForm, setConfigForm] = useState<Partial<KaraokeyaConfig>>({})
+  const [isSavingConfig, setIsSavingConfig] = useState(false)
 
   // DnD sensors
   const sensors = useSensors(
@@ -400,6 +406,37 @@ export function KaraokeyaPage() {
     }
   }
 
+  // Open config modal
+  const openConfigModal = () => {
+    if (config) {
+      setConfigForm({
+        enabled: config.enabled,
+        cooldownSeconds: config.cooldownSeconds,
+        maxPerPerson: config.maxPerPerson,
+        showQueueToClient: config.showQueueToClient,
+        showNextSinger: config.showNextSinger,
+      })
+    }
+    setShowConfigModal(true)
+  }
+
+  // Save config
+  const handleSaveConfig = async () => {
+    if (!eventId || isSavingConfig) return
+
+    setIsSavingConfig(true)
+    try {
+      const response = await karaokeyaApi.updateConfig(eventId, configForm)
+      setConfig(response.data)
+      setShowConfigModal(false)
+    } catch (err: any) {
+      console.error('Error saving config:', err)
+      setError(err.response?.data?.error || 'Error al guardar configuración')
+    } finally {
+      setIsSavingConfig(false)
+    }
+  }
+
   // Filter requests
   const filteredRequests = requests.filter(request => {
     const tab = FILTER_TABS.find(t => t.key === activeTab)
@@ -520,7 +557,7 @@ export function KaraokeyaPage() {
           </button>
           
           <button
-            onClick={() => {/* TODO: open config modal */}}
+            onClick={openConfigModal}
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
             title="Configuración"
           >
@@ -762,6 +799,162 @@ export function KaraokeyaPage() {
           ))
         )}
       </div>
+
+      {/* Config Modal */}
+      {showConfigModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+            {/* Header */}
+            <div className="flex items-center justify-between p-4 border-b border-gray-200">
+              <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                <Settings className="w-5 h-5 text-purple-600" />
+                Configuración Karaoke
+              </h2>
+              <button
+                onClick={() => setShowConfigModal(false)}
+                className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+
+            {/* Form */}
+            <div className="p-4 space-y-6">
+              {/* Enabled toggle */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium text-gray-900">Módulo habilitado</p>
+                  <p className="text-sm text-gray-500">Los invitados pueden anotarse</p>
+                </div>
+                <button
+                  onClick={() => setConfigForm(prev => ({ ...prev, enabled: !prev.enabled }))}
+                  className={clsx(
+                    'p-1 rounded-lg transition-colors',
+                    configForm.enabled ? 'text-green-600' : 'text-gray-400'
+                  )}
+                >
+                  {configForm.enabled ? (
+                    <ToggleRight className="w-10 h-10" />
+                  ) : (
+                    <ToggleLeft className="w-10 h-10" />
+                  )}
+                </button>
+              </div>
+
+              {/* Cooldown */}
+              <div>
+                <label className="block font-medium text-gray-900 mb-1">
+                  Cooldown (segundos)
+                </label>
+                <p className="text-sm text-gray-500 mb-2">
+                  Tiempo mínimo entre anotaciones del mismo email
+                </p>
+                <input
+                  type="number"
+                  min="0"
+                  step="60"
+                  value={configForm.cooldownSeconds || 0}
+                  onChange={(e) => setConfigForm(prev => ({ 
+                    ...prev, 
+                    cooldownSeconds: parseInt(e.target.value) || 0 
+                  }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                />
+                <p className="text-xs text-gray-400 mt-1">
+                  {Math.floor((configForm.cooldownSeconds || 0) / 60)} minutos
+                </p>
+              </div>
+
+              {/* Max per person */}
+              <div>
+                <label className="block font-medium text-gray-900 mb-1">
+                  Máximo por persona
+                </label>
+                <p className="text-sm text-gray-500 mb-2">
+                  Turnos activos simultáneos (0 = sin límite)
+                </p>
+                <input
+                  type="number"
+                  min="0"
+                  max="10"
+                  value={configForm.maxPerPerson || 0}
+                  onChange={(e) => setConfigForm(prev => ({ 
+                    ...prev, 
+                    maxPerPerson: parseInt(e.target.value) || 0 
+                  }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                />
+              </div>
+
+              {/* Show queue to client */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium text-gray-900">Mostrar cola al cliente</p>
+                  <p className="text-sm text-gray-500">El invitado ve su posición en cola</p>
+                </div>
+                <button
+                  onClick={() => setConfigForm(prev => ({ ...prev, showQueueToClient: !prev.showQueueToClient }))}
+                  className={clsx(
+                    'p-1 rounded-lg transition-colors',
+                    configForm.showQueueToClient ? 'text-green-600' : 'text-gray-400'
+                  )}
+                >
+                  {configForm.showQueueToClient ? (
+                    <ToggleRight className="w-10 h-10" />
+                  ) : (
+                    <ToggleLeft className="w-10 h-10" />
+                  )}
+                </button>
+              </div>
+
+              {/* Show next singer */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium text-gray-900">Mostrar siguiente cantante</p>
+                  <p className="text-sm text-gray-500">Visible en el display público</p>
+                </div>
+                <button
+                  onClick={() => setConfigForm(prev => ({ ...prev, showNextSinger: !prev.showNextSinger }))}
+                  className={clsx(
+                    'p-1 rounded-lg transition-colors',
+                    configForm.showNextSinger ? 'text-green-600' : 'text-gray-400'
+                  )}
+                >
+                  {configForm.showNextSinger ? (
+                    <ToggleRight className="w-10 h-10" />
+                  ) : (
+                    <ToggleLeft className="w-10 h-10" />
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="flex gap-3 p-4 border-t border-gray-200 bg-gray-50 rounded-b-xl">
+              <button
+                onClick={() => setShowConfigModal(false)}
+                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleSaveConfig}
+                disabled={isSavingConfig}
+                className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {isSavingConfig ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 animate-spin" />
+                    Guardando...
+                  </>
+                ) : (
+                  'Guardar'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
