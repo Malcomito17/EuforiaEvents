@@ -7,6 +7,8 @@ import { Request, Response, NextFunction } from 'express'
 import { ZodError } from 'zod'
 import { AuthError } from '../../modules/auth/auth.service'
 import { EventError } from '../../modules/events/events.service'
+import { VenueError } from '../../modules/venues/venues.service'
+import { ClientError } from '../../modules/clients/clients.service'
 
 export function errorHandler(
   err: Error,
@@ -25,6 +27,20 @@ export function errorHandler(
 
   // Errores de eventos
   if (err instanceof EventError) {
+    return res.status(err.statusCode).json({
+      error: err.message,
+    })
+  }
+
+  // Errores de venues
+  if (err instanceof VenueError) {
+    return res.status(err.statusCode).json({
+      error: err.message,
+    })
+  }
+
+  // Errores de clients
+  if (err instanceof ClientError) {
     return res.status(err.statusCode).json({
       error: err.message,
     })

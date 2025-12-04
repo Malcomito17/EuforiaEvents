@@ -6,6 +6,8 @@ import express from 'express'
 import cors from 'cors'
 import { authRoutes } from './modules/auth'
 import { eventRoutes } from './modules/events'
+import { venueRoutes } from './modules/venues'
+import { clientRoutes } from './modules/clients'
 import { errorHandler } from './shared/middleware/error.middleware'
 
 const app = express()
@@ -23,14 +25,16 @@ app.get('/health', (req, res) => {
 app.get('/api', (req, res) => {
   res.json({
     name: 'EUFORIA EVENTS API',
-    version: '0.2.0',
-    modules: ['auth', 'events', 'musicadj', 'karaokeya'],
+    version: '0.3.0',
+    modules: ['auth', 'events', 'venues', 'clients', 'musicadj', 'karaokeya'],
   })
 })
 
 // Rutas de módulos
 app.use('/api/auth', authRoutes)
 app.use('/api/events', eventRoutes)
+app.use('/api/venues', venueRoutes)
+app.use('/api/clients', clientRoutes)
 
 // TODO: Agregar más rutas de módulos
 // app.use('/api/musicadj', musicadjRoutes)
