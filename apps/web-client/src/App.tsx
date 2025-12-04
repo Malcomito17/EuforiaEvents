@@ -7,6 +7,7 @@ import EventLanding from './pages/EventLanding'
 import MusicaDJRequest from './pages/MusicaDJRequest'
 import KaraokeyaSignup from './pages/KaraokeyaSignup'
 import KaraokeyaSuccess from './pages/KaraokeyaSuccess'
+import KaraokeyaMyTurn from './pages/KaraokeyaMyTurn'
 import NotFound from './pages/NotFound'
 import RequestSuccess from './pages/RequestSuccess'
 
@@ -23,6 +24,7 @@ function App() {
       {/* KARAOKEYA - Karaoke */}
       <Route path="/e/:slug/karaokeya" element={<KaraokeyaSignup />} />
       <Route path="/e/:slug/karaokeya/success" element={<KaraokeyaSuccess />} />
+      <Route path="/e/:slug/karaokeya/turn" element={<KaraokeyaMyTurn />} />
       
       {/* 404 */}
       <Route path="*" element={<NotFound />} />
