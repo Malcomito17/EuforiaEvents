@@ -464,3 +464,43 @@ function validateStatusTransition(
     )
   }
 }
+
+// ============================================
+// EXPORT CSV
+// ============================================
+
+export interface KaraokeExportData {
+  turnNumber: number
+  singerName: string
+  singerLastname: string | null
+  singerEmail: string | null
+  singerWhatsapp: string | null
+  title: string
+  artist: string | null
+  status: string
+  createdAt: Date
+  calledAt: Date | null
+}
+
+export async function getAllForExport(eventId: string): Promise<KaraokeExportData[]> {
+  const requests = await prisma.karaokeRequest.findMany({
+    where: { eventId },
+    orderBy: { turnNumber: 'asc' },
+    select: {
+      turnNumber: true,
+      singerName: true,
+      singerLastname: true,
+      singerEmail: true,
+      singerWhatsapp: true,
+      title: true,
+      artist: true,
+      status: true,
+      createdAt: true,
+      calledAt: true,
+    },
+  })
+
+  console.log(`[KARAOKEYA] Exportando ${requests.length} turnos del evento ${eventId}`)
+
+  return requests
+}
