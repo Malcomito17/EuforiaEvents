@@ -10,6 +10,7 @@ import { EventError } from '../../modules/events/events.service'
 import { VenueError } from '../../modules/venues/venues.service'
 import { ClientError } from '../../modules/clients/clients.service'
 import { MusicadjError } from '../../modules/musicadj/musicadj.service'
+import { SpotifyError } from '../../modules/musicadj/spotify.service'
 
 export function errorHandler(
   err: Error,
@@ -51,6 +52,14 @@ export function errorHandler(
   if (err instanceof MusicadjError) {
     return res.status(err.statusCode).json({
       error: err.message,
+    })
+  }
+
+  // Errores de Spotify
+  if (err instanceof SpotifyError) {
+    return res.status(err.statusCode).json({
+      error: err.message,
+      spotifyAvailable: false,
     })
   }
 
