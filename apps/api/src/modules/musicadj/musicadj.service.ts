@@ -1,24 +1,18 @@
-/**
- * MUSICADJ Service
- * Lógica de negocio para solicitudes musicales
- */
-
 import { prisma } from '../../config/database'
 import { 
   CreateSongRequestInput, 
   UpdateSongRequestInput,
   MusicadjConfigInput,
   ListRequestsQuery,
-  SongRequestStatus
+  SongRequestStatus,
+  SongRequestResponse,
+  MusicadjError
 } from './musicadj.types'
 
 // ============================================
 // Config Operations
 // ============================================
 
-/**
- * Obtiene o crea la configuración del módulo para un evento
- */
 export async function getOrCreateConfig(eventId: string) {
   let config = await prisma.musicadjConfig.findUnique({
     where: { eventId }
@@ -34,11 +28,7 @@ export async function getOrCreateConfig(eventId: string) {
   return config
 }
 
-/**
- * Actualiza la configuración del módulo
- */
 export async function updateConfig(eventId: string, input: MusicadjConfigInput) {
-  // Asegurar que existe
   await getOrCreateConfig(eventId)
 
   const config = await prisma.musicadjConfig.update({
@@ -54,66 +44,77 @@ export async function updateConfig(eventId: string, input: MusicadjConfigInput) 
 // Song Request Operations
 // ============================================
 
-/**
- * Crea una nueva solicitud de canción
- */
-export async function createRequest(eventId: string, input: CreateSongRequestInput) {
-  // Verificar que el evento existe y está activo
+export async function createRequest(eventId: string, input: CreateSongRequestInput): Promise<SongRequestResponse> {
+  // Verificar evento
   const event = await prisma.event.findUnique({
     where: { id: eventId },
     include: { musicadjConfig: true }
   })
 
   if (!event) {
-    throw new MusicadjError('Evento no encontrado', 404)
+    throw new MusicadjError('Evento no encontrado', 404, 'EVENT_NOT_FOUND')
   }
 
   if (event.status !== 'ACTIVE') {
-    throw new MusicadjError('El evento no está activo', 400)
+    throw new MusicadjError('El evento no está activo', 400, 'EVENT_NOT_ACTIVE')
   }
 
-  // Verificar que el módulo está habilitado
+  // Verificar guest
+  const guest = await prisma.guest.findUnique({
+    where: { id: input.guestId }
+  })
+
+  if (!guest) {
+    throw new MusicadjError('Guest no encontrado', 404, 'GUEST_NOT_FOUND')
+  }
+
+  // Verificar módulo habilitado
   const config = event.musicadjConfig || await getOrCreateConfig(eventId)
   if (!config.enabled) {
-    throw new MusicadjError('El módulo de pedidos no está habilitado', 400)
+    throw new MusicadjError('El módulo de pedidos no está habilitado', 400, 'MODULE_DISABLED')
   }
 
-  // TODO: Verificar cooldown por requester
+  // TODO: Verificar cooldown por guest
 
   const request = await prisma.songRequest.create({
     data: {
       eventId,
-      ...input,
+      guestId: input.guestId,
+      spotifyId: input.spotifyId || null,
+      title: input.title,
+      artist: input.artist,
+      albumArtUrl: input.albumArtUrl || null,
       status: 'PENDING',
       priority: 0
+    },
+    include: {
+      guest: {
+        select: { id: true, displayName: true, email: true }
+      }
     }
   })
 
-  console.log(`[MUSICADJ] Nueva solicitud: "${input.title}" por ${input.requesterName}`)
-  return request
+  console.log(`[MUSICADJ] Nueva solicitud: "${input.title}" por ${guest.displayName}`)
+  return request as SongRequestResponse
 }
 
-/**
- * Obtiene una solicitud por ID
- */
-export async function getRequestById(eventId: string, requestId: string) {
+export async function getRequestById(eventId: string, requestId: string): Promise<SongRequestResponse> {
   const request = await prisma.songRequest.findFirst({
-    where: { 
-      id: requestId,
-      eventId 
+    where: { id: requestId, eventId },
+    include: {
+      guest: {
+        select: { id: true, displayName: true, email: true }
+      }
     }
   })
 
   if (!request) {
-    throw new MusicadjError('Solicitud no encontrada', 404)
+    throw new MusicadjError('Solicitud no encontrada', 404, 'REQUEST_NOT_FOUND')
   }
 
-  return request
+  return request as SongRequestResponse
 }
 
-/**
- * Lista solicitudes de un evento
- */
 export async function listRequests(eventId: string, query: ListRequestsQuery) {
   const { status, limit, offset } = query
 
@@ -125,6 +126,11 @@ export async function listRequests(eventId: string, query: ListRequestsQuery) {
   const [requests, total] = await Promise.all([
     prisma.songRequest.findMany({
       where,
+      include: {
+        guest: {
+          select: { id: true, displayName: true, email: true }
+        }
+      },
       orderBy: [
         { priority: 'desc' },
         { createdAt: 'asc' }
@@ -138,31 +144,28 @@ export async function listRequests(eventId: string, query: ListRequestsQuery) {
   return { requests, total, limit, offset }
 }
 
-/**
- * Actualiza una solicitud (estado, prioridad)
- */
 export async function updateRequest(
   eventId: string, 
   requestId: string, 
   input: UpdateSongRequestInput
-) {
-  // Verificar que existe
+): Promise<SongRequestResponse> {
   await getRequestById(eventId, requestId)
 
   const request = await prisma.songRequest.update({
     where: { id: requestId },
-    data: input
+    data: input,
+    include: {
+      guest: {
+        select: { id: true, displayName: true, email: true }
+      }
+    }
   })
 
   console.log(`[MUSICADJ] Solicitud ${requestId} actualizada: ${JSON.stringify(input)}`)
-  return request
+  return request as SongRequestResponse
 }
 
-/**
- * Elimina una solicitud
- */
 export async function deleteRequest(eventId: string, requestId: string) {
-  // Verificar que existe
   await getRequestById(eventId, requestId)
 
   await prisma.songRequest.delete({
@@ -173,11 +176,7 @@ export async function deleteRequest(eventId: string, requestId: string) {
   return { success: true }
 }
 
-/**
- * Reordena la cola de solicitudes
- */
 export async function reorderQueue(eventId: string, requestIds: string[]) {
-  // Actualizar prioridades en orden inverso (mayor prioridad = primero)
   const updates = requestIds.map((id, index) => 
     prisma.songRequest.update({
       where: { id },
@@ -191,9 +190,6 @@ export async function reorderQueue(eventId: string, requestIds: string[]) {
   return { success: true, order: requestIds }
 }
 
-/**
- * Obtiene estadísticas del módulo para un evento
- */
 export async function getStats(eventId: string) {
   const stats = await prisma.songRequest.groupBy({
     by: ['status'],
@@ -217,19 +213,5 @@ export async function getStats(eventId: string) {
       PLAYED: byStatus.PLAYED || 0,
       DISCARDED: byStatus.DISCARDED || 0
     }
-  }
-}
-
-// ============================================
-// Error Class
-// ============================================
-
-export class MusicadjError extends Error {
-  constructor(
-    message: string,
-    public statusCode: number = 400
-  ) {
-    super(message)
-    this.name = 'MusicadjError'
   }
 }
