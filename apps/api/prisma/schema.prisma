@@ -8,7 +8,7 @@ datasource db {
 }
 
 // ================================
-// USUARIOS Y AUTENTICACIÓN
+// USUARIOS Y AUTENTICACIÓN (OPERADORES)
 // ================================
 
 model User {
@@ -16,7 +16,7 @@ model User {
   username  String   @unique
   email     String?  @unique
   password  String
-  role      String   @default("OPERATOR")
+  role      String   @default("OPERATOR") // ADMIN | MANAGER | OPERATOR
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -30,7 +30,7 @@ model User {
 model UserPermission {
   id         String  @id @default(cuid())
   userId     String
-  module     String
+  module     String  // MUSICADJ | KARAOKEYA
   canView    Boolean @default(true)
   canOperate Boolean @default(false)
   canExport  Boolean @default(false)
@@ -42,13 +42,31 @@ model UserPermission {
 }
 
 // ================================
+// GUESTS (INVITADOS VÍA QR)
+// ================================
+
+model Guest {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  displayName String
+  whatsapp    String?
+  createdAt   DateTime @default(now())
+  lastSeenAt  DateTime @updatedAt
+
+  songRequests    SongRequest[]
+  karaokeRequests KaraokeRequest[]
+
+  @@map("guests")
+}
+
+// ================================
 // VENUES Y CLIENTS (REUTILIZABLES)
 // ================================
 
 model Venue {
   id           String   @id @default(cuid())
   name         String
-  type         String   @default("OTHER")
+  type         String   @default("OTHER") // SALON | BAR | CLUB | QUINTA | HOTEL | OTHER
   address      String?
   city         String?
   capacity     Int?
@@ -89,7 +107,7 @@ model Client {
 model Event {
   id           String   @id @default(cuid())
   slug         String   @unique
-  status       String   @default("DRAFT")
+  status       String   @default("DRAFT") // DRAFT | ACTIVE | PAUSED | FINISHED
   venueId      String?
   clientId     String?
   clonedFromId String?
@@ -116,7 +134,7 @@ model EventData {
   id              String    @id @default(cuid())
   eventId         String    @unique
   eventName       String
-  eventType       String    @default("OTHER")
+  eventType       String    @default("OTHER") // CUMPLE15 | CASAMIENTO | CORPORATE | SOCIAL | OTHER
   startDate       DateTime
   endDate         DateTime?
   guestCount      Int?
@@ -150,25 +168,24 @@ model MusicadjConfig {
 }
 
 model SongRequest {
-  id                String   @id @default(cuid())
-  eventId           String
-  spotifyId         String?
-  title             String
-  artist            String
-  albumArtUrl       String?
-  requesterName     String
-  requesterLastname String?
-  requesterEmail    String?
-  requesterWhatsapp String?
-  status            String   @default("PENDING")
-  priority          Int      @default(0)
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  id          String   @id @default(cuid())
+  eventId     String
+  guestId     String
+  spotifyId   String?
+  title       String
+  artist      String
+  albumArtUrl String?
+  status      String   @default("PENDING") // PENDING | HIGHLIGHTED | URGENT | PLAYED | DISCARDED
+  priority    Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  guest Guest @relation(fields: [guestId], references: [id])
 
   @@index([eventId, status])
   @@index([eventId, createdAt])
+  @@index([guestId])
   @@map("song_requests")
 }
 
@@ -190,23 +207,22 @@ model KaraokeyaConfig {
 }
 
 model KaraokeRequest {
-  id             String    @id @default(cuid())
-  eventId        String
-  title          String
-  artist         String?
-  singerName     String
-  singerLastname String?
-  singerEmail    String?
-  singerWhatsapp String?
-  turnNumber     Int
-  queuePosition  Int
-  status         String    @default("QUEUED")
-  createdAt      DateTime  @default(now())
-  calledAt       DateTime?
+  id            String    @id @default(cuid())
+  eventId       String
+  guestId       String
+  title         String
+  artist        String?
+  turnNumber    Int
+  queuePosition Int
+  status        String    @default("QUEUED") // QUEUED | CALLED | ON_STAGE | COMPLETED | NO_SHOW | CANCELLED
+  createdAt     DateTime  @default(now())
+  calledAt      DateTime?
 
   event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  guest Guest @relation(fields: [guestId], references: [id])
 
   @@index([eventId, status])
   @@index([eventId, queuePosition])
+  @@index([guestId])
   @@map("karaoke_requests")
 }
