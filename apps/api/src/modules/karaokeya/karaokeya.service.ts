@@ -1,10 +1,5 @@
-/**
- * KARAOKEYA Service
- * Lógica de negocio para cola de karaoke con sistema de turnos
- */
-
 import { prisma } from '../../config/database'
-import { KaraokeRequestStatus, Prisma } from '@prisma/client'
+import { Prisma } from '@prisma/client'
 import {
   CreateKaraokeRequestInput,
   KaraokeyaConfigInput,
@@ -12,6 +7,7 @@ import {
   KaraokeRequestResponse,
   KaraokeQueueStats,
   KaraokeyaConfigResponse,
+  KaraokeRequestStatus,
   KaraokeyaError,
 } from './karaokeya.types'
 
@@ -24,16 +20,7 @@ export async function getConfig(eventId: string): Promise<KaraokeyaConfigRespons
     where: { eventId },
   })
 
-  if (!config) return null
-
-  return {
-    eventId: config.eventId,
-    enabled: config.enabled,
-    cooldownSeconds: config.cooldownSeconds,
-    maxPerPerson: config.maxPerPerson,
-    showQueueToClient: config.showQueueToClient,
-    showNextSinger: config.showNextSinger,
-  }
+  return config
 }
 
 export async function getOrCreateConfig(eventId: string): Promise<KaraokeyaConfigResponse> {
@@ -48,14 +35,7 @@ export async function getOrCreateConfig(eventId: string): Promise<KaraokeyaConfi
     console.log(`[KARAOKEYA] Config creada para evento ${eventId}`)
   }
 
-  return {
-    eventId: config.eventId,
-    enabled: config.enabled,
-    cooldownSeconds: config.cooldownSeconds,
-    maxPerPerson: config.maxPerPerson,
-    showQueueToClient: config.showQueueToClient,
-    showNextSinger: config.showNextSinger,
-  }
+  return config
 }
 
 export async function updateConfig(
@@ -64,33 +44,15 @@ export async function updateConfig(
 ): Promise<KaraokeyaConfigResponse> {
   const config = await prisma.karaokeyaConfig.upsert({
     where: { eventId },
-    update: {
-      enabled: input.enabled,
-      cooldownSeconds: input.cooldownSeconds,
-      maxPerPerson: input.maxPerPerson,
-      showQueueToClient: input.showQueueToClient,
-      showNextSinger: input.showNextSinger,
-    },
+    update: input,
     create: {
       eventId,
-      enabled: input.enabled ?? true,
-      cooldownSeconds: input.cooldownSeconds ?? 600,
-      maxPerPerson: input.maxPerPerson ?? 0,
-      showQueueToClient: input.showQueueToClient ?? true,
-      showNextSinger: input.showNextSinger ?? true,
+      ...input,
     },
   })
 
   console.log(`[KARAOKEYA] Config actualizada para evento ${eventId}`)
-
-  return {
-    eventId: config.eventId,
-    enabled: config.enabled,
-    cooldownSeconds: config.cooldownSeconds,
-    maxPerPerson: config.maxPerPerson,
-    showQueueToClient: config.showQueueToClient,
-    showNextSinger: config.showNextSinger,
-  }
+  return config
 }
 
 // ============================================
@@ -115,7 +77,16 @@ export async function createRequest(
     throw new KaraokeyaError('El evento no está activo', 400, 'EVENT_NOT_ACTIVE')
   }
 
-  // 2. Verificar módulo habilitado (crear config si no existe)
+  // 2. Verificar guest
+  const guest = await prisma.guest.findUnique({
+    where: { id: input.guestId },
+  })
+
+  if (!guest) {
+    throw new KaraokeyaError('Guest no encontrado', 404, 'GUEST_NOT_FOUND')
+  }
+
+  // 3. Verificar módulo habilitado
   let config = event.karaokeyaConfig
   if (!config) {
     config = await prisma.karaokeyaConfig.create({
@@ -127,26 +98,26 @@ export async function createRequest(
     throw new KaraokeyaError('El karaoke no está habilitado', 400, 'MODULE_DISABLED')
   }
 
-  // 3. Verificar límite por persona (si aplica)
-  if (config.maxPerPerson > 0 && input.singerEmail) {
+  // 4. Verificar límite por persona
+  if (config.maxPerPerson > 0) {
     const existingCount = await prisma.karaokeRequest.count({
       where: {
         eventId,
-        singerEmail: input.singerEmail,
+        guestId: input.guestId,
         status: { in: ['QUEUED', 'CALLED', 'ON_STAGE'] },
       },
     })
 
     if (existingCount >= config.maxPerPerson) {
       throw new KaraokeyaError(
-        `Ya tenés ${existingCount} turno(s) activo(s). Máximo permitido: ${config.maxPerPerson}`,
+        `Ya tenés ${existingCount} turno(s) activo(s). Máximo: ${config.maxPerPerson}`,
         400,
         'MAX_PER_PERSON_EXCEEDED'
       )
     }
   }
 
-  // 4. Obtener siguiente número de turno y posición en cola
+  // 5. Obtener siguiente turno y posición
   const [lastTurn, lastPosition] = await Promise.all([
     prisma.karaokeRequest.findFirst({
       where: { eventId },
@@ -163,35 +134,42 @@ export async function createRequest(
   const nextTurnNumber = (lastTurn?.turnNumber ?? 0) + 1
   const nextQueuePosition = (lastPosition?.queuePosition ?? 0) + 1
 
-  // 5. Crear request
+  // 6. Crear request
   const request = await prisma.karaokeRequest.create({
     data: {
       eventId,
+      guestId: input.guestId,
       title: input.title,
       artist: input.artist || null,
-      singerName: input.singerName,
-      singerLastname: input.singerLastname || null,
-      singerEmail: input.singerEmail || null,
-      singerWhatsapp: input.singerWhatsapp || null,
       turnNumber: nextTurnNumber,
       queuePosition: nextQueuePosition,
       status: 'QUEUED',
     },
+    include: {
+      guest: {
+        select: { id: true, displayName: true, email: true },
+      },
+    },
   })
 
   console.log(
-    `[KARAOKEYA] Nuevo turno #${nextTurnNumber} - "${input.title}" por ${input.singerName} (evento: ${eventId})`
+    `[KARAOKEYA] Turno #${nextTurnNumber} - "${input.title}" por ${guest.displayName}`
   )
 
-  return mapToResponse(request)
+  return request as KaraokeRequestResponse
 }
 
 export async function getRequestById(requestId: string): Promise<KaraokeRequestResponse | null> {
   const request = await prisma.karaokeRequest.findUnique({
     where: { id: requestId },
+    include: {
+      guest: {
+        select: { id: true, displayName: true, email: true },
+      },
+    },
   })
 
-  return request ? mapToResponse(request) : null
+  return request as KaraokeRequestResponse | null
 }
 
 export async function listRequests(
@@ -206,6 +184,11 @@ export async function listRequests(
   const [requests, total] = await Promise.all([
     prisma.karaokeRequest.findMany({
       where,
+      include: {
+        guest: {
+          select: { id: true, displayName: true, email: true },
+        },
+      },
       orderBy: [{ queuePosition: 'asc' }, { createdAt: 'asc' }],
       take: query.limit,
       skip: query.offset,
@@ -214,7 +197,7 @@ export async function listRequests(
   ])
 
   return {
-    requests: requests.map(mapToResponse),
+    requests: requests as KaraokeRequestResponse[],
     total,
   }
 }
@@ -225,13 +208,18 @@ export async function getQueue(eventId: string): Promise<KaraokeRequestResponse[
       eventId,
       status: { in: ['QUEUED', 'CALLED', 'ON_STAGE'] },
     },
+    include: {
+      guest: {
+        select: { id: true, displayName: true, email: true },
+      },
+    },
     orderBy: [
-      { status: 'asc' }, // ON_STAGE primero, luego CALLED, luego QUEUED
+      { status: 'asc' },
       { queuePosition: 'asc' },
     ],
   })
 
-  return requests.map(mapToResponse)
+  return requests as KaraokeRequestResponse[]
 }
 
 export async function getQueueStats(eventId: string): Promise<KaraokeQueueStats> {
@@ -248,8 +236,6 @@ export async function getQueueStats(eventId: string): Promise<KaraokeQueueStats>
   })
 
   const queuedCount = counts.find((c) => c.status === 'QUEUED')?._count ?? 0
-
-  // Estimación simple: 3 minutos promedio por canción
   const AVG_SONG_MINUTES = 3
   const estimatedWaitMinutes = queuedCount > 0 ? queuedCount * AVG_SONG_MINUTES : null
 
@@ -267,7 +253,7 @@ export async function getQueueStats(eventId: string): Promise<KaraokeQueueStats>
 }
 
 // ============================================
-// GESTIÓN DE ESTADOS Y COLA
+// GESTIÓN DE ESTADOS
 // ============================================
 
 export async function updateStatus(
@@ -282,12 +268,9 @@ export async function updateStatus(
     throw new KaraokeyaError('Turno no encontrado', 404, 'REQUEST_NOT_FOUND')
   }
 
-  // Validar transiciones de estado
-  validateStatusTransition(request.status, status)
+  validateStatusTransition(request.status as KaraokeRequestStatus, status)
 
   const updateData: Prisma.KaraokeRequestUpdateInput = { status }
-
-  // Si está siendo llamado, registrar timestamp
   if (status === 'CALLED') {
     updateData.calledAt = new Date()
   }
@@ -295,42 +278,37 @@ export async function updateStatus(
   const updated = await prisma.karaokeRequest.update({
     where: { id: requestId },
     data: updateData,
+    include: {
+      guest: {
+        select: { id: true, displayName: true, email: true },
+      },
+    },
   })
 
-  console.log(
-    `[KARAOKEYA] Turno #${request.turnNumber} cambió de ${request.status} a ${status}`
-  )
-
-  return mapToResponse(updated)
+  console.log(`[KARAOKEYA] Turno #${request.turnNumber}: ${request.status} → ${status}`)
+  return updated as KaraokeRequestResponse
 }
 
 export async function callNext(eventId: string): Promise<KaraokeRequestResponse | null> {
-  // Buscar el siguiente en cola (menor queuePosition con status QUEUED)
   const next = await prisma.karaokeRequest.findFirst({
-    where: {
-      eventId,
-      status: 'QUEUED',
-    },
+    where: { eventId, status: 'QUEUED' },
     orderBy: { queuePosition: 'asc' },
   })
 
-  if (!next) {
-    return null
-  }
+  if (!next) return null
 
   const updated = await prisma.karaokeRequest.update({
     where: { id: next.id },
-    data: {
-      status: 'CALLED',
-      calledAt: new Date(),
+    data: { status: 'CALLED', calledAt: new Date() },
+    include: {
+      guest: {
+        select: { id: true, displayName: true, email: true },
+      },
     },
   })
 
-  console.log(
-    `[KARAOKEYA] Llamando turno #${next.turnNumber} - ${next.singerName} para "${next.title}"`
-  )
-
-  return mapToResponse(updated)
+  console.log(`[KARAOKEYA] Llamando turno #${next.turnNumber}`)
+  return updated as KaraokeRequestResponse
 }
 
 export async function reorderQueue(requestId: string, newPosition: number): Promise<void> {
@@ -339,23 +317,17 @@ export async function reorderQueue(requestId: string, newPosition: number): Prom
   })
 
   if (!request) {
-    throw new KaraokeyaError('Turno no encontrado', 404, 'REQUEST_NOT_FOUND')
+    throw new KaraokeyaError('Turno no encontrado', 404)
   }
 
   if (request.status !== 'QUEUED') {
-    throw new KaraokeyaError(
-      'Solo se pueden reordenar turnos en cola',
-      400,
-      'INVALID_STATUS'
-    )
+    throw new KaraokeyaError('Solo se pueden reordenar turnos en cola', 400)
   }
 
   const oldPosition = request.queuePosition
 
-  // Usar transacción para mantener consistencia
   await prisma.$transaction(async (tx) => {
     if (newPosition > oldPosition) {
-      // Moviendo hacia abajo: decrementar posiciones intermedias
       await tx.karaokeRequest.updateMany({
         where: {
           eventId: request.eventId,
@@ -365,7 +337,6 @@ export async function reorderQueue(requestId: string, newPosition: number): Prom
         data: { queuePosition: { decrement: 1 } },
       })
     } else if (newPosition < oldPosition) {
-      // Moviendo hacia arriba: incrementar posiciones intermedias
       await tx.karaokeRequest.updateMany({
         where: {
           eventId: request.eventId,
@@ -376,16 +347,13 @@ export async function reorderQueue(requestId: string, newPosition: number): Prom
       })
     }
 
-    // Actualizar posición del request movido
     await tx.karaokeRequest.update({
       where: { id: requestId },
       data: { queuePosition: newPosition },
     })
   })
 
-  console.log(
-    `[KARAOKEYA] Turno #${request.turnNumber} movido de posición ${oldPosition} a ${newPosition}`
-  )
+  console.log(`[KARAOKEYA] Turno #${request.turnNumber}: pos ${oldPosition} → ${newPosition}`)
 }
 
 export async function batchReorder(eventId: string, orderedIds: string[]): Promise<void> {
@@ -401,47 +369,41 @@ export async function batchReorder(eventId: string, orderedIds: string[]): Promi
   console.log(`[KARAOKEYA] Cola reordenada - ${orderedIds.length} items`)
 }
 
-export async function cancelRequest(requestId: string): Promise<KaraokeRequestResponse> {
-  return updateStatus(requestId, 'CANCELLED')
-}
-
 export async function deleteRequest(requestId: string): Promise<void> {
   const request = await prisma.karaokeRequest.findUnique({
     where: { id: requestId },
   })
 
   if (!request) {
-    throw new KaraokeyaError('Turno no encontrado', 404, 'REQUEST_NOT_FOUND')
+    throw new KaraokeyaError('Turno no encontrado', 404)
   }
 
-  await prisma.karaokeRequest.delete({
-    where: { id: requestId },
-  })
-
+  await prisma.karaokeRequest.delete({ where: { id: requestId } })
   console.log(`[KARAOKEYA] Turno #${request.turnNumber} eliminado`)
 }
 
 // ============================================
-// UTILIDADES PRIVADAS
+// EXPORT
 // ============================================
 
-function mapToResponse(request: any): KaraokeRequestResponse {
-  return {
-    id: request.id,
-    eventId: request.eventId,
-    title: request.title,
-    artist: request.artist,
-    singerName: request.singerName,
-    singerLastname: request.singerLastname,
-    singerEmail: request.singerEmail,
-    singerWhatsapp: request.singerWhatsapp,
-    turnNumber: request.turnNumber,
-    queuePosition: request.queuePosition,
-    status: request.status,
-    createdAt: request.createdAt,
-    calledAt: request.calledAt,
-  }
+export async function getAllForExport(eventId: string) {
+  const requests = await prisma.karaokeRequest.findMany({
+    where: { eventId },
+    include: {
+      guest: {
+        select: { displayName: true, email: true, whatsapp: true },
+      },
+    },
+    orderBy: { turnNumber: 'asc' },
+  })
+
+  console.log(`[KARAOKEYA] Exportando ${requests.length} turnos`)
+  return requests
 }
+
+// ============================================
+// HELPERS
+// ============================================
 
 function validateStatusTransition(
   current: KaraokeRequestStatus,
@@ -449,58 +411,14 @@ function validateStatusTransition(
 ): void {
   const validTransitions: Record<KaraokeRequestStatus, KaraokeRequestStatus[]> = {
     QUEUED: ['CALLED', 'CANCELLED'],
-    CALLED: ['ON_STAGE', 'NO_SHOW', 'QUEUED'], // QUEUED permite volver a la cola
+    CALLED: ['ON_STAGE', 'NO_SHOW', 'QUEUED'],
     ON_STAGE: ['COMPLETED', 'CANCELLED'],
-    COMPLETED: [], // Estado final
-    NO_SHOW: ['QUEUED'], // Permite reinsertar
-    CANCELLED: ['QUEUED'], // Permite reinsertar
+    COMPLETED: [],
+    NO_SHOW: ['QUEUED'],
+    CANCELLED: ['QUEUED'],
   }
 
   if (!validTransitions[current].includes(next)) {
-    throw new KaraokeyaError(
-      `Transición inválida: ${current} -> ${next}`,
-      400,
-      'INVALID_TRANSITION'
-    )
+    throw new KaraokeyaError(`Transición inválida: ${current} → ${next}`, 400)
   }
-}
-
-// ============================================
-// EXPORT CSV
-// ============================================
-
-export interface KaraokeExportData {
-  turnNumber: number
-  singerName: string
-  singerLastname: string | null
-  singerEmail: string | null
-  singerWhatsapp: string | null
-  title: string
-  artist: string | null
-  status: string
-  createdAt: Date
-  calledAt: Date | null
-}
-
-export async function getAllForExport(eventId: string): Promise<KaraokeExportData[]> {
-  const requests = await prisma.karaokeRequest.findMany({
-    where: { eventId },
-    orderBy: { turnNumber: 'asc' },
-    select: {
-      turnNumber: true,
-      singerName: true,
-      singerLastname: true,
-      singerEmail: true,
-      singerWhatsapp: true,
-      title: true,
-      artist: true,
-      status: true,
-      createdAt: true,
-      calledAt: true,
-    },
-  })
-
-  console.log(`[KARAOKEYA] Exportando ${requests.length} turnos del evento ${eventId}`)
-
-  return requests
 }
