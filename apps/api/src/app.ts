@@ -9,6 +9,7 @@ import { eventRoutes } from './modules/events'
 import { venueRoutes } from './modules/venues'
 import { clientRoutes } from './modules/clients'
 import { musicadjRoutes } from './modules/musicadj'
+import { guestRoutes } from './modules/guests'
 import { errorHandler } from './shared/middleware/error.middleware'
 
 const app = express()
@@ -33,6 +34,7 @@ app.get('/api', (req, res) => {
 
 // Rutas de módulos
 app.use('/api/auth', authRoutes)
+app.use('/api/guests', guestRoutes)
 app.use('/api/events', eventRoutes)
 app.use('/api/venues', venueRoutes)
 app.use('/api/clients', clientRoutes)

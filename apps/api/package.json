@@ -3,7 +3,7 @@
   "version": "0.5.0",
   "private": true,
   "scripts": {
-    "dev": "tsx watch src/server.ts",
+    "dev": "NODE_TLS_REJECT_UNAUTHORIZED=0 tsx watch src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
     "lint": "eslint src/",

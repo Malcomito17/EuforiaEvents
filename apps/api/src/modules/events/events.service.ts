@@ -507,6 +507,8 @@ class EventService {
         },
       },
       eventData: true,
+      musicadjConfig: true,
+      karaokeyaConfig: true,
       clonedFrom: {
         select: { id: true, slug: true },
       },

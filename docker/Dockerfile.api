@@ -1,0 +1,29 @@
+FROM node:20-alpine
+
+# Instalar dependencias del sistema
+RUN apk add --no-cache curl
+
+WORKDIR /app
+
+# Copiar archivos de configuración del monorepo
+COPY package.json pnpm-workspace.yaml ./
+COPY apps/api/package.json ./apps/api/
+COPY packages/shared/package.json ./packages/shared/ 2>/dev/null || true
+
+# Instalar pnpm y dependencias
+RUN npm install -g pnpm@10.23.0
+RUN pnpm install --frozen-lockfile || pnpm install
+
+# Copiar código fuente
+COPY apps/api ./apps/api
+COPY packages/shared ./packages/shared 2>/dev/null || true
+
+# Generar Prisma Client
+WORKDIR /app/apps/api
+RUN npx prisma generate || true
+
+WORKDIR /app
+
+EXPOSE 3000
+
+CMD ["sh", "-c", "cd apps/api && NODE_TLS_REJECT_UNAUTHORIZED=0 npx tsx watch src/server.ts"]

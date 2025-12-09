@@ -1,0 +1,85 @@
+version: '3.8'
+
+name: euforia-events
+
+services:
+  # Backend API
+  api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.api
+    container_name: euforia-api
+    restart: unless-stopped
+    ports:
+      - '3000:3000'
+    volumes:
+      - ./apps/api:/app/apps/api
+      - ./packages:/app/packages
+      - /app/node_modules
+      - /app/apps/api/node_modules
+      - ./apps/api/prisma/dev.db:/app/apps/api/prisma/dev.db
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=file:./prisma/dev.db
+      - PORT=3000
+      - JWT_SECRET=${JWT_SECRET:-dev-secret-change-in-production}
+      - JWT_EXPIRES_IN=7d
+      - CLIENT_URL=http://localhost:5173
+      - OPERATOR_URL=http://localhost:5174
+      - NODE_TLS_REJECT_UNAUTHORIZED=0
+    networks:
+      - euforia-network
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:3000/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Frontend Cliente (acceso público vía QR)
+  web-client:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.web-client
+    container_name: euforia-web-client
+    restart: unless-stopped
+    ports:
+      - '5173:5173'
+    volumes:
+      - ./apps/web-client:/app/apps/web-client
+      - ./packages:/app/packages
+      - /app/node_modules
+      - /app/apps/web-client/node_modules
+    environment:
+      - VITE_API_URL=http://localhost:3000
+      - VITE_WS_URL=http://localhost:3000
+    networks:
+      - euforia-network
+    depends_on:
+      - api
+
+  # Frontend Operador (panel de control)
+  web-operator:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.web-operator
+    container_name: euforia-web-operator
+    restart: unless-stopped
+    ports:
+      - '5174:5174'
+    volumes:
+      - ./apps/web-operator:/app/apps/web-operator
+      - ./packages:/app/packages
+      - /app/node_modules
+      - /app/apps/web-operator/node_modules
+    environment:
+      - VITE_API_URL=http://localhost:3000
+      - VITE_WS_URL=http://localhost:3000
+    networks:
+      - euforia-network
+    depends_on:
+      - api
+
+networks:
+  euforia-network:
+    driver: bridge
