@@ -3,6 +3,13 @@
  * Inicializa Express + Socket.io
  */
 
+// Cargar variables de entorno ANTES de todo
+import { config } from 'dotenv'
+import { resolve } from 'path'
+
+// Cargar .env desde el working directory (apps/api)
+config({ path: resolve(process.cwd(), '.env') })
+
 import { createServer } from 'http'
 import app from './app'
 import { initializeSocket } from './socket'
