@@ -10,18 +10,17 @@
 
 ```
 FASE 0: Foundation          [████████████████████] 100% ✅
-FASE 1: Event Management    [████████████████████] 100% ✅ (Backend)
-                            [██████████░░░░░░░░░░]  50% (UI pending)
+FASE 1: Event Management    [████████████████████] 100% ✅ (Backend + UI)
 FASE 2: MUSICADJ MVP        [████████░░░░░░░░░░░░]  40% ✅ (Backend core)
-                            [░░░░░░░░░░░░░░░░░░░░]   0% (Frontend)
+                            [██████████░░░░░░░░░░]  50% (Operator UI done)
 FASE 3: KARAOKEYA MVP       [░░░░░░░░░░░░░░░░░░░░]   0%
 FASE 4: Users & Permissions [░░░░░░░░░░░░░░░░░░░░]   0%
 FASE 5: Testing & Polish    [░░░░░░░░░░░░░░░░░░░░]   0%
 ```
 
-**Total invertido:** ~10-12h
+**Total invertido:** ~13-15h
 **Progreso backend:** ~70%
-**Progreso frontend:** ~10%
+**Progreso frontend:** ~45%
 
 ---
 
@@ -204,6 +203,26 @@ SPOTIFY_CLIENT_SECRET=your_client_secret
 - ✅ CORS configurado para local dev
 - ✅ Handlers en `socket/handlers/musicadj.handler.ts`
 
+### ✅ Completado (Fase 1 UI + T2.6):
+
+#### Frontend Operador:
+- ✅ **Fase 1 UI:** Venues, Clients, Events completo
+  - Listados con search y filtros
+  - Formularios create/edit con react-hook-form
+  - Soft delete y reactivate
+  - QR generation con preview + download
+  - Ver `FASE_1_UI_VERIFICATION.md` para detalles
+- ✅ **T2.6:** Panel DJ real-time (MUSICADJ)
+  - Lista de requests con Socket.io ✅
+  - Filtros por status (all, active, played, discarded) ✅
+  - Búsqueda de pedidos (título, artista, guest) ✅
+  - Acciones: HIGHLIGHTED, URGENT, PLAYED, DISCARDED ✅
+  - Stats cards en tiempo real ✅
+  - Connection status indicator ✅
+  - Album art display ✅
+  - Spotify links ✅
+  - **FIXED:** Actualizado a v1.3 Guest model (commit 509e906)
+
 ### 🚧 Pendiente (Fase 2):
 
 #### Backend:
@@ -211,7 +230,7 @@ SPOTIFY_CLIENT_SECRET=your_client_secret
 - [ ] Verificar `musicadj.routes.ts` alignment
 - [ ] Testing manual de endpoints
 
-#### Frontend Cliente:
+#### Frontend Cliente (web-client):
 - [ ] **T2.4:** Pantalla identificación Guest
   - Input email + displayName
   - localStorage para "recordarme"
@@ -226,12 +245,6 @@ SPOTIFY_CLIENT_SECRET=your_client_secret
   - Socket.io updates
 
 #### Frontend Operador:
-- [ ] **T2.6:** Panel DJ real-time
-  - Lista de requests con Socket.io
-  - Filtros por status
-  - Búsqueda de pedidos
-  - Acciones: HIGHLIGHTED, URGENT, PLAYED, DISCARDED
-  - Drag & drop reorder (opcional)
 - [ ] **T2.7:** Config MUSICADJ
   - Formulario config en evento
   - enabled, cooldown, allowWithoutSpotify, etc.
