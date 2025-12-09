@@ -267,18 +267,20 @@ export type SongRequestStatus = 'PENDING' | 'HIGHLIGHTED' | 'URGENT' | 'PLAYED' 
 export interface SongRequest {
   id: string
   eventId: string
+  guestId: string
   spotifyId: string | null
   title: string
   artist: string
   albumArtUrl: string | null
-  requesterName: string
-  requesterLastname: string | null
-  requesterEmail: string | null
-  requesterWhatsapp: string | null
   status: SongRequestStatus
   priority: number
   createdAt: string
   updatedAt: string
+  guest: {
+    id: string
+    displayName: string
+    email: string
+  }
 }
 
 export interface MusicadjConfig {

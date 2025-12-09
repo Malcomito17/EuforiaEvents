@@ -156,8 +156,8 @@ export function MusicaDJPage() {
       return (
         request.title.toLowerCase().includes(query) ||
         request.artist.toLowerCase().includes(query) ||
-        request.requesterName.toLowerCase().includes(query) ||
-        (request.requesterLastname?.toLowerCase().includes(query) ?? false)
+        request.guest.displayName.toLowerCase().includes(query) ||
+        request.guest.email.toLowerCase().includes(query)
       )
     }
     
@@ -416,7 +416,7 @@ function RequestCard({ request, onStatusChange, formatTime, timeAgo }: RequestCa
             <h3 className="font-semibold text-gray-900 truncate">{request.title}</h3>
             <p className="text-gray-600 truncate">{request.artist}</p>
             <div className="flex items-center gap-3 mt-1 text-sm text-gray-500">
-              <span>De: {request.requesterName} {request.requesterLastname || ''}</span>
+              <span>De: {request.guest.displayName}</span>
               <span>•</span>
               <span title={formatTime(request.createdAt)}>{timeAgo(request.createdAt)}</span>
             </div>

@@ -79,15 +79,19 @@ export interface MusicadjSocketEvents {
 export interface SongRequestEvent {
   id: string
   eventId: string
+  guestId: string
   spotifyId: string | null
   title: string
   artist: string
   albumArtUrl: string | null
-  requesterName: string
-  requesterLastname: string | null
   status: string
   priority: number
   createdAt: string
+  guest: {
+    id: string
+    displayName: string
+    email: string
+  }
 }
 
 export function subscribeMusicadj(events: MusicadjSocketEvents): () => void {
