@@ -3,7 +3,7 @@
  */
 
 import { useParams, useNavigate } from 'react-router-dom'
-import { CheckCircle2, Music2, ArrowLeft, Plus } from 'lucide-react'
+import { CheckCircle2, Music2, ArrowLeft, Plus, ListMusic } from 'lucide-react'
 import { useEventStore } from '../stores/eventStore'
 
 export default function RequestSuccess() {
@@ -32,13 +32,21 @@ export default function RequestSuccess() {
       {/* Acciones */}
       <div className="w-full max-w-xs space-y-3">
         <button
-          onClick={() => navigate(`/e/${slug}/musicadj`)}
+          onClick={() => navigate(`/e/${slug}/musicadj/mis-pedidos`)}
           className="btn-primary w-full flex items-center justify-center gap-2"
+        >
+          <ListMusic className="w-5 h-5" />
+          Ver mis pedidos
+        </button>
+
+        <button
+          onClick={() => navigate(`/e/${slug}/musicadj`)}
+          className="btn-secondary w-full flex items-center justify-center gap-2"
         >
           <Plus className="w-5 h-5" />
           Pedir otro tema
         </button>
-        
+
         <button
           onClick={() => navigate(`/e/${slug}`)}
           className="btn-secondary w-full flex items-center justify-center gap-2"

@@ -1,14 +1,15 @@
 /**
- * MusicaDJRequest - Formulario de pedido musical con búsqueda Spotify
+ * MusicaDJRequest - Identificación + Pedido musical (v1.3)
  */
 
 import { useState, useEffect, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { 
-  Search, ArrowLeft, Music2, Loader2, AlertCircle, 
-  Check, X, User
+import {
+  Search, ArrowLeft, Music2, Loader2, AlertCircle,
+  Check, X, User, Mail
 } from 'lucide-react'
 import { useEventStore } from '../stores/eventStore'
+import { useGuestStore } from '../stores/guestStore'
 import * as api from '../services/api'
 import type { SpotifyTrack, CreateSongRequestInput } from '../types'
 
@@ -26,6 +27,14 @@ export default function MusicaDJRequest() {
   const { slug } = useParams<{ slug: string }>()
   const navigate = useNavigate()
   const { event, musicadjConfig, loadEvent } = useEventStore()
+  const { guest, isIdentifying, identifyGuest } = useGuestStore()
+
+  // Estados de identificación
+  const [showIdentification, setShowIdentification] = useState(!guest)
+  const [identEmail, setIdentEmail] = useState('')
+  const [identName, setIdentName] = useState('')
+  const [identWhatsapp, setIdentWhatsapp] = useState('')
+  const [identError, setIdentError] = useState<string | null>(null)
 
   // Estados de búsqueda
   const [searchQuery, setSearchQuery] = useState('')
@@ -37,9 +46,7 @@ export default function MusicaDJRequest() {
   const [manualMode, setManualMode] = useState(false)
   const [manualTitle, setManualTitle] = useState('')
   const [manualArtist, setManualArtist] = useState('')
-  const [requesterName, setRequesterName] = useState('')
-  const [requesterLastname, setRequesterLastname] = useState('')
-  
+
   // Estados de envío
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -52,6 +59,26 @@ export default function MusicaDJRequest() {
       loadEvent(slug)
     }
   }, [slug, event, loadEvent])
+
+  // Verificar si hay guest al montar
+  useEffect(() => {
+    if (guest) {
+      setShowIdentification(false)
+    }
+  }, [guest])
+
+  // Manejar identificación
+  const handleIdentify = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIdentError(null)
+
+    try {
+      await identifyGuest(identEmail, identName, identWhatsapp || undefined)
+      setShowIdentification(false)
+    } catch (err) {
+      setIdentError(err instanceof Error ? err.message : 'Error al identificarse')
+    }
+  }
 
   // Buscar en Spotify
   const searchSpotify = useCallback(async (query: string) => {
@@ -99,11 +126,10 @@ export default function MusicaDJRequest() {
   // Enviar pedido
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!event || !requesterName.trim()) return
+    if (!event || !guest) return
 
     const input: CreateSongRequestInput = {
-      requesterName: requesterName.trim(),
-      requesterLastname: requesterLastname.trim() || undefined,
+      guestId: guest.id,
       ...(selectedTrack ? {
         spotifyId: selectedTrack.id,
         title: selectedTrack.name,
@@ -129,9 +155,7 @@ export default function MusicaDJRequest() {
   }
 
   // Validar formulario
-  const isValid = requesterName.trim() && (
-    selectedTrack || (manualTitle.trim() && manualArtist.trim())
-  )
+  const isValid = selectedTrack || (manualTitle.trim() && manualArtist.trim())
 
   if (!event || !musicadjConfig) {
     return (
@@ -141,6 +165,124 @@ export default function MusicaDJRequest() {
     )
   }
 
+  // Mostrar form de identificación
+  if (showIdentification || !guest) {
+    return (
+      <div className="min-h-screen pb-safe">
+        {/* Header */}
+        <header className="sticky top-0 bg-gray-900/80 backdrop-blur-lg border-b border-white/10 z-10">
+          <div className="max-w-lg mx-auto px-4 py-3 flex items-center gap-3">
+            <button
+              onClick={() => navigate(`/e/${slug}`)}
+              className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+            <div className="flex-1">
+              <h1 className="font-semibold">Identificación</h1>
+              <p className="text-xs text-white/60">{event.name}</p>
+            </div>
+          </div>
+        </header>
+
+        <main className="max-w-lg mx-auto px-4 py-8">
+          <div className="text-center mb-8">
+            <div className="w-16 h-16 bg-primary-600/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <User className="w-8 h-8 text-primary-400" />
+            </div>
+            <h2 className="text-2xl font-bold mb-2">¡Bienvenido!</h2>
+            <p className="text-white/70">
+              Para pedir tu tema, necesitamos que te identifiques
+            </p>
+          </div>
+
+          {/* Error */}
+          {identError && (
+            <div className="mb-6 p-4 bg-red-500/20 border border-red-500/50 rounded-xl flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-red-200">{identError}</p>
+            </div>
+          )}
+
+          {/* Form */}
+          <form onSubmit={handleIdentify} className="space-y-5">
+            <div>
+              <label className="block text-sm font-medium mb-2 text-white/80">
+                Email *
+              </label>
+              <div className="relative">
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
+                <input
+                  type="email"
+                  value={identEmail}
+                  onChange={(e) => setIdentEmail(e.target.value)}
+                  placeholder="tu@email.com"
+                  className="input-field pl-12"
+                  required
+                  autoComplete="email"
+                />
+              </div>
+              <p className="text-xs text-white/50 mt-1">
+                Usaremos tu email para reconocerte en futuros eventos
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2 text-white/80">
+                Tu nombre *
+              </label>
+              <div className="relative">
+                <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
+                <input
+                  type="text"
+                  value={identName}
+                  onChange={(e) => setIdentName(e.target.value)}
+                  placeholder="Ej: Juan Pérez"
+                  className="input-field pl-12"
+                  required
+                  autoComplete="name"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2 text-white/80">
+                WhatsApp (opcional)
+              </label>
+              <input
+                type="tel"
+                value={identWhatsapp}
+                onChange={(e) => setIdentWhatsapp(e.target.value)}
+                placeholder="+54 9 2901 123456"
+                className="input-field"
+                autoComplete="tel"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={isIdentifying || !identEmail.trim() || !identName.trim()}
+              className="btn-primary w-full flex items-center justify-center gap-2"
+            >
+              {isIdentifying ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Identificando...
+                </>
+              ) : (
+                <>
+                  <Check className="w-5 h-5" />
+                  Continuar
+                </>
+              )}
+            </button>
+          </form>
+        </main>
+      </div>
+    )
+  }
+
+  // Form de pedido (ya identificado)
   return (
     <div className="min-h-screen pb-safe">
       {/* Header */}
@@ -154,7 +296,9 @@ export default function MusicaDJRequest() {
           </button>
           <div className="flex-1">
             <h1 className="font-semibold">Pedí tu tema</h1>
-            <p className="text-xs text-white/60">{event.name}</p>
+            <p className="text-xs text-white/60">
+              {guest.displayName} • {event.name}
+            </p>
           </div>
         </div>
       </header>
@@ -175,8 +319,8 @@ export default function MusicaDJRequest() {
           <div className="mb-6 card">
             <div className="flex items-center gap-4">
               {selectedTrack.albumArtUrl ? (
-                <img 
-                  src={selectedTrack.albumArtUrl} 
+                <img
+                  src={selectedTrack.albumArtUrl}
                   alt={selectedTrack.album}
                   className="w-16 h-16 rounded-lg"
                 />
@@ -254,8 +398,8 @@ export default function MusicaDJRequest() {
                         className="w-full p-3 bg-white/5 hover:bg-white/10 rounded-xl flex items-center gap-3 text-left transition-colors"
                       >
                         {track.albumArtUrl ? (
-                          <img 
-                            src={track.albumArtUrl} 
+                          <img
+                            src={track.albumArtUrl}
                             alt={track.album}
                             className="w-12 h-12 rounded-lg"
                           />
@@ -315,46 +459,8 @@ export default function MusicaDJRequest() {
           </div>
         )}
 
-        {/* Formulario de datos del solicitante */}
+        {/* Botón enviar */}
         <form onSubmit={handleSubmit}>
-          <div className="card mb-6">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-primary-600/30 rounded-lg flex items-center justify-center">
-                <User className="w-5 h-5 text-primary-400" />
-              </div>
-              <h2 className="font-semibold">Tus datos</h2>
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-2 text-white/70">
-                  Nombre *
-                </label>
-                <input
-                  type="text"
-                  value={requesterName}
-                  onChange={(e) => setRequesterName(e.target.value)}
-                  placeholder="Tu nombre"
-                  className="input-field"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2 text-white/70">
-                  Apellido (opcional)
-                </label>
-                <input
-                  type="text"
-                  value={requesterLastname}
-                  onChange={(e) => setRequesterLastname(e.target.value)}
-                  placeholder="Tu apellido"
-                  className="input-field"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Botón enviar */}
           <button
             type="submit"
             disabled={!isValid || submitting}
@@ -363,7 +469,7 @@ export default function MusicaDJRequest() {
             {submitting ? (
               <>
                 <Loader2 className="w-5 h-5 animate-spin" />
-                Enviando...
+                Enviando pedido...
               </>
             ) : (
               <>

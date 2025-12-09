@@ -47,41 +47,72 @@ export interface SpotifySearchResult {
 }
 
 // ============================================
-// Song Request Types
+// Guest Types (v1.3)
 // ============================================
 
-export type SongRequestStatus = 
-  | 'PENDING' 
-  | 'HIGHLIGHTED' 
-  | 'URGENT' 
-  | 'PLAYED' 
+export interface Guest {
+  id: string
+  email: string
+  displayName: string
+  whatsapp: string | null
+  createdAt: string
+}
+
+export interface GuestIdentifyInput {
+  email: string
+  displayName: string
+  whatsapp?: string
+}
+
+export interface GuestIdentifyResponse {
+  success: boolean
+  guest: Guest
+}
+
+// ============================================
+// Song Request Types (v1.3)
+// ============================================
+
+export type SongRequestStatus =
+  | 'PENDING'
+  | 'HIGHLIGHTED'
+  | 'URGENT'
+  | 'PLAYED'
   | 'DISCARDED'
 
 export interface SongRequest {
   id: string
   eventId: string
+  guestId: string
   spotifyId: string | null
   title: string
   artist: string
   albumArtUrl: string | null
-  requesterName: string
-  requesterLastname: string | null
-  requesterEmail: string | null
-  requesterWhatsapp: string | null
   status: SongRequestStatus
   priority: number
   createdAt: string
+  updatedAt: string
+  guest: {
+    id: string
+    displayName: string
+    email: string
+  }
 }
 
 export interface CreateSongRequestInput {
+  guestId: string
   spotifyId?: string
   title: string
   artist: string
   albumArtUrl?: string
-  requesterName: string
-  requesterLastname?: string
-  requesterEmail?: string
-  requesterWhatsapp?: string
+}
+
+export interface GuestRequestsResponse {
+  success: boolean
+  requests: {
+    songs: Array<SongRequest & { event: any }>
+    karaoke: any[]
+  }
 }
 
 // ============================================

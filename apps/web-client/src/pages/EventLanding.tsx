@@ -4,13 +4,15 @@
 
 import { useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { Music2, Loader2, AlertCircle, Mic2 } from 'lucide-react'
+import { Music2, Loader2, AlertCircle, Mic2, ListMusic } from 'lucide-react'
 import { useEventStore } from '../stores/eventStore'
+import { useGuestStore } from '../stores/guestStore'
 
 export default function EventLanding() {
   const { slug } = useParams<{ slug: string }>()
   const navigate = useNavigate()
   const { event, musicadjConfig, loading, error, loadEvent } = useEventStore()
+  const { guest } = useGuestStore()
 
   useEffect(() => {
     if (slug) {
@@ -76,18 +78,36 @@ export default function EventLanding() {
       <div className="w-full max-w-sm space-y-4">
         {/* MUSICADJ */}
         {musicadjConfig?.enabled && (
-          <button
-            onClick={() => navigate(`/e/${slug}/musicadj`)}
-            className="w-full card hover:bg-white/20 transition-all flex items-center gap-4 text-left"
-          >
-            <div className="w-14 h-14 bg-primary-600 rounded-xl flex items-center justify-center flex-shrink-0">
-              <Music2 className="w-7 h-7" />
-            </div>
-            <div>
-              <h2 className="text-lg font-semibold">Pedí tu tema</h2>
-              <p className="text-white/60 text-sm">Buscá y solicitá tu canción favorita</p>
-            </div>
-          </button>
+          <>
+            <button
+              onClick={() => navigate(`/e/${slug}/musicadj`)}
+              className="w-full card hover:bg-white/20 transition-all flex items-center gap-4 text-left"
+            >
+              <div className="w-14 h-14 bg-primary-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                <Music2 className="w-7 h-7" />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold">Pedí tu tema</h2>
+                <p className="text-white/60 text-sm">Buscá y solicitá tu canción favorita</p>
+              </div>
+            </button>
+
+            {/* Mis pedidos - solo si está identificado */}
+            {guest && (
+              <button
+                onClick={() => navigate(`/e/${slug}/musicadj/mis-pedidos`)}
+                className="w-full card hover:bg-white/20 transition-all flex items-center gap-4 text-left"
+              >
+                <div className="w-14 h-14 bg-primary-500/30 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <ListMusic className="w-7 h-7" />
+                </div>
+                <div className="flex-1">
+                  <h2 className="text-lg font-semibold">Mis pedidos</h2>
+                  <p className="text-white/60 text-sm">Ver el estado de tus solicitudes</p>
+                </div>
+              </button>
+            )}
+          </>
         )}
 
         {/* KARAOKEYA (próximamente) */}

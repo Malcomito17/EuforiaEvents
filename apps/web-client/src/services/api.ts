@@ -1,14 +1,18 @@
 /**
- * API Service - Cliente HTTP para el backend
+ * API Service - Cliente HTTP para el backend (v1.3)
  */
 
 import axios from 'axios'
-import type { 
-  Event, 
-  MusicadjConfig, 
-  SpotifySearchResult, 
+import type {
+  Event,
+  MusicadjConfig,
+  SpotifySearchResult,
   SongRequest,
-  CreateSongRequestInput 
+  CreateSongRequestInput,
+  Guest,
+  GuestIdentifyInput,
+  GuestIdentifyResponse,
+  GuestRequestsResponse
 } from '../types'
 
 const api = axios.create({
@@ -17,6 +21,22 @@ const api = axios.create({
     'Content-Type': 'application/json',
   },
 })
+
+// ============================================
+// Guest API (v1.3)
+// ============================================
+
+export async function identifyGuest(input: GuestIdentifyInput): Promise<Guest> {
+  const { data } = await api.post<GuestIdentifyResponse>('/guests/identify', input)
+  return data.guest
+}
+
+export async function getGuestRequests(guestId: string, eventId?: string): Promise<GuestRequestsResponse> {
+  const { data } = await api.get<GuestRequestsResponse>(`/guests/${guestId}/requests`, {
+    params: eventId ? { eventId } : undefined,
+  })
+  return data
+}
 
 // ============================================
 // Event API

@@ -5,6 +5,7 @@
 import { Routes, Route } from 'react-router-dom'
 import EventLanding from './pages/EventLanding'
 import MusicaDJRequest from './pages/MusicaDJRequest'
+import MyRequests from './pages/MyRequests'
 import NotFound from './pages/NotFound'
 import RequestSuccess from './pages/RequestSuccess'
 
@@ -17,6 +18,7 @@ function App() {
       {/* MUSICADJ - Pedidos musicales */}
       <Route path="/e/:slug/musicadj" element={<MusicaDJRequest />} />
       <Route path="/e/:slug/musicadj/success" element={<RequestSuccess />} />
+      <Route path="/e/:slug/musicadj/mis-pedidos" element={<MyRequests />} />
       
       {/* 404 */}
       <Route path="*" element={<NotFound />} />
