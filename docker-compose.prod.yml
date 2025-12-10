@@ -25,10 +25,10 @@ services:
   # API Backend (Node.js + Express + Prisma)
   # ==========================================================================
   api:
+    platform: linux/arm64  # Raspberry Pi 4
     build:
       context: .
       dockerfile: docker/Dockerfile.api.prod
-      platform: linux/arm64  # Raspberry Pi 4
     image: euforia-events-api:latest
     container_name: euforia-api-prod
     restart: always
@@ -93,10 +93,10 @@ services:
   # Web Client (Invitados - Acceso público vía QR)
   # ==========================================================================
   web-client:
+    platform: linux/arm64
     build:
       context: .
       dockerfile: docker/Dockerfile.web-client.prod
-      platform: linux/arm64
       args:
         - VITE_API_URL=${PUBLIC_DOMAIN}
         - VITE_WS_URL=${PUBLIC_DOMAIN}
@@ -140,10 +140,10 @@ services:
   # Web Operator (Panel de control)
   # ==========================================================================
   web-operator:
+    platform: linux/arm64
     build:
       context: .
       dockerfile: docker/Dockerfile.web-operator.prod
-      platform: linux/arm64
       args:
         - VITE_API_URL=${PUBLIC_DOMAIN}
         - VITE_WS_URL=${PUBLIC_DOMAIN}
