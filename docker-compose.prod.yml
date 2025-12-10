@@ -28,9 +28,7 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile.api.prod
-      platforms:
-        - linux/arm64  # Raspberry Pi 4
-        - linux/amd64  # Testing en Mac/PC
+      platform: linux/arm64  # Raspberry Pi 4
     image: euforia-events-api:latest
     container_name: euforia-api-prod
     restart: always
@@ -98,9 +96,7 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile.web-client.prod
-      platforms:
-        - linux/arm64
-        - linux/amd64
+      platform: linux/arm64
       args:
         - VITE_API_URL=${PUBLIC_DOMAIN}
         - VITE_WS_URL=${PUBLIC_DOMAIN}
@@ -147,9 +143,7 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile.web-operator.prod
-      platforms:
-        - linux/arm64
-        - linux/amd64
+      platform: linux/arm64
       args:
         - VITE_API_URL=${PUBLIC_DOMAIN}
         - VITE_WS_URL=${PUBLIC_DOMAIN}
