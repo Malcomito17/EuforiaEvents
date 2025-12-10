@@ -25,7 +25,7 @@ RUN npm install -g pnpm@10.23.0
 # Copiar archivos de configuración del monorepo
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY apps/api/package.json ./apps/api/
-COPY packages/shared/package.json ./packages/shared/ 2>/dev/null || true
+COPY packages/shared/package.json ./packages/shared/
 
 # Instalar TODAS las dependencias (necesarias para build)
 RUN pnpm install --frozen-lockfile || pnpm install
@@ -49,7 +49,7 @@ RUN npm install -g pnpm@10.23.0
 # Copiar código fuente
 COPY package.json pnpm-workspace.yaml ./
 COPY apps/api ./apps/api
-COPY packages/shared ./packages/shared 2>/dev/null || true
+COPY packages/shared ./packages/shared
 
 # Generar Prisma Client
 WORKDIR /app/apps/api
@@ -88,7 +88,7 @@ RUN npm install -g pnpm@10.23.0
 # Copiar archivos de package.json
 COPY --chown=nodejs:nodejs package.json pnpm-workspace.yaml ./
 COPY --chown=nodejs:nodejs apps/api/package.json ./apps/api/
-COPY --chown=nodejs:nodejs packages/shared/package.json ./packages/shared/ 2>/dev/null || true
+COPY --chown=nodejs:nodejs packages/shared/package.json ./packages/shared/
 
 # Instalar SOLO dependencias de producción
 RUN pnpm install --prod --frozen-lockfile || pnpm install --prod
