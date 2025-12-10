@@ -35,8 +35,6 @@ RUN pnpm install --frozen-lockfile || pnpm install
 # =============================================================================
 FROM node:20-alpine AS builder
 
-RUN apk add --no-cache curl wget
-
 WORKDIR /app
 
 # Copiar node_modules del stage anterior
