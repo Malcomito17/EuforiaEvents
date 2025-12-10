@@ -52,6 +52,10 @@ COPY packages/shared ./packages/shared
 
 # Build de producción con Vite
 WORKDIR /app/apps/web-client
+
+# Aumentar límite de memoria para Node (Raspberry Pi puede tener problemas)
+ENV NODE_OPTIONS="--max-old-space-size=2048"
+
 RUN pnpm run build
 
 # Verificar que el build se generó correctamente
