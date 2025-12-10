@@ -17,7 +17,7 @@ import {
   GripVertical
 } from 'lucide-react'
 import { clsx } from 'clsx'
-import { eventsApi, musicadjApi, SongRequest, SongRequestStatus, MusicadjConfig, Event, MusicadjStats } from '@/lib/api'
+import { eventsApi, musicadjApi, SongRequest, SongRequestStatus, Event, MusicadjStats } from '@/lib/api'
 import { connectSocket, disconnectSocket, subscribeMusicadj } from '@/lib/socket'
 import {
   DndContext,

@@ -18,7 +18,7 @@ import {
   GripVertical
 } from 'lucide-react'
 import { clsx } from 'clsx'
-import { eventsApi, karaokeyaApi, KaraokeRequest, KaraokeRequestStatus, KaraokeyaConfig, Event, KaraokeyaStats } from '@/lib/api'
+import { eventsApi, karaokeyaApi, KaraokeRequest, KaraokeRequestStatus, Event, KaraokeyaStats } from '@/lib/api'
 import { connectSocket, disconnectSocket, subscribeKaraokeya } from '@/lib/socket'
 import {
   DndContext,
