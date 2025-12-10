@@ -30,6 +30,10 @@ export const createEventDataSchema = z.object({
   hashtag: z.string().max(50).optional().nullable(),
   spotifyPlaylist: z.string().url().optional().nullable(),
   notes: z.string().max(1000).optional().nullable(),
+  // Colores personalizados (formato hex #RRGGBB)
+  primaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Color debe ser formato hex (#RRGGBB)').optional(),
+  secondaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Color debe ser formato hex (#RRGGBB)').optional(),
+  accentColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Color debe ser formato hex (#RRGGBB)').optional(),
 })
 
 export const createEventSchema = z.object({

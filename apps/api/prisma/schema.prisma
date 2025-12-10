@@ -16,7 +16,7 @@ model User {
   username  String   @unique
   email     String?  @unique
   password  String
-  role      String   @default("OPERATOR")  // ADMIN | MANAGER | OPERATOR
+  role      String   @default("OPERATOR")  // ADMIN | OPERATOR | VIEWER
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -30,14 +30,17 @@ model User {
 model UserPermission {
   id         String  @id @default(cuid())
   userId     String
-  module     String  // MUSICADJ | KARAOKEYA
+  module     String  // MUSICADJ | KARAOKEYA | VENUES | EVENTS | CLIENTS | USERS
   canView    Boolean @default(true)
-  canOperate Boolean @default(false)
+  canEdit    Boolean @default(false)
+  canDelete  Boolean @default(false)
   canExport  Boolean @default(false)
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, module])
+  @@index([userId])
+  @@index([module])
   @@map("user_permissions")
 }
 
@@ -98,6 +101,7 @@ model Guest {
 
   songRequests    SongRequest[]
   karaokeRequests KaraokeRequest[]
+  likedSongs      KaraokeSongLike[]
 
   @@map("guests")
 }
@@ -147,6 +151,11 @@ model EventData {
   notes           String?
   customFields    String?   // JSON para campos adicionales
 
+  // Colores personalizables del tema (hex)
+  primaryColor    String    @default("#7C3AED")  // Púrpura
+  secondaryColor  String    @default("#EC4899")  // Rosa
+  accentColor     String    @default("#F59E0B")  // Ámbar
+
   event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
 
   @@map("event_data")
@@ -163,6 +172,8 @@ model MusicadjConfig {
   allowWithoutSpotify Boolean @default(true)
   welcomeMessage      String?
   showQueueToClient   Boolean @default(false)
+  // v1.4: Mensajes configurables
+  customMessages      String? // JSON opcional para override de mensajes
 
   event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
 
@@ -196,39 +207,56 @@ model SongRequest {
 // ================================
 
 // Catálogo maestro de canciones (global, no por evento)
+// v1.4: Integración con YouTube + normalización de títulos
+// v2.0: CRUD, ranking, opiniones y sistema de likes
 model KaraokeSong {
   id              String   @id @default(cuid())
-  title           String
-  artist          String
-  youtubeUrl      String?  // Link a video con LETRA/LYRICS
-  language        String   @default("ES")  // ES | EN | PT
-  difficulty      Int      @default(3)     // 1-5 (⭐ a ⭐⭐⭐⭐⭐)
-  moods           String   @default("[]")  // JSON array: ["PARA_ROMPERLA", "ROMANTICO", etc.]
-  tags            String   @default("[]")  // JSON array: ["Popular", "Clásico", "Dúo"]
-  timesRequested  Int      @default(0)     // Contador global (aprendizaje cross-evento)
-  timesCompleted  Int      @default(0)     // Veces cantada exitosamente
-  isActive        Boolean  @default(true)  // Para ocultar sin eliminar
+  title           String   // Título normalizado (sin artista ni extras)
+  artist          String   // Artista normalizado
+  youtubeId       String   @unique  // ID único de YouTube (ej: "fJ9rUzIMcZQ")
+  youtubeShareUrl String   // Link compartible: https://youtu.be/{youtubeId}
+  thumbnailUrl    String?  // Thumbnail del video para preview
+  duration        Int?     // Duración en segundos
+  source          String     @default("YOUTUBE")  // YOUTUBE | MANUAL | IMPORTED
+  language        String     @default("ES")  // ES | EN | PT
+  difficulty      String     @default("MEDIO") // FACIL | MEDIO | DIFICIL | PAVAROTTI
+  ranking         Int        @default(3)     // Calificación de calidad 1-5 (⭐ a ⭐⭐⭐⭐⭐)
+  opinion         String?                    // Opinión editorial del operador
+  moods           String     @default("[]")  // JSON array: ["PARA_ROMPERLA", "ROMANTICO", etc.]
+  tags            String     @default("[]")  // JSON array: ["Popular", "Clásico", "Dúo"]
+  timesRequested  Int        @default(1)     // Contador de popularidad (inicia en 1 al crear)
+  timesCompleted  Int        @default(0)     // Veces cantada exitosamente
+  likesCount      Int        @default(0)     // Contador global de "me gusta"
+  isActive        Boolean    @default(true)  // Para ocultar sin eliminar
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
   requests KaraokeRequest[]
+  likes    KaraokeSongLike[]
 
+  @@index([youtubeId])
   @@index([language])
   @@index([difficulty])
+  @@index([ranking])         // Para ordenar por calificación
+  @@index([likesCount])      // Para ordenar por popularidad de likes
+  @@index([timesRequested])  // Para ordenar por popularidad
   @@map("karaoke_songs")
 }
 
 model KaraokeyaConfig {
-  eventId             String  @id
-  enabled             Boolean @default(true)
-  cooldownSeconds     Int     @default(600)
-  maxPerPerson        Int     @default(0)  // 0 = sin límite
-  showQueueToClient   Boolean @default(true)
-  showNextSinger      Boolean @default(true)
+  eventId               String  @id
+  enabled               Boolean @default(true)
+  cooldownSeconds       Int     @default(600)
+  maxPerPerson          Int     @default(0)  // 0 = sin límite
+  showQueueToClient     Boolean @default(true)
+  showNextSinger        Boolean @default(true)
   // Configuración de sugerencias
-  suggestionsEnabled  Boolean @default(true)
-  suggestionsCount    Int     @default(3)  // 0-5, cantidad de sugerencias a mostrar
-  allowedLanguages    String  @default("[]")  // JSON array: ["ES", "EN"] o vacío = todos
+  suggestionsEnabled    Boolean @default(true)
+  suggestionsCount      Int     @default(3)  // 0-5, cantidad de sugerencias a mostrar
+  allowedLanguages      String  @default("[]")  // JSON array: ["ES", "EN"] o vacío = todos
+  // v1.4: YouTube + Mensajes configurables
+  youtubeSearchKeywords String  @default("[\"letra\", \"lyrics\"]")  // Keywords para búsqueda YouTube
+  customMessages        String? // JSON opcional para override de mensajes: {"search.placeholder": "..."}
 
   event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
 
@@ -257,4 +285,20 @@ model KaraokeRequest {
   @@index([guestId])
   @@index([songId])
   @@map("karaoke_requests")
+}
+
+// Sistema de "Me Gusta" para canciones de karaoke (global, cross-evento)
+model KaraokeSongLike {
+  id        String   @id @default(cuid())
+  songId    String
+  guestId   String
+  createdAt DateTime @default(now())
+
+  song  KaraokeSong @relation(fields: [songId], references: [id], onDelete: Cascade)
+  guest Guest       @relation(fields: [guestId], references: [id], onDelete: Cascade)
+
+  @@unique([songId, guestId])  // Prevenir duplicados: un guest solo puede dar like una vez por canción
+  @@index([songId])
+  @@index([guestId])
+  @@map("karaoke_song_likes")
 }

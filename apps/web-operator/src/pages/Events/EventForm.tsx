@@ -18,6 +18,10 @@ interface EventFormData {
   hashtag: string
   spotifyPlaylist: string
   notes: string
+  // Colores del tema
+  primaryColor: string
+  secondaryColor: string
+  accentColor: string
 }
 
 const EVENT_TYPES = [
@@ -42,11 +46,19 @@ export function EventFormPage() {
   const [venues, setVenues] = useState<Venue[]>([])
   const [clients, setClients] = useState<Client[]>([])
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<EventFormData>({
+  const { register, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<EventFormData>({
     defaultValues: {
       eventType: 'BIRTHDAY',
+      primaryColor: '#7C3AED',
+      secondaryColor: '#EC4899',
+      accentColor: '#F59E0B',
     }
   })
+
+  // Watch color values for synchronization
+  const primaryColor = watch('primaryColor')
+  const secondaryColor = watch('secondaryColor')
+  const accentColor = watch('accentColor')
 
   useEffect(() => {
     loadDependencies()
@@ -89,6 +101,9 @@ export function EventFormPage() {
         hashtag: data.eventData?.hashtag || '',
         spotifyPlaylist: data.eventData?.spotifyPlaylist || '',
         notes: data.eventData?.notes || '',
+        primaryColor: data.eventData?.primaryColor || '#7C3AED',
+        secondaryColor: data.eventData?.secondaryColor || '#EC4899',
+        accentColor: data.eventData?.accentColor || '#F59E0B',
       })
     } catch (err) {
       setError('Error al cargar el evento')
@@ -103,26 +118,32 @@ export function EventFormPage() {
     setError('')
 
     try {
-      const payload: CreateEventInput = {
-        venueId: formData.venueId || undefined,
-        clientId: formData.clientId || undefined,
-        eventData: {
-          eventName: formData.eventName,
-          eventType: formData.eventType,
-          startDate: new Date(formData.startDate).toISOString(),
-          endDate: formData.endDate ? new Date(formData.endDate).toISOString() : undefined,
-          guestCount: formData.guestCount ? parseInt(formData.guestCount) : undefined,
-          instagramUrl: formData.instagramUrl || undefined,
-          instagramUser: formData.instagramUser || undefined,
-          hashtag: formData.hashtag || undefined,
-          spotifyPlaylist: formData.spotifyPlaylist || undefined,
-          notes: formData.notes || undefined,
-        },
+      const eventData = {
+        eventName: formData.eventName,
+        eventType: formData.eventType,
+        startDate: new Date(formData.startDate).toISOString(),
+        endDate: formData.endDate ? new Date(formData.endDate).toISOString() : undefined,
+        guestCount: formData.guestCount ? parseInt(formData.guestCount) : undefined,
+        instagramUrl: formData.instagramUrl || undefined,
+        instagramUser: formData.instagramUser || undefined,
+        hashtag: formData.hashtag || undefined,
+        spotifyPlaylist: formData.spotifyPlaylist || undefined,
+        notes: formData.notes || undefined,
+        primaryColor: formData.primaryColor || '#7C3AED',
+        secondaryColor: formData.secondaryColor || '#EC4899',
+        accentColor: formData.accentColor || '#F59E0B',
       }
 
       if (isEditing) {
-        await eventsApi.update(id!, payload)
+        // Al editar, actualizar eventData por separado
+        await eventsApi.updateEventData(id!, eventData)
       } else {
+        // Al crear, enviar todo junto
+        const payload: CreateEventInput = {
+          venueId: formData.venueId || undefined,
+          clientId: formData.clientId || undefined,
+          eventData,
+        }
         await eventsApi.create(payload)
       }
 
@@ -336,10 +357,86 @@ export function EventFormPage() {
           </div>
         </div>
 
+        {/* Colores del Tema */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Colores del Tema</h2>
+          <p className="text-sm text-gray-600 mb-4">
+            Personaliza los colores que verán los invitados en la interfaz del evento
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Color Primario
+              </label>
+              <div className="flex items-center gap-3">
+                <input
+                  type="color"
+                  value={primaryColor}
+                  onChange={(e) => setValue('primaryColor', e.target.value)}
+                  className="h-12 w-20 rounded-lg border border-gray-300 cursor-pointer"
+                />
+                <input
+                  type="text"
+                  {...register('primaryColor')}
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none font-mono text-sm uppercase"
+                  placeholder="#7C3AED"
+                  maxLength={7}
+                />
+              </div>
+              <p className="text-xs text-gray-500 mt-1">Usado en botones y elementos principales</p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Color Secundario
+              </label>
+              <div className="flex items-center gap-3">
+                <input
+                  type="color"
+                  value={secondaryColor}
+                  onChange={(e) => setValue('secondaryColor', e.target.value)}
+                  className="h-12 w-20 rounded-lg border border-gray-300 cursor-pointer"
+                />
+                <input
+                  type="text"
+                  {...register('secondaryColor')}
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none font-mono text-sm uppercase"
+                  placeholder="#EC4899"
+                  maxLength={7}
+                />
+              </div>
+              <p className="text-xs text-gray-500 mt-1">Para acentos y destacados</p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Color de Acento
+              </label>
+              <div className="flex items-center gap-3">
+                <input
+                  type="color"
+                  value={accentColor}
+                  onChange={(e) => setValue('accentColor', e.target.value)}
+                  className="h-12 w-20 rounded-lg border border-gray-300 cursor-pointer"
+                />
+                <input
+                  type="text"
+                  {...register('accentColor')}
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none font-mono text-sm uppercase"
+                  placeholder="#F59E0B"
+                  maxLength={7}
+                />
+              </div>
+              <p className="text-xs text-gray-500 mt-1">Para elementos decorativos</p>
+            </div>
+          </div>
+        </div>
+
         {/* Notas */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Notas</h2>
-          
+
           <textarea
             {...register('notes')}
             rows={4}

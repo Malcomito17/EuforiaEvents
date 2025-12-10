@@ -124,3 +124,75 @@ export function subscribeMusicadj(events: MusicadjSocketEvents): () => void {
     }
   }
 }
+
+// ============================================
+// KARAOKEYA SOCKET EVENTS
+// ============================================
+
+export interface KaraokeyaSocketEvents {
+  onNewRequest?: (request: KaraokeRequestEvent) => void
+  onRequestUpdated?: (request: KaraokeRequestEvent) => void
+  onRequestDeleted?: (data: { requestId: string }) => void
+  onQueueReordered?: (data: { requests: KaraokeRequestEvent[] }) => void
+}
+
+export interface KaraokeRequestEvent {
+  id: string
+  eventId: string
+  guestId: string
+  songId: string | null
+  title: string
+  artist: string | null
+  turnNumber: number
+  queuePosition: number
+  status: string
+  createdAt: string
+  calledAt: string | null
+  guest: {
+    id: string
+    displayName: string
+    email: string
+    whatsapp: string | null
+  }
+  song: {
+    id: string
+    title: string
+    artist: string | null
+    youtubeId: string
+    youtubeShareUrl: string
+    thumbnailUrl: string | null
+    duration: number | null
+    timesRequested: number
+  } | null
+}
+
+export function subscribeKaraokeya(events: KaraokeyaSocketEvents): () => void {
+  if (!socket) {
+    console.warn('[Socket] Not connected, cannot subscribe to KARAOKEYA events')
+    return () => {}
+  }
+
+  // Subscribe to KARAOKEYA events
+  if (events.onNewRequest) {
+    socket.on('karaokeya:request:new', events.onNewRequest)
+  }
+  if (events.onRequestUpdated) {
+    socket.on('karaokeya:request:updated', events.onRequestUpdated)
+  }
+  if (events.onRequestDeleted) {
+    socket.on('karaokeya:request:deleted', events.onRequestDeleted)
+  }
+  if (events.onQueueReordered) {
+    socket.on('karaokeya:queue:reordered', events.onQueueReordered)
+  }
+
+  // Return cleanup function
+  return () => {
+    if (socket) {
+      socket.off('karaokeya:request:new')
+      socket.off('karaokeya:request:updated')
+      socket.off('karaokeya:request:deleted')
+      socket.off('karaokeya:queue:reordered')
+    }
+  }
+}

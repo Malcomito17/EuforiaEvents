@@ -12,7 +12,12 @@ import type {
   Guest,
   GuestIdentifyInput,
   GuestIdentifyResponse,
-  GuestRequestsResponse
+  GuestRequestsResponse,
+  KaraokeyaConfig,
+  HybridSearchResult,
+  CreateKaraokeRequestInput,
+  KaraokeRequest,
+  CatalogSong
 } from '../types'
 
 const api = axios.create({
@@ -73,6 +78,100 @@ export async function createSongRequest(
 ): Promise<SongRequest> {
   const { data } = await api.post(`/events/${eventId}/musicadj/requests`, input)
   return data
+}
+
+// ============================================
+// KARAOKEYA API
+// ============================================
+
+export async function getKaraokeyaConfig(eventId: string): Promise<KaraokeyaConfig> {
+  const { data } = await api.get(`/events/${eventId}/karaokeya/config`)
+  return data
+}
+
+export async function searchKaraoke(
+  eventId: string,
+  query: string
+): Promise<HybridSearchResult> {
+  const { data } = await api.get(`/events/${eventId}/karaokeya/search`, {
+    params: { q: query },
+  })
+  return data
+}
+
+export async function createKaraokeRequest(
+  eventId: string,
+  input: CreateKaraokeRequestInput
+): Promise<KaraokeRequest> {
+  const { data } = await api.post(`/events/${eventId}/karaokeya/requests`, input)
+  return data
+}
+
+export async function getGuestKaraokeQueue(
+  eventId: string,
+  guestId: string
+): Promise<{ requests: KaraokeRequest[]; total: number }> {
+  const { data } = await api.get(`/events/${eventId}/karaokeya/guests/${guestId}/requests`)
+  return data
+}
+
+export async function getPopularSongs(
+  eventId: string,
+  limit: number = 10
+): Promise<{ songs: CatalogSong[]; total: number }> {
+  const { data } = await api.get(`/events/${eventId}/karaokeya/popular`, {
+    params: { limit },
+  })
+  return data
+}
+
+export async function getSmartSuggestions(
+  eventId: string,
+  guestId?: string,
+  limit: number = 5
+): Promise<{ suggestions: (CatalogSong & { reason?: string })[]; total: number }> {
+  const { data } = await api.get(`/events/${eventId}/karaokeya/suggestions`, {
+    params: { guestId, limit },
+  })
+  return data
+}
+
+// ============================================
+// Karaoke Likes API
+// ============================================
+
+export async function toggleSongLike(
+  songId: string,
+  guestId: string
+): Promise<{ liked: boolean; likesCount: number }> {
+  const { data } = await api.post(`/karaokeya/songs/${songId}/like`, { guestId })
+  return data
+}
+
+export async function getSongLikeStatus(
+  songId: string,
+  guestId: string
+): Promise<{ liked: boolean }> {
+  const { data } = await api.get(`/karaokeya/songs/${songId}/like-status`, {
+    params: { guestId },
+  })
+  return data
+}
+
+export async function batchGetLikeStatuses(
+  songIds: string[],
+  guestId: string
+): Promise<Record<string, boolean>> {
+  // Helper para obtener múltiples estados en paralelo
+  const promises = songIds.map(songId => getSongLikeStatus(songId, guestId))
+  const results = await Promise.all(promises)
+
+  const statusMap: Record<string, boolean> = {}
+  songIds.forEach((songId, index) => {
+    statusMap[songId] = results[index].liked
+  })
+
+  return statusMap
 }
 
 // ============================================

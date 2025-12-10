@@ -1,0 +1,1 @@
+export { KaraokeyaPage } from './KaraokeyaPage'

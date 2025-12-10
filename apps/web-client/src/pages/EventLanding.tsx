@@ -7,12 +7,13 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { Music2, Loader2, AlertCircle, Mic2, ListMusic } from 'lucide-react'
 import { useEventStore } from '../stores/eventStore'
 import { useGuestStore } from '../stores/guestStore'
+import { Footer } from '../components/Footer'
 
 export default function EventLanding() {
   const { slug } = useParams<{ slug: string }>()
   const navigate = useNavigate()
-  const { event, musicadjConfig, loading, error, loadEvent } = useEventStore()
-  const { guest } = useGuestStore()
+  const { event, musicadjConfig, karaokeyaConfig, loading, error, loadEvent } = useEventStore()
+  const { guest, clearGuest } = useGuestStore()
 
   useEffect(() => {
     if (slug) {
@@ -72,58 +73,107 @@ export default function EventLanding() {
         {musicadjConfig?.welcomeMessage && (
           <p className="text-white/70 text-lg">{musicadjConfig.welcomeMessage}</p>
         )}
+
+        {/* Botón de cambio de usuario */}
+        {guest && (
+          <button
+            onClick={() => clearGuest()}
+            className="mt-3 text-sm text-white/50 hover:text-white/80 transition-colors underline"
+          >
+            ¿No sos {guest.displayName}? Volver a ingresar
+          </button>
+        )}
       </div>
 
       {/* Módulos disponibles */}
-      <div className="w-full max-w-sm space-y-4">
-        {/* MUSICADJ */}
+      <div className="w-full max-w-sm space-y-6">
+        {/* MUSICADJ Section */}
         {musicadjConfig?.enabled && (
-          <>
-            <button
-              onClick={() => navigate(`/e/${slug}/musicadj`)}
-              className="w-full card hover:bg-white/20 transition-all flex items-center gap-4 text-left"
-            >
-              <div className="w-14 h-14 bg-primary-600 rounded-xl flex items-center justify-center flex-shrink-0">
-                <Music2 className="w-7 h-7" />
-              </div>
-              <div>
-                <h2 className="text-lg font-semibold">Pedí tu tema</h2>
-                <p className="text-white/60 text-sm">Buscá y solicitá tu canción favorita</p>
-              </div>
-            </button>
-
-            {/* Mis pedidos - solo si está identificado */}
-            {guest && (
+          <div className="bg-gradient-to-br from-primary-600/20 to-primary-800/20 rounded-2xl p-4 backdrop-blur-sm border border-primary-400/30">
+            <div className="flex items-center gap-2 mb-3">
+              <Music2 className="w-5 h-5 text-primary-300" />
+              <h3 className="font-semibold text-primary-100 text-sm uppercase tracking-wide">
+                MUSICADJ
+              </h3>
+            </div>
+            <div className="space-y-2">
               <button
-                onClick={() => navigate(`/e/${slug}/musicadj/mis-pedidos`)}
+                onClick={() => navigate(`/e/${slug}/musicadj`)}
                 className="w-full card hover:bg-white/20 transition-all flex items-center gap-4 text-left"
               >
-                <div className="w-14 h-14 bg-primary-500/30 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <ListMusic className="w-7 h-7" />
+                <div className="w-14 h-14 bg-primary-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <Music2 className="w-7 h-7" />
                 </div>
-                <div className="flex-1">
-                  <h2 className="text-lg font-semibold">Mis pedidos</h2>
-                  <p className="text-white/60 text-sm">Ver el estado de tus solicitudes</p>
+                <div>
+                  <h2 className="text-lg font-semibold">Pedí tu tema</h2>
+                  <p className="text-white/60 text-sm">Buscá y solicitá tu canción favorita</p>
                 </div>
               </button>
-            )}
-          </>
+
+              {/* Mis pedidos - solo si está identificado */}
+              {guest && (
+                <button
+                  onClick={() => navigate(`/e/${slug}/musicadj/mis-pedidos`)}
+                  className="w-full card hover:bg-white/20 transition-all flex items-center gap-4 text-left"
+                >
+                  <div className="w-14 h-14 bg-primary-500/30 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <ListMusic className="w-7 h-7" />
+                  </div>
+                  <div className="flex-1">
+                    <h2 className="text-lg font-semibold">Mis pedidos</h2>
+                    <p className="text-white/60 text-sm">Ver el estado de tus solicitudes</p>
+                  </div>
+                </button>
+              )}
+            </div>
+          </div>
         )}
 
-        {/* KARAOKEYA (próximamente) */}
-        <button
-          disabled
-          className="w-full card opacity-50 cursor-not-allowed flex items-center gap-4 text-left"
-        >
-          <div className="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0">
-            <Mic2 className="w-7 h-7" />
+        {/* KARAOKEYA Section */}
+        {karaokeyaConfig?.enabled && (
+          <div className="bg-gradient-to-br from-purple-600/20 to-purple-800/20 rounded-2xl p-4 backdrop-blur-sm border border-purple-400/30">
+            <div className="flex items-center gap-2 mb-3">
+              <Mic2 className="w-5 h-5 text-purple-300" />
+              <h3 className="font-semibold text-purple-100 text-sm uppercase tracking-wide">
+                KARAOKEYA
+              </h3>
+            </div>
+            <div className="space-y-2">
+              <button
+                onClick={() => navigate(`/e/${slug}/karaokeya`)}
+                className="w-full card hover:bg-white/20 transition-all flex items-center gap-4 text-left"
+              >
+                <div className="w-14 h-14 bg-purple-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <Mic2 className="w-7 h-7" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-semibold">Pedí tu canción</h2>
+                  <p className="text-white/60 text-sm">Elegí y cantá tu tema favorito</p>
+                </div>
+              </button>
+
+              {/* Mi Cola - solo si está identificado */}
+              {guest && (
+                <button
+                  onClick={() => navigate(`/e/${slug}/karaokeya/mi-cola`)}
+                  className="w-full card hover:bg-white/20 transition-all flex items-center gap-4 text-left"
+                >
+                  <div className="w-14 h-14 bg-purple-500/30 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <Mic2 className="w-7 h-7" />
+                  </div>
+                  <div className="flex-1">
+                    <h2 className="text-lg font-semibold">Mi Cola</h2>
+                    <p className="text-white/60 text-sm">Ver el estado de tus solicitudes</p>
+                  </div>
+                </button>
+              )}
+            </div>
           </div>
-          <div>
-            <h2 className="text-lg font-semibold">Karaoke</h2>
-            <p className="text-white/60 text-sm">Próximamente</p>
-          </div>
-        </button>
+        )}
       </div>
+
+      {/* Footer */}
+      <Footer />
     </div>
   )
 }

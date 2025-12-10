@@ -186,6 +186,15 @@ export default function MusicaDJRequest() {
         </header>
 
         <main className="max-w-lg mx-auto px-4 py-8">
+          {/* Logo corporativo */}
+          <div className="text-center mb-8">
+            <img
+              src="/logo-euforia.png"
+              alt="Euforia Events"
+              className="h-32 mx-auto mb-8 opacity-90"
+            />
+          </div>
+
           <div className="text-center mb-8">
             <div className="w-16 h-16 bg-primary-600/20 rounded-full flex items-center justify-center mx-auto mb-4">
               <User className="w-8 h-8 text-primary-400" />

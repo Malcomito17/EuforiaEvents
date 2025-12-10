@@ -1,12 +1,12 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import { 
-  ArrowLeft, 
-  Music, 
-  Clock, 
-  Star, 
-  AlertTriangle, 
-  CheckCircle, 
+import {
+  ArrowLeft,
+  Music,
+  Clock,
+  Star,
+  AlertTriangle,
+  CheckCircle,
   XCircle,
   RefreshCw,
   Filter,
@@ -14,11 +14,29 @@ import {
   Wifi,
   WifiOff,
   Settings,
-  ExternalLink
+  ExternalLink,
+  GripVertical
 } from 'lucide-react'
 import { clsx } from 'clsx'
 import { eventsApi, musicadjApi, SongRequest, SongRequestStatus, MusicadjConfig, Event, MusicadjStats } from '@/lib/api'
 import { connectSocket, disconnectSocket, subscribeMusicadj, SongRequestEvent } from '@/lib/socket'
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core'
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 
 // Status configuration
 const STATUS_CONFIG: Record<SongRequestStatus, { label: string; color: string; bgColor: string; icon: typeof Clock }> = {
@@ -125,20 +143,67 @@ export function MusicaDJPage() {
     }
   }, [eventId, loadData])
   
+  // Drag & Drop sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8, // 8px de movimiento antes de activar drag
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  )
+
   // Update request status
   const handleStatusChange = async (requestId: string, newStatus: SongRequestStatus) => {
     if (!eventId) return
-    
+
     try {
       await musicadjApi.updateRequest(eventId, requestId, { status: newStatus })
       // Optimistic update
-      setRequests(prev => prev.map(r => 
+      setRequests(prev => prev.map(r =>
         r.id === requestId ? { ...r, status: newStatus } : r
       ))
       loadData() // Reload to get accurate stats
     } catch (err: any) {
       console.error('Error updating status:', err)
       setError(err.response?.data?.error || 'Error al actualizar estado')
+    }
+  }
+
+  // Handle drag end - reorder queue
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event
+
+    if (!over || active.id === over.id || !eventId) {
+      return
+    }
+
+    const oldIndex = filteredRequests.findIndex(r => r.id === active.id)
+    const newIndex = filteredRequests.findIndex(r => r.id === over.id)
+
+    if (oldIndex === -1 || newIndex === -1) {
+      return
+    }
+
+    // Optimistic update
+    const newOrder = arrayMove(filteredRequests, oldIndex, newIndex)
+    setRequests(prev => {
+      // Merge newOrder with items not in filteredRequests
+      const filteredIds = new Set(filteredRequests.map(r => r.id))
+      const otherItems = prev.filter(r => !filteredIds.has(r.id))
+      return [...newOrder, ...otherItems]
+    })
+
+    try {
+      // Send only the IDs of the reordered items to the backend
+      await musicadjApi.reorderQueue(eventId, newOrder.map(r => r.id))
+    } catch (err: any) {
+      console.error('Error reordering queue:', err)
+      setError(err.response?.data?.error || 'Error al reordenar cola')
+      // Reload on error to get correct order from server
+      loadData()
     }
   }
   
@@ -335,7 +400,7 @@ export function MusicaDJPage() {
           <div className="bg-white rounded-xl border border-gray-100 p-12 text-center">
             <Music className="h-12 w-12 text-gray-300 mx-auto mb-4" />
             <p className="text-gray-500">
-              {searchQuery 
+              {searchQuery
                 ? 'No se encontraron pedidos con esos criterios'
                 : activeTab === 'active'
                   ? 'No hay pedidos activos. ¡Esperando nuevos pedidos!'
@@ -343,7 +408,30 @@ export function MusicaDJPage() {
               }
             </p>
           </div>
+        ) : activeTab === 'active' ? (
+          // Drag & Drop enabled for "active" tab only
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={filteredRequests.map(r => r.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              {filteredRequests.map(request => (
+                <SortableRequestCard
+                  key={request.id}
+                  request={request}
+                  onStatusChange={handleStatusChange}
+                  formatTime={formatTime}
+                  timeAgo={timeAgo}
+                />
+              ))}
+            </SortableContext>
+          </DndContext>
         ) : (
+          // No drag & drop for other tabs
           filteredRequests.map(request => (
             <RequestCard
               key={request.id}
@@ -359,15 +447,55 @@ export function MusicaDJPage() {
   )
 }
 
-// Request Card Component
-interface RequestCardProps {
+// Sortable Request Card (with drag & drop)
+interface SortableRequestCardProps {
   request: SongRequest
   onStatusChange: (id: string, status: SongRequestStatus) => void
   formatTime: (date: string) => string
   timeAgo: (date: string) => string
 }
 
-function RequestCard({ request, onStatusChange, formatTime, timeAgo }: RequestCardProps) {
+function SortableRequestCard({ request, onStatusChange, formatTime, timeAgo }: SortableRequestCardProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: request.id })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  }
+
+  return (
+    <div ref={setNodeRef} style={style}>
+      <RequestCard
+        request={request}
+        onStatusChange={onStatusChange}
+        formatTime={formatTime}
+        timeAgo={timeAgo}
+        dragHandleProps={{ ...attributes, ...listeners }}
+        isDraggable
+      />
+    </div>
+  )
+}
+
+// Request Card Component
+interface RequestCardProps {
+  request: SongRequest
+  onStatusChange: (id: string, status: SongRequestStatus) => void
+  formatTime: (date: string) => string
+  timeAgo: (date: string) => string
+  dragHandleProps?: any
+  isDraggable?: boolean
+}
+
+function RequestCard({ request, onStatusChange, formatTime, timeAgo, dragHandleProps, isDraggable = false }: RequestCardProps) {
   const statusConfig = STATUS_CONFIG[request.status]
   const StatusIcon = statusConfig.icon
   
@@ -396,6 +524,16 @@ function RequestCard({ request, onStatusChange, formatTime, timeAgo }: RequestCa
     )}>
       <div className="p-4">
         <div className="flex items-start gap-4">
+          {/* Drag handle */}
+          {isDraggable && (
+            <div
+              {...dragHandleProps}
+              className="flex items-center justify-center w-8 cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600 transition-colors flex-shrink-0"
+            >
+              <GripVertical className="h-5 w-5" />
+            </div>
+          )}
+
           {/* Album art */}
           <div className="w-16 h-16 rounded-lg bg-gray-200 overflow-hidden flex-shrink-0">
             {request.albumArtUrl ? (

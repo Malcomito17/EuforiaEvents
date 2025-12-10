@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { eventsApi, venuesApi, clientsApi, Event } from '@/lib/api'
-import { Calendar, Building2, Users, Plus, ArrowRight } from 'lucide-react'
+import { eventsApi, venuesApi, clientsApi, usersApi, Event } from '@/lib/api'
+import { Calendar, Building2, Users, UserCog, Plus, ArrowRight } from 'lucide-react'
 import clsx from 'clsx'
 
 interface Stats {
@@ -9,6 +9,7 @@ interface Stats {
   activeEvents: number
   totalVenues: number
   totalClients: number
+  totalUsers: number
 }
 
 export function DashboardPage() {
@@ -22,10 +23,11 @@ export function DashboardPage() {
 
   const loadData = async () => {
     try {
-      const [eventsRes, venuesRes, clientsRes] = await Promise.all([
+      const [eventsRes, venuesRes, clientsRes, usersRes] = await Promise.all([
         eventsApi.list({ limit: 5 }),
         venuesApi.list(),
         clientsApi.list(),
+        usersApi.list(),
       ])
 
       setStats({
@@ -33,6 +35,7 @@ export function DashboardPage() {
         activeEvents: eventsRes.data.events.filter(e => e.status === 'ACTIVE').length,
         totalVenues: venuesRes.data.total,
         totalClients: clientsRes.data.total,
+        totalUsers: usersRes.data.pagination.total,
       })
       setRecentEvents(eventsRes.data.events)
     } catch (error) {
@@ -78,8 +81,8 @@ export function DashboardPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+        <Link to="/events" className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
           <div className="flex items-center gap-4">
             <div className="p-3 bg-primary-100 rounded-lg">
               <Calendar className="h-6 w-6 text-primary-600" />
@@ -89,9 +92,9 @@ export function DashboardPage() {
               <p className="text-2xl font-bold text-gray-900">{stats?.totalEvents || 0}</p>
             </div>
           </div>
-        </div>
+        </Link>
 
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+        <Link to="/events" className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
           <div className="flex items-center gap-4">
             <div className="p-3 bg-green-100 rounded-lg">
               <Calendar className="h-6 w-6 text-green-600" />
@@ -101,9 +104,9 @@ export function DashboardPage() {
               <p className="text-2xl font-bold text-gray-900">{stats?.activeEvents || 0}</p>
             </div>
           </div>
-        </div>
+        </Link>
 
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+        <Link to="/venues" className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
           <div className="flex items-center gap-4">
             <div className="p-3 bg-blue-100 rounded-lg">
               <Building2 className="h-6 w-6 text-blue-600" />
@@ -113,9 +116,9 @@ export function DashboardPage() {
               <p className="text-2xl font-bold text-gray-900">{stats?.totalVenues || 0}</p>
             </div>
           </div>
-        </div>
+        </Link>
 
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+        <Link to="/clients" className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
           <div className="flex items-center gap-4">
             <div className="p-3 bg-orange-100 rounded-lg">
               <Users className="h-6 w-6 text-orange-600" />
@@ -125,7 +128,19 @@ export function DashboardPage() {
               <p className="text-2xl font-bold text-gray-900">{stats?.totalClients || 0}</p>
             </div>
           </div>
-        </div>
+        </Link>
+
+        <Link to="/users" className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-purple-100 rounded-lg">
+              <UserCog className="h-6 w-6 text-purple-600" />
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Usuarios</p>
+              <p className="text-2xl font-bold text-gray-900">{stats?.totalUsers || 0}</p>
+            </div>
+          </div>
+        </Link>
       </div>
 
       {/* Recent Events */}

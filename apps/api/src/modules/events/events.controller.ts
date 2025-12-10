@@ -82,6 +82,9 @@ export const eventController = {
               eventName: event.eventData.eventName,
               eventType: event.eventData.eventType,
               hashtag: event.eventData.hashtag,
+              primaryColor: event.eventData.primaryColor,
+              secondaryColor: event.eventData.secondaryColor,
+              accentColor: event.eventData.accentColor,
             }
           : null,
         venue: event.venue

@@ -1,0 +1,155 @@
+{
+  "es": {
+    "common": {
+      "loading": "Cargando...",
+      "error": "Ocurrió un error",
+      "success": "¡Listo!",
+      "cancel": "Cancelar",
+      "confirm": "Confirmar",
+      "close": "Cerrar"
+    },
+    "musicadj": {
+      "search": {
+        "placeholder": "Buscá tu tema favorito...",
+        "noResults": "No encontramos ese tema",
+        "searching": "Buscando...",
+        "spotifyBadge": "Desde Spotify",
+        "manualEntry": "Entrada manual"
+      },
+      "request": {
+        "success": "¡Tu pedido fue enviado!",
+        "successMessage": "El DJ verá tu solicitud en su pantalla",
+        "cooldownError": "Debes esperar {seconds} segundos antes de pedir otro tema",
+        "alreadyQueued": "Este tema ya está en cola",
+        "submitButton": "Enviar pedido"
+      },
+      "myRequests": {
+        "title": "Mis pedidos",
+        "empty": "No tenés pedidos",
+        "emptyMessage": "Todavía no pediste ningún tema en este evento",
+        "pending": "Pendientes",
+        "played": "Reproducidos",
+        "total": "Total",
+        "highlighted": "El DJ destacó tu pedido",
+        "urgent": "¡Tu pedido está marcado como urgente!",
+        "completed": "Este tema ya fue reproducido",
+        "discarded": "Este pedido fue descartado por el DJ"
+      }
+    },
+    "karaokeya": {
+      "search": {
+        "placeholder": "Buscá tu tema de karaoke...",
+        "noResults": "No encontramos ese tema",
+        "searching": "Buscando en YouTube...",
+        "popularBadge": "★ Otras estrellas eligieron anteriormente",
+        "fromYoutube": "Desde YouTube",
+        "fromCatalog": "De nuestro catálogo"
+      },
+      "request": {
+        "success": "¡Tu pedido de karaoke fue enviado!",
+        "successMessage": "Te llamaremos cuando sea tu turno",
+        "cooldownError": "Debes esperar {seconds} segundos antes de pedir otro tema",
+        "maxReachedError": "Alcanzaste el límite de {max} temas por persona",
+        "alreadyQueued": "Este tema ya está en tu cola",
+        "submitButton": "Pedir tema",
+        "turnNumber": "Turno #{number}"
+      },
+      "myQueue": {
+        "title": "Mi cola de karaoke",
+        "empty": "No tenés temas en cola",
+        "emptyMessage": "Pedí un tema para empezar a cantar",
+        "yourTurn": "¡ES TU TURNO!",
+        "nextUp": "Próximamente",
+        "waiting": "En espera",
+        "completed": "Completado",
+        "cancelled": "Cancelado",
+        "position": "Posición #{pos}"
+      }
+    }
+  },
+  "en": {
+    "common": {
+      "loading": "Loading...",
+      "error": "An error occurred",
+      "success": "Done!",
+      "cancel": "Cancel",
+      "confirm": "Confirm",
+      "close": "Close"
+    },
+    "musicadj": {
+      "search": {
+        "placeholder": "Search your favorite song...",
+        "noResults": "We couldn't find that song",
+        "searching": "Searching...",
+        "spotifyBadge": "From Spotify",
+        "manualEntry": "Manual entry"
+      },
+      "request": {
+        "success": "Your request was submitted!",
+        "successMessage": "The DJ will see your request",
+        "cooldownError": "You must wait {seconds} seconds before requesting another song",
+        "alreadyQueued": "This song is already in the queue",
+        "submitButton": "Submit request"
+      },
+      "myRequests": {
+        "title": "My requests",
+        "empty": "You have no requests",
+        "emptyMessage": "You haven't requested any songs yet",
+        "pending": "Pending",
+        "played": "Played",
+        "total": "Total"
+      }
+    },
+    "karaokeya": {
+      "search": {
+        "placeholder": "Search your karaoke song...",
+        "noResults": "We couldn't find that song",
+        "searching": "Searching on YouTube...",
+        "popularBadge": "★ Previously chosen by other stars",
+        "fromYoutube": "From YouTube",
+        "fromCatalog": "From our catalog"
+      },
+      "request": {
+        "success": "Your karaoke request was submitted!",
+        "successMessage": "We'll call you when it's your turn",
+        "cooldownError": "You must wait {seconds} seconds before requesting another song",
+        "maxReachedError": "You've reached the limit of {max} songs per person",
+        "alreadyQueued": "This song is already in your queue",
+        "submitButton": "Request song",
+        "turnNumber": "Turn #{number}"
+      },
+      "myQueue": {
+        "title": "My karaoke queue",
+        "empty": "You have no songs in queue",
+        "emptyMessage": "Request a song to start singing",
+        "yourTurn": "IT'S YOUR TURN!",
+        "nextUp": "Coming up",
+        "waiting": "Waiting",
+        "completed": "Completed",
+        "cancelled": "Cancelled",
+        "position": "Position #{pos}"
+      }
+    }
+  },
+  "formal": {
+    "musicadj": {
+      "search": {
+        "placeholder": "Ingrese el título de la canción que desea solicitar..."
+      },
+      "request": {
+        "success": "Su solicitud ha sido registrada",
+        "successMessage": "El operador recibirá su pedido"
+      }
+    },
+    "karaokeya": {
+      "search": {
+        "placeholder": "Ingrese el título de la canción que desea interpretar...",
+        "popularBadge": "★ Seleccionado anteriormente"
+      },
+      "request": {
+        "success": "Su solicitud ha sido registrada",
+        "successMessage": "Será convocado cuando corresponda su turno"
+      }
+    }
+  }
+}

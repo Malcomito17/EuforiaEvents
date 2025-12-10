@@ -21,6 +21,9 @@ const envSchema = z.object({
   // Spotify (opcional para MVP)
   SPOTIFY_CLIENT_ID: z.string().optional(),
   SPOTIFY_CLIENT_SECRET: z.string().optional(),
+
+  // YouTube API (para KARAOKEYA)
+  YOUTUBE_API_KEY: z.string().optional(),
 })
 
 function loadEnv() {

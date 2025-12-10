@@ -5,10 +5,14 @@ import { Layout } from '@/components/Layout'
 import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { LoginPage } from '@/pages/Login'
 import { DashboardPage } from '@/pages/Dashboard'
-import { EventListPage, EventFormPage, EventDetailPage, EventQRPage } from '@/pages/Events'
+import { ChangePasswordPage } from '@/pages/ChangePassword'
+import { EventListPage, EventFormPage, EventDetailPage, EventQRPage, EventSettingsPage } from '@/pages/Events'
 import { VenueListPage, VenueFormPage } from '@/pages/Venues'
 import { ClientListPage, ClientFormPage } from '@/pages/Clients'
 import { MusicaDJPage } from '@/pages/MusicaDJ'
+import { KaraokeyaPage } from '@/pages/Karaokeya'
+import { SongListPage, SongFormPage } from '@/pages/KaraokeSongs'
+import { UserListPage, UserFormPage } from '@/pages/Users'
 
 function App() {
   const { checkAuth, isAuthenticated } = useAuthStore()
@@ -34,6 +38,18 @@ function App() {
           <ProtectedRoute>
             <Layout>
               <DashboardPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Change Password */}
+      <Route
+        path="/change-password"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <ChangePasswordPage />
             </Layout>
           </ProtectedRoute>
         }
@@ -90,6 +106,16 @@ function App() {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/events/:id/settings"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <EventSettingsPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
 
       {/* MUSICADJ */}
       <Route
@@ -98,6 +124,50 @@ function App() {
           <ProtectedRoute>
             <Layout>
               <MusicaDJPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      {/* KARAOKEYA */}
+      <Route
+        path="/events/:eventId/karaokeya"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <KaraokeyaPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Karaoke Songs */}
+      <Route
+        path="/karaoke-songs"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <SongListPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/karaoke-songs/new"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <SongFormPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/karaoke-songs/:id/edit"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <SongFormPage />
             </Layout>
           </ProtectedRoute>
         }
@@ -162,6 +232,38 @@ function App() {
           <ProtectedRoute>
             <Layout>
               <ClientFormPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Users */}
+      <Route
+        path="/users"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <UserListPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/users/new"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <UserFormPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/users/:id/edit"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <UserFormPage />
             </Layout>
           </ProtectedRoute>
         }

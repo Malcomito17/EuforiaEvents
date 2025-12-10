@@ -78,6 +78,10 @@ export interface EventData {
   hashtag: string | null
   spotifyPlaylist: string | null
   notes: string | null
+  // Colores del tema
+  primaryColor?: string
+  secondaryColor?: string
+  accentColor?: string
 }
 
 export interface Event {
@@ -119,6 +123,9 @@ export interface CreateEventInput {
     hashtag?: string
     spotifyPlaylist?: string
     notes?: string
+    primaryColor?: string
+    secondaryColor?: string
+    accentColor?: string
   }
 }
 
@@ -145,8 +152,8 @@ export const eventsApi = {
   
   update: (id: string, data: Partial<CreateEventInput>) =>
     api.patch<Event>(`/events/${id}`, data),
-  
-  updateData: (id: string, data: Partial<EventData>) =>
+
+  updateEventData: (id: string, data: Partial<EventData>) =>
     api.patch<EventData>(`/events/${id}/data`, data),
   
   updateStatus: (id: string, status: string) =>
@@ -345,4 +352,225 @@ export const musicadjApi = {
   // Reorder (drag & drop)
   reorderRequests: (eventId: string, orderedIds: string[]) =>
     api.post(`/events/${eventId}/musicadj/requests/reorder`, { orderedIds }),
+}
+
+// ============================================
+// KARAOKEYA
+// ============================================
+
+export type KaraokeRequestStatus = 'QUEUED' | 'CALLED' | 'ON_STAGE' | 'COMPLETED' | 'NO_SHOW' | 'CANCELLED'
+
+export interface KaraokeRequest {
+  id: string
+  eventId: string
+  guestId: string
+  songId: string | null
+  title: string
+  artist: string | null
+  turnNumber: number
+  queuePosition: number
+  status: KaraokeRequestStatus
+  createdAt: string
+  calledAt: string | null
+  guest: {
+    id: string
+    displayName: string
+    email: string
+    whatsapp: string | null
+  }
+  song: {
+    id: string
+    title: string
+    artist: string | null
+    youtubeId: string
+    youtubeShareUrl: string
+    thumbnailUrl: string | null
+    duration: number | null
+    timesRequested: number
+  } | null
+}
+
+export interface KaraokeyaConfig {
+  eventId: string
+  enabled: boolean
+  cooldownSeconds: number
+  maxPerPerson: number
+  showQueueToClient: boolean
+  youtubeAvailable: boolean
+}
+
+export interface KaraokeRequestFilters {
+  status?: KaraokeRequestStatus | KaraokeRequestStatus[]
+  search?: string
+  limit?: number
+  offset?: number
+}
+
+export interface UpdateKaraokeRequestInput {
+  status?: KaraokeRequestStatus
+}
+
+export interface KaraokeyaStats {
+  total: number
+  queued: number
+  called: number
+  onStage: number
+  completed: number
+  noShow: number
+  cancelled: number
+}
+
+export const karaokeyaApi = {
+  // Config
+  getConfig: (eventId: string) =>
+    api.get<KaraokeyaConfig>(`/events/${eventId}/karaokeya/config`),
+
+  updateConfig: (eventId: string, data: Partial<KaraokeyaConfig>) =>
+    api.patch<KaraokeyaConfig>(`/events/${eventId}/karaokeya/config`, data),
+
+  // Stats
+  getStats: (eventId: string) =>
+    api.get<KaraokeyaStats>(`/events/${eventId}/karaokeya/stats`),
+
+  // Requests
+  listRequests: (eventId: string, filters?: KaraokeRequestFilters) =>
+    api.get<{ requests: KaraokeRequest[]; total: number }>(
+      `/events/${eventId}/karaokeya/requests`,
+      { params: filters }
+    ),
+
+  getRequest: (eventId: string, requestId: string) =>
+    api.get<KaraokeRequest>(`/events/${eventId}/karaokeya/requests/${requestId}`),
+
+  updateRequest: (eventId: string, requestId: string, data: UpdateKaraokeRequestInput) =>
+    api.patch<KaraokeRequest>(`/events/${eventId}/karaokeya/requests/${requestId}`, data),
+
+  deleteRequest: (eventId: string, requestId: string) =>
+    api.delete(`/events/${eventId}/karaokeya/requests/${requestId}`),
+
+  // Reorder (drag & drop)
+  reorderQueue: (eventId: string, requestIds: string[]) =>
+    api.post(`/events/${eventId}/karaokeya/requests/reorder`, { requestIds }),
+}
+
+// ============================================
+// KARAOKE SONGS (CRUD)
+// ============================================
+
+export type Difficulty = 'FACIL' | 'MEDIO' | 'DIFICIL' | 'PAVAROTTI'
+
+export interface KaraokeSong {
+  id: string
+  title: string
+  artist: string
+  youtubeId: string
+  youtubeShareUrl: string
+  thumbnailUrl: string | null
+  duration: number | null
+  source: string
+  language: string
+  difficulty: Difficulty
+  ranking: number  // 1-5
+  opinion: string | null
+  likesCount: number
+  moods: string  // JSON
+  tags: string   // JSON
+  timesRequested: number
+  timesCompleted: number
+  isActive: boolean
+  createdAt: string
+  updatedAt: string
+  _count?: {
+    requests: number
+    likes: number
+  }
+}
+
+export interface CreateKaraokeSongInput {
+  title: string
+  artist: string
+  youtubeId: string
+  youtubeShareUrl?: string
+  thumbnailUrl?: string | null
+  duration?: number | null
+  language?: 'ES' | 'EN' | 'PT'
+  difficulty?: Difficulty
+  ranking?: number
+  opinion?: string | null
+  source?: string
+  moods?: string
+  tags?: string
+}
+
+export interface ListSongsFilters {
+  search?: string
+  difficulty?: Difficulty
+  minRanking?: number
+  language?: 'ES' | 'EN' | 'PT'
+  sortBy?: 'title' | 'ranking' | 'likesCount' | 'timesRequested' | 'createdAt'
+  sortOrder?: 'asc' | 'desc'
+  includeInactive?: boolean
+  limit?: number
+  offset?: number
+}
+
+export const karaokeSongsApi = {
+  list: (filters?: ListSongsFilters) =>
+    api.get<{ songs: KaraokeSong[]; pagination: { total: number; limit: number; offset: number; hasMore: boolean } }>('/karaokeya/songs', { params: filters }),
+
+  get: (id: string) =>
+    api.get<KaraokeSong>(`/karaokeya/songs/${id}`),
+
+  create: (data: CreateKaraokeSongInput) =>
+    api.post<KaraokeSong>('/karaokeya/songs', data),
+
+  update: (id: string, data: Partial<CreateKaraokeSongInput>) =>
+    api.patch<KaraokeSong>(`/karaokeya/songs/${id}`, data),
+
+  delete: (id: string) =>
+    api.delete(`/karaokeya/songs/${id}`),
+
+  reactivate: (id: string) =>
+    api.post<KaraokeSong>(`/karaokeya/songs/${id}/reactivate`),
+
+  toggleLike: (songId: string, guestId: string) =>
+    api.post<{ liked: boolean; likesCount: number }>(`/karaokeya/songs/${songId}/like`, { guestId }),
+
+  getLikeStatus: (songId: string, guestId: string) =>
+    api.get<{ liked: boolean }>(`/karaokeya/songs/${songId}/like-status`, { params: { guestId } }),
+
+  getGuestLikedSongs: (guestId: string, limit?: number) =>
+    api.get<{ songs: KaraokeSong[]; total: number }>(`/karaokeya/guests/${guestId}/liked-songs`, { params: { limit } }),
+}
+
+// ============================================
+// USERS
+// ============================================
+
+export type { User, Role, Module, Permission, CreateUserInput, UpdateUserInput } from './types/users'
+
+export const usersApi = {
+  list: (filters?: { role?: string; isActive?: boolean; search?: string; includeInactive?: boolean }) =>
+    api.get<{ users: any[]; pagination: any }>('/users', { params: filters }),
+  
+  get: (id: string) =>
+    api.get('/users/' + id),
+  
+  create: (data: any) =>
+    api.post('/users', data),
+  
+  update: (id: string, data: any) =>
+    api.patch('/users/' + id, data),
+  
+  updatePermissions: (id: string, permissions: any[]) =>
+    api.patch('/users/' + id + '/permissions', { permissions }),
+  
+  delete: (id: string) =>
+    api.delete('/users/' + id),
+  
+  reactivate: (id: string) =>
+    api.post('/users/' + id + '/reactivate'),
+  
+  getRolePreset: (role: string) =>
+    api.get('/users/roles/' + role + '/preset'),
 }
