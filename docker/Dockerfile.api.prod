@@ -68,11 +68,13 @@ LABEL description="API Backend for EUFORIA EVENTS (Production)"
 LABEL version="2.0"
 
 # Instalar solo dependencias runtime
+# IMPORTANTE: openssl1.1-compat-libs es necesario para Prisma
 RUN apk add --no-cache \
     curl \
     wget \
     tini \
-    dumb-init
+    dumb-init \
+    openssl1.1-compat-libs
 
 WORKDIR /app
 
