@@ -19,7 +19,7 @@ import {
 } from 'lucide-react'
 import { clsx } from 'clsx'
 import { eventsApi, karaokeyaApi, KaraokeRequest, KaraokeRequestStatus, KaraokeyaConfig, Event, KaraokeyaStats } from '@/lib/api'
-import { connectSocket, disconnectSocket, subscribeKaraokeya, KaraokeRequestEvent } from '@/lib/socket'
+import { connectSocket, disconnectSocket, subscribeKaraokeya } from '@/lib/socket'
 import {
   DndContext,
   closestCenter,
@@ -65,7 +65,6 @@ export function KaraokeyaPage() {
 
   // State
   const [event, setEvent] = useState<Event | null>(null)
-  const [config, setConfig] = useState<KaraokeyaConfig | null>(null)
   const [requests, setRequests] = useState<KaraokeRequest[]>([])
   const [stats, setStats] = useState<KaraokeyaStats | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -83,16 +82,14 @@ export function KaraokeyaPage() {
     try {
       setError(null)
 
-      // Load event, config, requests, and stats in parallel
-      const [eventRes, configRes, requestsRes, statsRes] = await Promise.all([
+      // Load event, requests, and stats in parallel
+      const [eventRes, requestsRes, statsRes] = await Promise.all([
         eventsApi.get(eventId),
-        karaokeyaApi.getConfig(eventId),
         karaokeyaApi.listRequests(eventId, { limit: 100 }),
         karaokeyaApi.getStats(eventId),
       ])
 
       setEvent(eventRes.data)
-      setConfig(configRes.data)
       setRequests(requestsRes.data.requests)
       setStats(statsRes.data)
     } catch (err: any) {

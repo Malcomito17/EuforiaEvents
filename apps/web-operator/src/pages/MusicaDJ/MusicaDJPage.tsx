@@ -9,7 +9,6 @@ import {
   CheckCircle,
   XCircle,
   RefreshCw,
-  Filter,
   Search,
   Wifi,
   WifiOff,
@@ -19,7 +18,7 @@ import {
 } from 'lucide-react'
 import { clsx } from 'clsx'
 import { eventsApi, musicadjApi, SongRequest, SongRequestStatus, MusicadjConfig, Event, MusicadjStats } from '@/lib/api'
-import { connectSocket, disconnectSocket, subscribeMusicadj, SongRequestEvent } from '@/lib/socket'
+import { connectSocket, disconnectSocket, subscribeMusicadj } from '@/lib/socket'
 import {
   DndContext,
   closestCenter,
@@ -63,7 +62,6 @@ export function MusicaDJPage() {
   
   // State
   const [event, setEvent] = useState<Event | null>(null)
-  const [config, setConfig] = useState<MusicadjConfig | null>(null)
   const [requests, setRequests] = useState<SongRequest[]>([])
   const [stats, setStats] = useState<MusicadjStats | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -80,16 +78,14 @@ export function MusicaDJPage() {
     
     try {
       setError(null)
-      
-      // Load event, config, and requests in parallel
-      const [eventRes, configRes, requestsRes] = await Promise.all([
+
+      // Load event and requests in parallel
+      const [eventRes, requestsRes] = await Promise.all([
         eventsApi.get(eventId),
-        musicadjApi.getConfig(eventId),
         musicadjApi.listRequests(eventId, { limit: 100 }),
       ])
-      
+
       setEvent(eventRes.data)
-      setConfig(configRes.data)
       setRequests(requestsRes.data.requests)
       setStats(requestsRes.data.stats)
     } catch (err: any) {
@@ -198,7 +194,7 @@ export function MusicaDJPage() {
 
     try {
       // Send only the IDs of the reordered items to the backend
-      await musicadjApi.reorderQueue(eventId, newOrder.map(r => r.id))
+      await musicadjApi.reorderRequests(eventId, newOrder.map(r => r.id))
     } catch (err: any) {
       console.error('Error reordering queue:', err)
       setError(err.response?.data?.error || 'Error al reordenar cola')

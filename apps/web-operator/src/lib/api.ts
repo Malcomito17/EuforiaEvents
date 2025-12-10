@@ -547,7 +547,7 @@ export const karaokeSongsApi = {
 // USERS
 // ============================================
 
-export type { User, Role, Module, Permission, CreateUserInput, UpdateUserInput } from './types/users'
+export type { Role, Module, Permission, CreateUserInput, UpdateUserInput } from './types/users'
 
 export const usersApi = {
   list: (filters?: { role?: string; isActive?: boolean; search?: string; includeInactive?: boolean }) =>

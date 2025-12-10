@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { eventsApi, Event } from '@/lib/api'
-import { Plus, Search, Filter, Calendar, QrCode, Copy, Trash2, MoreVertical } from 'lucide-react'
+import { Plus, Search, Filter, Calendar, QrCode, Copy, Trash2 } from 'lucide-react'
 import clsx from 'clsx'
 
 export function EventListPage() {

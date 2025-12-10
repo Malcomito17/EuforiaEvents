@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { ArrowLeft, Save, Loader2, Star, ExternalLink } from 'lucide-react'
-import { karaokeSongsApi, type CreateKaraokeSongInput, type KaraokeSong, type Difficulty } from '../../lib/api'
+import { karaokeSongsApi, type CreateKaraokeSongInput, type Difficulty } from '../../lib/api'
 import clsx from 'clsx'
 
 type FormData = {
