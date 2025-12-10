@@ -1,0 +1,298 @@
+# =============================================================================
+# EUFORIA EVENTS - Production Docker Compose
+# =============================================================================
+#
+# Optimizado para Raspberry Pi 4+ con Cloudflare Tunnel
+#
+# Uso:
+#   docker-compose -f docker-compose.prod.yml up -d
+#   docker-compose -f docker-compose.prod.yml logs -f
+#   docker-compose -f docker-compose.prod.yml down
+#
+# Requisitos:
+#   - .env configurado con variables de producción
+#   - Cloudflare Tunnel corriendo (setup-cloudflare-tunnel.sh)
+#   - Docker y Docker Compose instalados
+#
+# =============================================================================
+
+version: '3.8'
+
+name: euforia-events-prod
+
+services:
+  # ==========================================================================
+  # API Backend (Node.js + Express + Prisma)
+  # ==========================================================================
+  api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.api.prod
+      platforms:
+        - linux/arm64  # Raspberry Pi 4
+        - linux/amd64  # Testing en Mac/PC
+    image: euforia-events-api:latest
+    container_name: euforia-api-prod
+    restart: always
+
+    # Resource limits para Raspberry Pi 4 (4GB RAM)
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'      # Max 2 cores
+          memory: 1024M    # Max 1GB RAM
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+    # Solo exponer internamente (Nginx hace de proxy)
+    expose:
+      - "3000"
+
+    # Volúmenes persistentes
+    volumes:
+      # Base de datos SQLite (persistente)
+      - ./data/db:/app/apps/api/prisma/data
+      # Uploads (si los hay en el futuro)
+      - ./data/uploads:/app/apps/api/uploads
+      # Logs
+      - ./data/logs:/app/apps/api/logs
+
+    # Variables de entorno desde .env
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=file:./prisma/data/production.db
+      - PORT=3000
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN:-7d}
+      - BCRYPT_ROUNDS=${BCRYPT_ROUNDS:-10}
+      - CLIENT_URL=${PUBLIC_DOMAIN}
+      - OPERATOR_URL=${OPERATOR_DOMAIN:-${PUBLIC_DOMAIN}}
+      - PUBLIC_DOMAIN=${PUBLIC_DOMAIN}
+      - SPOTIFY_CLIENT_ID=${SPOTIFY_CLIENT_ID:-}
+      - SPOTIFY_CLIENT_SECRET=${SPOTIFY_CLIENT_SECRET:-}
+      - YOUTUBE_API_KEY=${YOUTUBE_API_KEY:-}
+
+    networks:
+      - euforia-network
+
+    # Healthcheck
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+    # Logging limitado para no llenar disco
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ==========================================================================
+  # Web Client (Invitados - Acceso público vía QR)
+  # ==========================================================================
+  web-client:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.web-client.prod
+      platforms:
+        - linux/arm64
+        - linux/amd64
+      args:
+        - VITE_API_URL=${PUBLIC_DOMAIN}
+        - VITE_WS_URL=${PUBLIC_DOMAIN}
+    image: euforia-events-web-client:latest
+    container_name: euforia-web-client-prod
+    restart: always
+
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+
+    expose:
+      - "80"
+
+    networks:
+      - euforia-network
+
+    depends_on:
+      api:
+        condition: service_healthy
+
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "2"
+
+  # ==========================================================================
+  # Web Operator (Panel de control)
+  # ==========================================================================
+  web-operator:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.web-operator.prod
+      platforms:
+        - linux/arm64
+        - linux/amd64
+      args:
+        - VITE_API_URL=${PUBLIC_DOMAIN}
+        - VITE_WS_URL=${PUBLIC_DOMAIN}
+    image: euforia-events-web-operator:latest
+    container_name: euforia-web-operator-prod
+    restart: always
+
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+
+    expose:
+      - "80"
+
+    networks:
+      - euforia-network
+
+    depends_on:
+      api:
+        condition: service_healthy
+
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "2"
+
+  # ==========================================================================
+  # Nginx Reverse Proxy
+  # ==========================================================================
+  nginx:
+    image: nginx:alpine
+    container_name: euforia-nginx-prod
+    restart: always
+
+    # Puerto expuesto para Cloudflare Tunnel
+    ports:
+      - "80:80"
+
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 128M
+        reservations:
+          cpus: '0.1'
+          memory: 64M
+
+    volumes:
+      - ./docker/nginx/nginx.prod.conf:/etc/nginx/nginx.conf:ro
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./data/nginx-cache:/var/cache/nginx
+      - ./data/logs/nginx:/var/log/nginx
+
+    networks:
+      - euforia-network
+
+    depends_on:
+      - api
+      - web-client
+      - web-operator
+
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/health"]
+      interval: 20s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+# ==============================================================================
+# Networks
+# ==============================================================================
+networks:
+  euforia-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+# ==============================================================================
+# Volumes (opcional - si prefieres named volumes en lugar de bind mounts)
+# ==============================================================================
+# volumes:
+#   db-data:
+#     driver: local
+#   uploads-data:
+#     driver: local
+#   nginx-cache:
+#     driver: local
+#   logs:
+#     driver: local
+
+# ==============================================================================
+# NOTAS DE PRODUCCIÓN
+# ==============================================================================
+#
+# 1. CLOUDFLARE TUNNEL
+#    - Debe apuntar a http://localhost:80 (servicio nginx)
+#    - El tunnel maneja HTTPS automáticamente
+#    - Ver: scripts/setup-cloudflare-tunnel.sh
+#
+# 2. PERSISTENCIA
+#    - Base de datos: ./data/db/production.db
+#    - Logs: ./data/logs/
+#    - Nginx cache: ./data/nginx-cache/
+#    - IMPORTANTE: Hacer backup de ./data/ regularmente
+#
+# 3. RECURSOS
+#    - Total RAM usado: ~1.5-2GB (de 4GB disponibles en Pi 4)
+#    - Dejar ~2GB libres para sistema y cache
+#    - Swap recomendado: 2GB (ya configurado en Pi OS)
+#
+# 4. MONITOREO
+#    - Logs: docker-compose -f docker-compose.prod.yml logs -f
+#    - Stats: docker stats
+#    - Health: docker ps
+#
+# 5. ACTUALIZACIÓN
+#    - Hacer backup de ./data/
+#    - Pull nuevo código: git pull
+#    - Rebuild: docker-compose -f docker-compose.prod.yml build
+#    - Restart: docker-compose -f docker-compose.prod.yml up -d
+#
+# 6. BACKUP
+#    - Script automático: scripts/backup-euforia.sh
+#    - Cron diario recomendado
+#
+# ==============================================================================

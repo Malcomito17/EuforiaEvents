@@ -17,6 +17,9 @@ const envSchema = z.object({
   // URLs
   CLIENT_URL: z.string().url().optional(),
   OPERATOR_URL: z.string().url().optional(),
+
+  // Public domain (for production with Cloudflare Tunnel)
+  PUBLIC_DOMAIN: z.string().url().optional(),
   
   // Spotify (opcional para MVP)
   SPOTIFY_CLIENT_ID: z.string().optional(),

@@ -40,9 +40,13 @@ const DEFAULT_OPTIONS: QRGenerateOptions = {
 
 /**
  * Genera la URL de acceso público para un evento
+ * Prioridad: PUBLIC_DOMAIN (producción) > CLIENT_URL (desarrollo) > localhost
  */
 export function generateEventUrl(slug: string): string {
-  const baseUrl = env.CLIENT_URL || 'http://localhost:5173';
+  // Usar PUBLIC_DOMAIN si está configurado (producción con Cloudflare Tunnel)
+  // Fallback a CLIENT_URL (desarrollo local)
+  // Fallback final a localhost
+  const baseUrl = env.PUBLIC_DOMAIN || env.CLIENT_URL || 'http://localhost:5173';
   return `${baseUrl}/e/${slug}`;
 }
 
