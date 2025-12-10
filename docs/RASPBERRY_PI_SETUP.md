@@ -1,151 +1,375 @@
-# 🎉 EUFORIA EVENTS - Guía de Setup en Raspberry Pi
+# 🎉 EUFORIA EVENTS - Setup Completo en Raspberry Pi (DESDE CERO)
 
-**Configuración Específica - euforiaevents**
+**Guía completa de instalación desde la instalación del sistema operativo hasta el deployment en producción**
 
-Esta guía documenta el setup específico de EUFORIA EVENTS en tu Raspberry Pi con CasaOS.
+**Configuración Final**:
+- Usuario: `malcomito`
+- Hostname: `euforiaevents`
+- Dominio: `euforiateclog.cloud`
+- IP: `192.168.80.160` (estática)
 
-**Tiempo estimado**: 1-2 horas (con CasaOS ya instalado)
-
----
-
-## 📋 CONFIGURACIÓN ACTUAL
-
-### Hardware
-- **Raspberry Pi 4** (4GB RAM o superior)
-- **CasaOS** ya instalado y funcional
-- **Red**: IP estática configurada
-- **Almacenamiento**: SSD recomendado (mejor que microSD)
-
-### Software
-- **Usuario**: `malcomito`
-- **Hostname**: `euforiaevents`
-- **Dominio**: `euforiateclog.cloud` (Porkbun → Cloudflare)
-- **Acceso SSH**: Configurado
-
-### Credenciales
-- **Cloudflare**: Cuenta creada, dominio agregado
-- **Porkbun**: Dominio registrado, nameservers apuntando a Cloudflare
-- **Spotify**: Client ID y Secret (opcional para MUSICADJ)
+**Tiempo estimado total**: 2-3 horas
 
 ---
 
-## 📖 ÍNDICE
+## 📋 ÍNDICE
 
-1. [Estado Actual y Prerrequisitos](#1-estado-actual-y-prerrequisitos)
-2. [CasaOS y Docker](#2-casaos-y-docker)
-3. [Clonar Repositorio](#3-clonar-repositorio)
-4. [Configuración de Variables](#4-configuración-de-variables)
-5. [Cloudflare Tunnel](#5-cloudflare-tunnel)
-6. [Deploy de la Aplicación](#6-deploy-de-la-aplicación)
-7. [Verificación y Testing](#7-verificación-y-testing)
-8. [Mantenimiento](#8-mantenimiento)
+1. [FASE 0: Preparación y Materiales](#fase-0-preparación-y-materiales)
+2. [FASE 1: Instalación del Sistema Operativo](#fase-1-instalación-del-sistema-operativo)
+3. [FASE 2: Configuración Inicial del Sistema](#fase-2-configuración-inicial-del-sistema)
+4. [FASE 3: Instalación de Docker](#fase-3-instalación-de-docker)
+5. [FASE 4: Instalación de CasaOS (Opcional)](#fase-4-instalación-de-casaos-opcional)
+6. [FASE 5: Clonar Repositorio](#fase-5-clonar-repositorio)
+7. [FASE 6: Configuración de Variables de Entorno](#fase-6-configuración-de-variables-de-entorno)
+8. [FASE 7: Cloudflare Tunnel](#fase-7-cloudflare-tunnel)
+9. [FASE 8: Deploy de la Aplicación](#fase-8-deploy-de-la-aplicación)
+10. [FASE 9: Verificación y Testing](#fase-9-verificación-y-testing)
+11. [Mantenimiento](#mantenimiento)
+12. [Troubleshooting](#troubleshooting)
 
 ---
 
-## 1. ESTADO ACTUAL Y PRERREQUISITOS
+## FASE 0: Preparación y Materiales
 
-### ✅ Ya Completado
+### 🛠️ Hardware Necesario
 
-- ✅ Raspberry Pi con sistema operativo instalado
-- ✅ CasaOS instalado y funcionando
-- ✅ Usuario `malcomito` creado
-- ✅ Hostname `euforiaevents` configurado
-- ✅ IP estática configurada
-- ✅ SSH habilitado y accesible
-- ✅ Dominio `euforiateclog.cloud` registrado en Porkbun
-- ✅ Nameservers actualizados para apuntar a Cloudflare
+- **Raspberry Pi 4** (4GB RAM o superior recomendado)
+- **MicroSD Card** (16GB mínimo, 32GB+ recomendado) O mejor aún **SSD USB 3.0**
+- **Fuente de alimentación** USB-C 5V/3A oficial
+- **Cable Ethernet** (para configuración inicial, recomendado)
+- **Monitor + Cable HDMI** (opcional, solo para troubleshooting)
+- **Teclado USB** (opcional, solo para troubleshooting)
 
-### 🔍 Verificación de Acceso
+### 💻 Software Necesario (en tu Mac)
 
-Desde tu Mac, verificá que podés conectarte:
+- **Raspberry Pi Imager**: https://www.raspberrypi.com/software/
+- **Terminal** o cliente SSH (ya incluido en Mac)
+
+### ☁️ Cuentas Necesarias
+
+- [x] **GitHub**: Código del proyecto ya subido
+- [x] **Porkbun**: Dominio `euforiateclog.cloud` ya registrado
+- [x] **Cloudflare**: Cuenta creada, dominio agregado y activo
+- [ ] **Spotify Developer** (opcional): Para módulo MUSICADJ
+
+---
+
+## FASE 1: Instalación del Sistema Operativo
+
+### 1.1 Descargar Raspberry Pi Imager (en tu Mac)
 
 ```bash
-# Por hostname
-ssh malcomito@euforiaevents.local
+# Opción 1: Descargar desde el sitio oficial
+# https://www.raspberrypi.com/software/
 
-# O por IP estática (tu IP configurada)
-ssh malcomito@192.168.1.X
+# Opción 2: Instalar con Homebrew
+brew install --cask raspberry-pi-imager
 ```
 
-### 📋 Pendiente
+### 1.2 Preparar la MicroSD / SSD
 
-- ⏳ Verificar Docker en CasaOS
-- ⏳ Clonar repositorio EUFORIA EVENTS
-- ⏳ Configurar variables de entorno
-- ⏳ Configurar Cloudflare Tunnel
-- ⏳ Deploy de la aplicación
+1. **Abrir Raspberry Pi Imager**
+2. **Elegir dispositivo**: Raspberry Pi 4
+3. **Elegir OS**:
+   - Raspberry Pi OS (64-bit) **Lite** (recomendado para servidor)
+   - O Raspberry Pi OS (64-bit) **Desktop** (si querés interfaz gráfica)
+
+4. **Elegir Storage**: Seleccionar tu microSD o SSD
+
+### 1.3 Configuración Avanzada (IMPORTANTE)
+
+Antes de escribir, click en **⚙️ configuración avanzada**:
+
+```
+✅ Habilitar SSH
+   ○ Usar autenticación por contraseña
+
+✅ Configurar usuario y contraseña
+   Usuario: malcomito
+   Contraseña: [tu-contraseña-segura]
+
+✅ Configurar wireless LAN (si usás WiFi)
+   SSID: [nombre-de-tu-wifi]
+   Password: [password-wifi]
+   País: AR (o tu país)
+
+✅ Configurar opciones de localización
+   Zona horaria: America/Argentina/Buenos_Aires
+   Distribución de teclado: es (español)
+
+✅ Hostname
+   euforiaevents
+```
+
+### 1.4 Escribir en la SD/SSD
+
+1. Click en **"Escribir"** / **"Write"**
+2. Confirmar (se borrará todo el contenido)
+3. Esperar 5-10 minutos
+4. Cuando termine, expulsar la SD/SSD
+
+### 1.5 Primer Arranque
+
+1. **Insertar la microSD** (o conectar SSD USB) en la Raspberry Pi
+2. **Conectar cable Ethernet** al router (recomendado para setup inicial)
+3. **Conectar fuente de alimentación**
+4. **Esperar 2-3 minutos** para que arranque
 
 ---
 
-## 2. CASAOS Y DOCKER
+## FASE 2: Configuración Inicial del Sistema
 
-CasaOS viene con Docker preinstalado, pero necesitamos verificar que esté accesible desde CLI.
+### 2.1 Encontrar la IP de la Raspberry Pi
 
-### 2.1 Verificar Docker
+**Opción A: Usando el hostname** (si funciona mDNS)
+```bash
+# Desde tu Mac
+ping euforiaevents.local
+```
+
+**Opción B: Escanear la red**
+```bash
+# Desde tu Mac (instalar nmap si no lo tenés)
+brew install nmap
+
+# Escanear tu red local (ajustar el rango según tu red)
+nmap -sn 192.168.1.0/24 | grep -B 2 "Raspberry"
+
+# O ver en el router las conexiones activas
+```
+
+Deberías encontrar la IP, por ejemplo: `192.168.80.160`
+
+### 2.2 Conectar por SSH
+
+```bash
+# Desde tu Mac
+ssh malcomito@euforiaevents.local
+
+# O usando la IP
+ssh malcomito@192.168.80.160
+
+# Confirmar la huella digital (primera vez)
+# Escribir tu contraseña
+```
+
+### 2.3 Actualizar el Sistema
+
+```bash
+# Actualizar lista de paquetes
+sudo apt update
+
+# Actualizar paquetes instalados
+sudo apt upgrade -y
+
+# Instalar paquetes esenciales
+sudo apt install -y \
+  git \
+  curl \
+  wget \
+  nano \
+  vim \
+  htop \
+  net-tools \
+  ca-certificates \
+  gnupg \
+  lsb-release
+
+# Reiniciar (opcional pero recomendado)
+sudo reboot
+
+# Esperar 1 minuto y reconectar
+ssh malcomito@euforiaevents.local
+```
+
+### 2.4 Configurar IP Estática
+
+**Opción A: Usando NetworkManager (Raspberry Pi OS Bookworm)**
+
+```bash
+# Ver interfaces de red
+nmcli device status
+
+# Ver conexión actual
+nmcli connection show
+
+# Configurar IP estática (ajustar según tu red)
+# Nombre de conexión suele ser "Wired connection 1" o "eth0"
+sudo nmcli connection modify "Wired connection 1" \
+  ipv4.addresses 192.168.80.160/24 \
+  ipv4.gateway 192.168.80.1 \
+  ipv4.dns "8.8.8.8,8.8.4.4" \
+  ipv4.method manual
+
+# Aplicar cambios
+sudo nmcli connection up "Wired connection 1"
+
+# Verificar
+ip addr show eth0
+```
+
+**Opción B: Usando dhcpcd (Raspberry Pi OS Bullseye o anterior)**
+
+```bash
+# Editar configuración
+sudo nano /etc/dhcpcd.conf
+
+# Agregar al final (ajustar según tu red):
+interface eth0
+static ip_address=192.168.80.160/24
+static routers=192.168.80.1
+static domain_name_servers=8.8.8.8 8.8.4.4
+
+# Guardar: Ctrl+X, Y, Enter
+
+# Reiniciar servicio
+sudo systemctl restart dhcpcd
+
+# Verificar
+ip addr show eth0
+```
+
+### 2.5 Verificar Configuración
+
+```bash
+# Verificar hostname
+hostname
+# Debe mostrar: euforiaevents
+
+# Verificar usuario
+whoami
+# Debe mostrar: malcomito
+
+# Verificar IP
+ip addr show eth0
+# Debe mostrar: 192.168.80.160
+
+# Verificar conexión a internet
+ping -c 4 google.com
+```
+
+---
+
+## FASE 3: Instalación de Docker
+
+### 3.1 Instalar Docker
 
 ```bash
 # Conectar por SSH
 ssh malcomito@euforiaevents.local
 
-# Verificar Docker
-docker --version
-docker ps
+# Descargar script oficial de instalación
+curl -fsSL https://get.docker.com -o get-docker.sh
 
-# Si dice "permission denied", agregar usuario al grupo docker
+# Verificar el script (opcional)
+cat get-docker.sh
+
+# Ejecutar instalación
+sudo sh get-docker.sh
+
+# Limpiar
+rm get-docker.sh
+```
+
+### 3.2 Configurar Permisos
+
+```bash
+# Agregar usuario al grupo docker
 sudo usermod -aG docker malcomito
 
-# Salir y volver a entrar para aplicar cambios
+# Aplicar cambios (cerrar sesión y volver a entrar)
 exit
+
+# Reconectar
 ssh malcomito@euforiaevents.local
 
-# Probar de nuevo
+# Verificar que funciona SIN sudo
+docker --version
 docker ps
 ```
 
-### 2.2 Verificar Docker Compose
-
-```bash
-# Verificar Docker Compose
-docker-compose --version
-
-# Si no está instalado, instalarlo
-sudo apt update
-sudo apt install -y docker-compose
+Deberías ver:
+```
+Docker version 24.x.x
+CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
 ```
 
-### 2.3 Verificar Git
+### 3.3 Instalar Docker Compose
 
 ```bash
-git --version
+# Verificar si ya está instalado (viene con Docker moderno)
+docker compose version
 
-# Si no está instalado
-sudo apt install -y git
+# Si NO está instalado, instalar manualmente:
+sudo apt install -y docker-compose-plugin
+
+# O instalar versión standalone:
+sudo apt install -y docker-compose
+
+# Verificar
+docker compose version
+```
+
+### 3.4 Configurar Docker para inicio automático
+
+```bash
+# Habilitar Docker para que arranque con el sistema
+sudo systemctl enable docker
+
+# Verificar estado
+sudo systemctl status docker
 ```
 
 ---
 
-## 3. CLONAR REPOSITORIO
+## FASE 4: Instalación de CasaOS (Opcional)
 
-### 3.1 Crear Directorio de Trabajo
+CasaOS proporciona una interfaz web para administrar Docker. Es **opcional** pero útil.
+
+### 4.1 Instalar CasaOS
+
+```bash
+# Ejecutar instalador oficial
+curl -fsSL https://get.casaos.io | sudo bash
+
+# Esperar 5-10 minutos
+# Al finalizar mostrará la URL de acceso
+```
+
+### 4.2 Acceder a CasaOS
+
+```
+http://192.168.80.160
+# O
+http://euforiaevents.local
+```
+
+**Primer acceso**:
+1. Crear cuenta de administrador
+2. Configurar preferencias básicas
+
+**Nota**: CasaOS no interfiere con el uso de Docker desde CLI. Podés usar ambos.
+
+---
+
+## FASE 5: Clonar Repositorio
+
+### 5.1 Crear Directorio de Trabajo
 
 ```bash
 # Conectar por SSH
 ssh malcomito@euforiaevents.local
 
-# Crear directorio (si no existe)
-cd ~
-mkdir -p projects
-cd projects
+# Crear directorio
+mkdir -p ~/projects
+cd ~/projects
 ```
 
-### 3.2 Clonar EUFORIA EVENTS
+### 5.2 Clonar EUFORIA EVENTS
 
 ```bash
-# Clonar repositorio
-git clone https://github.com/tu-usuario/euforia-events.git
-
-# O si usás SSH
-git clone git@github.com:tu-usuario/euforia-events.git
+# Clonar repositorio (HTTPS)
+git clone https://github.com/Malcomito17/EuforiaEvents.git euforia-events
 
 # Entrar al directorio
 cd euforia-events
@@ -161,231 +385,178 @@ docker/
 scripts/
 docs/
 .env.example
-docker-compose.yml
 docker-compose.prod.yml
 package.json
+...
+```
+
+### 5.3 Hacer Scripts Ejecutables
+
+```bash
+# Dar permisos de ejecución a todos los scripts
+chmod +x scripts/*.sh
+
+# Verificar
+ls -la scripts/
 ```
 
 ---
 
-## 4. CONFIGURACIÓN DE VARIABLES
+## FASE 6: Configuración de Variables de Entorno
 
-### 4.1 Crear Archivo .env
+### 6.1 Generar .env Automáticamente (RECOMENDADO)
+
+```bash
+# Ejecutar generador interactivo
+./scripts/generate-env-prod.sh
+```
+
+El script te preguntará:
+```
+Dominio: euforiateclog.cloud
+SPOTIFY_CLIENT_ID (opcional): [Enter para omitir]
+SPOTIFY_CLIENT_SECRET (opcional): [Enter para omitir]
+```
+
+**Resultado**: Se crea `.env` con:
+- JWT_SECRET aleatorio y seguro
+- PUBLIC_DOMAIN configurado
+- Todas las variables necesarias
+
+### 6.2 Crear .env Manualmente (Alternativa)
 
 ```bash
 # Copiar template
 cp .env.example .env
 
-# Editar con nano
+# Editar
 nano .env
 ```
 
-### 4.2 Variables Críticas
-
-**Editá las siguientes variables**:
+**Variables críticas a configurar**:
 
 ```bash
 # ===========================================
-# EUFORIA EVENTS - Environment Variables
+# ENVIRONMENT
 # ===========================================
-
-# General
 NODE_ENV=production
 PORT=3000
 
-# URLs - Se actualizarán automáticamente con el script de Cloudflare
-# Por ahora dejá estos valores, el script los modificará
-CLIENT_URL=http://localhost:5173
-OPERATOR_URL=http://localhost:5174
-PUBLIC_DOMAIN=
-OPERATOR_DOMAIN=
-
-# Database (SQLite para producción)
-DATABASE_URL="file:./prisma/data/production.db"
-
-# Authentication - ¡¡¡CAMBIAR OBLIGATORIAMENTE!!!
-JWT_SECRET=CAMBIAR-ESTE-SECRETO-POR-UNO-ALEATORIO-MINIMO-32-CARACTERES
+# ===========================================
+# SECURITY
+# ===========================================
+# ¡GENERAR UN SECRETO ALEATORIO!
+JWT_SECRET=
 JWT_EXPIRES_IN=7d
-BCRYPT_ROUNDS=10
 
-# Spotify API (MUSICADJ module)
-# Obtener en: https://developer.spotify.com/dashboard
-SPOTIFY_CLIENT_ID=tu-client-id-aqui
-SPOTIFY_CLIENT_SECRET=tu-client-secret-aqui
+# ===========================================
+# CLOUDFLARE TUNNEL
+# ===========================================
+PUBLIC_DOMAIN=https://euforiateclog.cloud
+OPERATOR_DOMAIN=https://euforiateclog.cloud
 
-# YouTube API (KARAOKEYA module)
-# Obtener en: https://console.cloud.google.com/apis/credentials
-YOUTUBE_API_KEY=tu-api-key-aqui
+# ===========================================
+# DATABASE
+# ===========================================
+DATABASE_URL=file:./prisma/data/production.db
 
-# Cloudflare Tunnel (se configura automáticamente)
-PUBLIC_DOMAIN=
-OPERATOR_DOMAIN=
+# ===========================================
+# SPOTIFY (Opcional)
+# ===========================================
+SPOTIFY_CLIENT_ID=
+SPOTIFY_CLIENT_SECRET=
+
+# ===========================================
+# MODULES
+# ===========================================
+ENABLED_MODULES=MUSICADJ,KARAOKEYA
 ```
 
-**⚠️ IMPORTANTE: JWT_SECRET**
-
-Generá un secreto aleatorio fuerte:
-
+**Generar JWT_SECRET**:
 ```bash
-# Generar secreto aleatorio (en la Pi)
-openssl rand -base64 32
+# En la Pi
+openssl rand -base64 48
 
 # Copiar el resultado y pegarlo en JWT_SECRET
 ```
 
-### 4.3 Guardar y Salir
+**Guardar y salir**: `Ctrl+X`, `Y`, `Enter`
 
-```
-Ctrl + X
-Y (confirmar)
-Enter
+### 6.3 Verificar .env
+
+```bash
+# Verificar que existe
+ls -la .env
+
+# Ver contenido (ocultar datos sensibles al compartir)
+cat .env
 ```
 
 ---
 
-## 5. CLOUDFLARE TUNNEL
+## FASE 7: Cloudflare Tunnel
 
-### 5.1 Verificar Dominio en Cloudflare
+### 7.1 Verificar Dominio en Cloudflare
 
-Antes de continuar, verificá que `euforiateclog.cloud` esté **"Active"** en Cloudflare:
+**Antes de continuar**, verificá en Cloudflare Dashboard:
 
-1. Ir a https://dash.cloudflare.com
-2. Buscar `euforiateclog.cloud`
+1. Ir a: https://dash.cloudflare.com
+2. Buscar: `euforiateclog.cloud`
 3. Estado debe ser: **"Active"** ✅
 
-Si aún está "Pending", esperá 5-30 minutos más para que los nameservers se propaguen.
+Si dice "Pending", esperar 10-30 minutos más.
 
-### 5.2 Ejecutar Script de Setup
+### 7.2 Ejecutar Setup de Cloudflare Tunnel
 
 ```bash
 # Asegurate de estar en el directorio correcto
 cd ~/projects/euforia-events
 
-# Hacer ejecutable el script
-chmod +x scripts/setup-cloudflare-tunnel.sh
-
-# Ejecutar
+# Ejecutar script
 ./scripts/setup-cloudflare-tunnel.sh
 ```
 
-### 5.3 Seguir el Wizard Interactivo
+### 7.3 Proceso de Autenticación
 
-El script te preguntará:
+El script te guiará:
 
 **1. Autenticación con Cloudflare**
-- Se abrirá un navegador (o te dará una URL)
-- Iniciá sesión en Cloudflare
-- Autorizá cloudflared
-
-**2. Dominio para la aplicación (invitados)**
 ```
-Ingresá el dominio para acceso de invitados: euforiateclog.cloud
-```
-
-**3. Dominio para operadores**
-```
-Ingresá el dominio para panel de operadores [euforiateclog.cloud]:
-```
-Presioná Enter para usar el mismo, o escribí uno diferente como `admin.euforiateclog.cloud`
-
-**4. Configuración automática**
-El script:
-- Creará el tunnel `euforia-events`
-- Configurará DNS en Cloudflare
-- Actualizará el `.env` con los dominios
-- Instalará el servicio systemd
-- Iniciará cloudflared
-
-**5. Verificación**
-Al final mostrará el estado. Deberías ver:
-```
-✅ Servicio activo y corriendo
-✅ DNS configurado correctamente
-✅ Tunnel funcionando
+Se abrirá un navegador (o mostrará una URL)
+→ Ir a la URL desde tu Mac/teléfono
+→ Iniciar sesión en Cloudflare
+→ Autorizar cloudflared
+→ Volver a la terminal
 ```
 
-### 5.4 Verificar Manualmente (Opcional)
-
-```bash
-# Ver estado del servicio
-sudo systemctl status cloudflared
-
-# Ver logs en tiempo real
-sudo journalctl -u cloudflared -f
-
-# Verificar DNS
-nslookup euforiateclog.cloud
+**2. Configuración de dominio**
+```
+Dominio para invitados: euforiateclog.cloud
+Dominio para operadores: euforiateclog.cloud
+(O usar un subdominio como: operator.euforiateclog.cloud)
 ```
 
----
+**3. El script hace automáticamente**:
+- Instala `cloudflared` para ARM64
+- Crea tunnel `euforia-events`
+- Configura DNS en Cloudflare
+- Crea servicio systemd
+- Actualiza archivo `.env`
+- Inicia el tunnel
 
-## 6. DEPLOY DE LA APLICACIÓN
-
-### 6.1 Build de Imágenes Docker
-
-```bash
-# Asegurate de estar en el directorio correcto
-cd ~/projects/euforia-events
-
-# Build de todas las imágenes (puede tardar 15-20 min en la Pi)
-docker-compose -f docker-compose.prod.yml build
-
-# Ver progreso
-# Esto construirá:
-# - euforia-events-api:latest
-# - euforia-events-web-client:latest
-# - euforia-events-web-operator:latest
+**4. Verificación final**
+```
+✅ cloudflared instalado
+✅ Tunnel creado: [UUID]
+✅ DNS configurado
+✅ Servicio iniciado y habilitado
+✅ .env actualizado
 ```
 
-**⏱️ NOTA**: El primer build puede tardar 15-30 minutos en Raspberry Pi. Es normal.
-
-### 6.2 Iniciar Servicios
-
-```bash
-# Iniciar en modo detached (background)
-docker-compose -f docker-compose.prod.yml up -d
-
-# Ver logs en tiempo real
-docker-compose -f docker-compose.prod.yml logs -f
-
-# Presionar Ctrl+C para salir de los logs (los servicios siguen corriendo)
-```
-
-### 6.3 Verificar Contenedores
-
-```bash
-# Ver contenedores corriendo
-docker ps
-
-# Deberías ver 4 contenedores:
-# - euforia-api-prod
-# - euforia-web-client-prod
-# - euforia-web-operator-prod
-# - euforia-nginx-prod
-```
-
-### 6.4 Crear Usuario Admin Inicial
-
-```bash
-# Conectar al contenedor API
-docker exec -it euforia-api-prod sh
-
-# Dentro del contenedor, ejecutar Prisma Studio o crear usuario via script
-# (Por ahora lo haremos vía API después del deploy)
-
-# Salir del contenedor
-exit
-```
-
----
-
-## 7. VERIFICACIÓN Y TESTING
-
-### 7.1 Verificar Estado del Tunnel
+### 7.4 Verificar Tunnel
 
 ```bash
 # Ejecutar script de verificación
-chmod +x scripts/check-tunnel-status.sh
 ./scripts/check-tunnel-status.sh
 ```
 
@@ -393,51 +564,126 @@ Deberías ver:
 ```
 ✅ Servicio activo y corriendo
 ✅ DNS resolviendo correctamente
-✅ HTTP 200 OK en el dominio
-✅ Servicio local respondiendo en puerto 80
+✅ Túnel conectado
 ```
 
-### 7.2 Probar en el Navegador
+---
 
-**Desde tu Mac/PC/teléfono**:
+## FASE 8: Deploy de la Aplicación
 
-1. **API Health Check**:
-   ```
-   https://euforiateclog.cloud/api/health
-   ```
-   Debe responder:
-   ```json
-   {"status":"ok","timestamp":"..."}
-   ```
+### 8.1 Build de Imágenes Docker
 
-2. **Panel de Operador**:
-   ```
-   https://euforiateclog.cloud/operator
-   ```
-   Debe cargar la pantalla de login
+```bash
+# Asegurate de estar en el directorio correcto
+cd ~/projects/euforia-events
 
-3. **Cliente (necesitarás slug de evento)**:
-   ```
-   https://euforiateclog.cloud/e/test-event
-   ```
+# Build de todas las imágenes
+docker compose -f docker-compose.prod.yml build
+```
 
-### 7.3 Crear Primer Usuario Admin
+**⏱️ TIEMPO ESTIMADO**: 15-30 minutos en Raspberry Pi 4
 
-Desde tu Mac, usar curl o Postman:
+Durante el build verás:
+```
+[+] Building ...
+ => [api] ...
+ => [web-client] ...
+ => [web-operator] ...
+ => [nginx] ...
+```
+
+### 8.2 Iniciar Base de Datos
+
+```bash
+# Generar Prisma Client
+cd ~/projects/euforia-events/apps/api
+npx prisma generate
+
+# Crear base de datos
+npx prisma db push
+
+# Volver al directorio raíz
+cd ~/projects/euforia-events
+```
+
+### 8.3 Iniciar Servicios
+
+```bash
+# Iniciar en modo detached (background)
+docker compose -f docker-compose.prod.yml up -d
+
+# Ver logs en tiempo real
+docker compose -f docker-compose.prod.yml logs -f
+```
+
+Deberías ver:
+```
+✅ euforia-api-prod         ... running
+✅ euforia-web-client-prod  ... running
+✅ euforia-web-operator-prod ... running
+✅ euforia-nginx-prod       ... running
+```
+
+### 8.4 Verificar Contenedores
+
+```bash
+# Ver contenedores corriendo
+docker ps
+
+# Ver estado de salud
+docker compose -f docker-compose.prod.yml ps
+```
+
+---
+
+## FASE 9: Verificación y Testing
+
+### 9.1 Verificar desde la Pi
+
+```bash
+# Health check local
+curl http://localhost/api/health
+
+# Debe responder:
+# {"status":"ok","timestamp":"..."}
+```
+
+### 9.2 Verificar desde tu Mac/Navegador
+
+**1. API Health**
+```
+https://euforiateclog.cloud/api/health
+```
+Debe mostrar: `{"status":"ok","timestamp":"..."}`
+
+**2. Panel de Operador**
+```
+https://euforiateclog.cloud/operator
+```
+Debe cargar la pantalla de login
+
+**3. Cliente (con slug de prueba)**
+```
+https://euforiateclog.cloud/e/test
+```
+
+### 9.3 Crear Usuario Admin
+
+**Opción A: Via API desde tu Mac**
 
 ```bash
 # Crear usuario admin
-curl -X POST https://euforiateclog.cloud/api/users/register \
+curl -X POST https://euforiateclog.cloud/api/auth/register \
   -H "Content-Type: application/json" \
   -d '{
     "username": "admin",
     "email": "admin@euforiateclog.cloud",
-    "password": "tu-password-seguro",
+    "password": "Admin123!",
     "role": "ADMIN"
   }'
 ```
 
-**O crear desde el contenedor**:
+**Opción B: Desde el contenedor**
 
 ```bash
 # Conectar al contenedor API
@@ -446,65 +692,79 @@ docker exec -it euforia-api-prod sh
 # Ejecutar Prisma Studio
 npx prisma studio
 
-# Abrir en navegador: http://euforiaevents.local:5555
-# Crear usuario manualmente en la tabla users
+# Abrir en navegador: http://192.168.80.160:5555
+# Crear usuario en tabla "User"
+# Salir: Ctrl+C
 
-# Salir
 exit
 ```
 
-### 7.4 Login en el Panel
+### 9.4 Login en el Panel
 
-1. Ir a `https://euforiateclog.cloud/operator`
+1. Ir a: `https://euforiateclog.cloud/operator`
 2. Usuario: `admin`
-3. Password: tu password
-4. Deberías entrar al dashboard
+3. Password: `Admin123!` (o la que hayas configurado)
+4. ✅ Deberías entrar al dashboard
+
+### 9.5 Verificación Completa
+
+```bash
+# Ejecutar script de verificación
+./scripts/check-tunnel-status.sh
+```
+
+**Checklist**:
+- ✅ Servicio cloudflared activo
+- ✅ DNS resolviendo
+- ✅ HTTP 200 OK en el dominio
+- ✅ Contenedores corriendo
+- ✅ API respondiendo
+- ✅ Panel de operador accesible
 
 ---
 
-## 8. MANTENIMIENTO
+## Mantenimiento
 
-### 8.1 Ver Logs
+### Ver Logs
 
 ```bash
-# Logs de todos los servicios
-docker-compose -f docker-compose.prod.yml logs -f
+# Todos los servicios
+docker compose -f docker-compose.prod.yml logs -f
 
-# Logs de un servicio específico
+# Solo API
 docker logs -f euforia-api-prod
-docker logs -f euforia-nginx-prod
 
-# Últimas 50 líneas
-docker-compose -f docker-compose.prod.yml logs --tail=50
+# Últimas 100 líneas
+docker compose -f docker-compose.prod.yml logs --tail=100
 ```
 
-### 8.2 Reiniciar Servicios
+### Reiniciar Servicios
 
 ```bash
 # Reiniciar todo
-docker-compose -f docker-compose.prod.yml restart
+docker compose -f docker-compose.prod.yml restart
 
-# Reiniciar un servicio específico
-docker-compose -f docker-compose.prod.yml restart api
+# Reiniciar solo API
+docker compose -f docker-compose.prod.yml restart api
 ```
 
-### 8.3 Detener y Eliminar
+### Detener la Aplicación
 
 ```bash
 # Detener (mantiene datos)
-docker-compose -f docker-compose.prod.yml stop
+docker compose -f docker-compose.prod.yml stop
 
 # Detener y eliminar contenedores
-docker-compose -f docker-compose.prod.yml down
+docker compose -f docker-compose.prod.yml down
 
-# Eliminar TODO incluyendo volúmenes (⚠️ CUIDADO: borra la DB)
-docker-compose -f docker-compose.prod.yml down -v
+# ⚠️ Eliminar TODO incluyendo datos
+docker compose -f docker-compose.prod.yml down -v
 ```
 
-### 8.4 Actualizar la Aplicación
+### Actualizar la Aplicación
 
 ```bash
-# 1. Hacer backup primero
+# 1. Backup primero
 ./scripts/backup-euforia.sh
 
 # 2. Pull cambios
@@ -512,16 +772,16 @@ cd ~/projects/euforia-events
 git pull origin main
 
 # 3. Rebuild
-docker-compose -f docker-compose.prod.yml build
+docker compose -f docker-compose.prod.yml build
 
 # 4. Reiniciar
-docker-compose -f docker-compose.prod.yml up -d
+docker compose -f docker-compose.prod.yml up -d
 
 # 5. Ver logs
-docker-compose -f docker-compose.prod.yml logs -f
+docker compose -f docker-compose.prod.yml logs -f
 ```
 
-### 8.5 Backups Automáticos
+### Backups Automáticos
 
 ```bash
 # Ejecutar backup manual
@@ -530,13 +790,13 @@ docker-compose -f docker-compose.prod.yml logs -f
 # Configurar cron para backup diario a las 3 AM
 crontab -e
 
-# Agregar esta línea:
+# Agregar:
 0 3 * * * /home/malcomito/projects/euforia-events/scripts/backup-euforia.sh >> /home/malcomito/euforia-backups/cron.log 2>&1
 
 # Guardar y salir
 ```
 
-### 8.6 Monitoreo de Recursos
+### Monitoreo
 
 ```bash
 # CPU y RAM de contenedores
@@ -548,28 +808,15 @@ vcgencmd measure_temp
 # Espacio en disco
 df -h
 
-# Memoria del sistema
+# Memoria
 free -h
 ```
 
 ---
 
-## 🔧 TROUBLESHOOTING
+## Troubleshooting
 
-### Problema: No puedo conectar por SSH
-
-```bash
-# Probar con IP directa
-ssh malcomito@192.168.1.X
-
-# Verificar que el hostname resuelve
-ping euforiaevents.local
-
-# Resetear conocimiento de hosts si cambió la Pi
-ssh-keygen -R euforiaevents.local
-```
-
-### Problema: Docker dice "permission denied"
+### Docker no funciona / Permission denied
 
 ```bash
 # Agregar usuario al grupo docker
@@ -583,104 +830,98 @@ ssh malcomito@euforiaevents.local
 docker ps
 ```
 
-### Problema: "503 Bad Gateway" en el dominio
+### Dominio no resuelve / 503 Error
 
 ```bash
-# 1. Verificar contenedores
-docker ps
-
-# 2. Verificar logs del API
-docker logs euforia-api-prod
-
-# 3. Verificar logs de Nginx
-docker logs euforia-nginx-prod
-
-# 4. Verificar Cloudflare Tunnel
-./scripts/check-tunnel-status.sh
-
-# 5. Reiniciar servicios
-docker-compose -f docker-compose.prod.yml restart
-```
-
-### Problema: Dominio no resuelve
-
-```bash
-# Verificar DNS
+# 1. Verificar DNS
 nslookup euforiateclog.cloud
 
-# Verificar estado de Cloudflare Tunnel
+# 2. Verificar tunnel
 sudo systemctl status cloudflared
-
-# Reiniciar Cloudflare Tunnel
-sudo systemctl restart cloudflared
-```
-
-### Problema: Build muy lento
-
-Es normal en Raspberry Pi. Para acelerar:
-
-```bash
-# Usar cached builds cuando sea posible
-docker-compose -f docker-compose.prod.yml build --no-cache
-
-# O build por servicio
-docker-compose -f docker-compose.prod.yml build api
-```
-
-### Problema: Espacio en disco lleno
-
-```bash
-# Ver uso de espacio
-df -h
-
-# Limpiar imágenes y contenedores no usados
-docker system prune -a
-
-# Limpiar volúmenes huérfanos
-docker volume prune
-```
-
----
-
-## 📚 RECURSOS ADICIONALES
-
-### Documentación
-
-- **Guía de Despliegue**: `docs/PRODUCTION_DEPLOYMENT.md`
-- **Requerimientos Técnicos**: `docs/EUFORIA_EVENTS_TECH_REQUIREMENTS_v1.3.md`
-- **Estado del Proyecto**: `PROJECT_STATUS.md`
-
-### Scripts Útiles
-
-- **Setup Cloudflare**: `scripts/setup-cloudflare-tunnel.sh`
-- **Verificar Tunnel**: `scripts/check-tunnel-status.sh`
-- **Backup**: `scripts/backup-euforia.sh`
-
-### Comandos Rápidos
-
-```bash
-# SSH a la Pi
-ssh malcomito@euforiaevents.local
-
-# Ver logs
-docker-compose -f docker-compose.prod.yml logs -f
-
-# Reiniciar todo
-docker-compose -f docker-compose.prod.yml restart
-
-# Estado del tunnel
 ./scripts/check-tunnel-status.sh
 
-# Backup
-./scripts/backup-euforia.sh
+# 3. Reiniciar tunnel
+sudo systemctl restart cloudflared
+
+# 4. Ver logs del tunnel
+sudo journalctl -u cloudflared -f
+
+# 5. Verificar contenedores
+docker ps
+docker compose -f docker-compose.prod.yml ps
+```
+
+### Contenedores no inician
+
+```bash
+# Ver logs
+docker compose -f docker-compose.prod.yml logs
+
+# Ver logs de un servicio específico
+docker logs euforia-api-prod
+
+# Reiniciar todo
+docker compose -f docker-compose.prod.yml restart
+
+# Reconstruir desde cero
+docker compose -f docker-compose.prod.yml down
+docker compose -f docker-compose.prod.yml build --no-cache
+docker compose -f docker-compose.prod.yml up -d
+```
+
+### No puedo conectar por SSH
+
+```bash
+# Desde tu Mac, probar con IP directa
+ssh malcomito@192.168.80.160
+
+# Verificar que la Pi está en la red
+ping 192.168.80.160
+
+# Resetear conocimiento de hosts
+ssh-keygen -R euforiaevents.local
+ssh-keygen -R 192.168.80.160
+```
+
+### Espacio en disco lleno
+
+```bash
+# Ver uso
+df -h
+
+# Limpiar Docker
+docker system prune -a
+docker volume prune
+
+# Limpiar paquetes
+sudo apt autoremove
+sudo apt clean
+```
+
+### Build muy lento
+
+Es normal en Raspberry Pi. Paciencia.
+
+```bash
+# Para acelerar builds futuros, usar cache
+docker compose -f docker-compose.prod.yml build
+
+# Si hay problemas de cache
+docker compose -f docker-compose.prod.yml build --no-cache
 ```
 
 ---
 
 ## ✅ CHECKLIST FINAL
 
-- [ ] SSH funciona con `malcomito@euforiaevents.local`
-- [ ] Docker y Docker Compose instalados y accesibles
+- [ ] Raspberry Pi OS instalado y actualizado
+- [ ] Usuario `malcomito` configurado
+- [ ] Hostname `euforiaevents` configurado
+- [ ] IP estática `192.168.80.160` configurada
+- [ ] SSH funciona desde tu Mac
+- [ ] Docker instalado y funcional
+- [ ] Docker Compose instalado
+- [ ] CasaOS instalado (opcional)
 - [ ] Repositorio clonado en `~/projects/euforia-events`
 - [ ] Archivo `.env` configurado con JWT_SECRET seguro
 - [ ] Dominio `euforiateclog.cloud` activo en Cloudflare
@@ -688,29 +929,61 @@ docker-compose -f docker-compose.prod.yml restart
 - [ ] Contenedores Docker corriendo (4 servicios)
 - [ ] `https://euforiateclog.cloud/api/health` responde OK
 - [ ] Panel de operador accesible
-- [ ] Usuario admin creado
-- [ ] Backup automático configurado en cron
+- [ ] Usuario admin creado y puede hacer login
+- [ ] Backup automático configurado
 
 ---
 
-## 🎉 ¡LISTO!
+## 🎉 ¡INSTALACIÓN COMPLETA!
 
-Tu instalación de EUFORIA EVENTS está completa y accesible desde Internet en:
+Tu instalación de EUFORIA EVENTS está completa y accesible desde cualquier parte del mundo en:
 
 **🌐 https://euforiateclog.cloud**
 
-**Próximos pasos**:
-1. Crear eventos desde el panel de operador
-2. Generar QR codes para invitados
-3. Testear todos los módulos
-4. Configurar backups automáticos
-5. Monitorear recursos y logs
+### Próximos Pasos
+
+1. **Crear tu primer evento** en el panel de operador
+2. **Generar QR codes** para invitados
+3. **Probar todos los módulos** (MUSICADJ, KARAOKEYA)
+4. **Configurar Spotify API** para MUSICADJ
+5. **Configurar YouTube API** para KARAOKEYA
+6. **Testear en un evento real**
+
+### Comandos Útiles
+
+```bash
+# SSH a la Pi
+ssh malcomito@euforiaevents.local
+
+# Ver logs
+docker compose -f docker-compose.prod.yml logs -f
+
+# Reiniciar servicios
+docker compose -f docker-compose.prod.yml restart
+
+# Estado del tunnel
+./scripts/check-tunnel-status.sh
+
+# Backup manual
+./scripts/backup-euforia.sh
+
+# Monitorear recursos
+docker stats
+```
+
+### Documentación Adicional
+
+- **Arquitectura y troubleshooting**: `docs/PRODUCTION_DEPLOYMENT.md`
+- **Guía rápida de deploy**: `docs/QUICK_DEPLOY_PI.md`
+- **Requerimientos técnicos completos**: `docs/EUFORIA_EVENTS_TECH_REQUIREMENTS_v1.3.md`
+
+---
 
 **¿Necesitás ayuda?**
-- Ver logs: `docker-compose -f docker-compose.prod.yml logs -f`
+- Ver logs: `docker compose -f docker-compose.prod.yml logs -f`
 - Verificar tunnel: `./scripts/check-tunnel-status.sh`
 - Docs completas: `docs/PRODUCTION_DEPLOYMENT.md`
 
 ---
 
-**EUFORIA EVENTS v2.0** - Listo para eventos memorables 🎉
+**EUFORIA EVENTS v2.0** - De cero a producción en 2-3 horas 🚀
