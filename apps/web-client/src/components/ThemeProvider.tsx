@@ -40,8 +40,6 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
       }
 
       const primaryRgb = hexToRgb(primary)
-      const secondaryRgb = hexToRgb(secondary)
-      const accentRgb = hexToRgb(accent)
 
       // Establecer colores principales en formato hex (para compatibilidad)
       root.style.setProperty('--color-primary', primary)
