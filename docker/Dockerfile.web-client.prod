@@ -18,7 +18,7 @@ RUN npm install -g pnpm@10.23.0
 # Copiar archivos de configuración del monorepo
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY apps/web-client/package.json ./apps/web-client/
-COPY packages/shared/package.json ./packages/shared/ 2>/dev/null || true
+COPY packages/shared/package.json ./packages/shared/
 
 # Instalar dependencias
 RUN pnpm install --frozen-lockfile || pnpm install
@@ -48,7 +48,7 @@ RUN npm install -g pnpm@10.23.0
 # Copiar código fuente
 COPY package.json pnpm-workspace.yaml ./
 COPY apps/web-client ./apps/web-client
-COPY packages/shared ./packages/shared 2>/dev/null || true
+COPY packages/shared ./packages/shared
 
 # Build de producción con Vite
 WORKDIR /app/apps/web-client
