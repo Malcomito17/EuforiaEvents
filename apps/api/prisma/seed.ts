@@ -43,8 +43,8 @@ async function main() {
       isActive: true,
       permissions: {
         create: [
-          { module: 'MUSICADJ', canView: true, canOperate: true, canExport: false },
-          { module: 'KARAOKEYA', canView: true, canOperate: true, canExport: false },
+          { module: 'MUSICADJ', canView: true, canEdit: true, canExport: false },
+          { module: 'KARAOKEYA', canView: true, canEdit: true, canExport: false },
         ],
       },
     },
