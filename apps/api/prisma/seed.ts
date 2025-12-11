@@ -19,7 +19,7 @@ async function main() {
     update: {},
     create: {
       username: 'admin',
-      email: 'admin@euforia.events',
+      email: 'euforiateclog@gmail.com',
       password: hashedPassword,
       role: 'ADMIN',
       isActive: true,

@@ -23,8 +23,10 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
+      // Solo limpiar token, dejar que el authStore y ProtectedRoute manejen el redirect
       localStorage.removeItem('token')
-      window.location.href = '/login'
+      // Si necesitamos redirect manual, usar el basename correcto
+      // window.location.href = '/operador/login'
     }
     return Promise.reject(error)
   }
