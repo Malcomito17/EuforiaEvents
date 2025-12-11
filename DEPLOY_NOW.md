@@ -2,7 +2,8 @@
 
 **Servidor**: `euforiaevents` (192.168.80.160)
 **Usuario**: `malcomito`
-**Dominio**: `euforiateclog.cloud`
+**Dominio**: `https://app.euforiateclog.cloud`
+**Panel Operador**: `https://app.euforiateclog.cloud/operador`
 
 ---
 
@@ -32,7 +33,7 @@ docker-compose -f docker-compose.prod.yml logs --tail 50
 ### 3. Reiniciar servicios
 
 ```bash
-cd ~/euforia-events
+cd ~/EuforiaEvents
 
 # Detener todos los servicios
 docker-compose -f docker-compose.prod.yml down
@@ -62,7 +63,7 @@ curl http://localhost/api/health
 # Debería responder: {"status":"ok","timestamp":"..."}
 ```
 
-Browser: `https://euforiateclog.cloud/operator`
+Browser: `https://app.euforiateclog.cloud/operador`
 
 ---
 
@@ -99,7 +100,7 @@ Wants=network-online.target
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-WorkingDirectory=/home/malcomito/euforia-events
+WorkingDirectory=/home/malcomito/EuforiaEvents
 ExecStart=/usr/bin/docker-compose -f docker-compose.prod.yml up -d
 ExecStop=/usr/bin/docker-compose -f docker-compose.prod.yml down
 TimeoutStartSec=300
@@ -148,7 +149,7 @@ docker ps
 ### 2. Actualizar código
 
 ```bash
-cd ~/euforia-events
+cd ~/EuforiaEvents
 git pull origin main
 ```
 
@@ -215,7 +216,7 @@ curl http://localhost/api/health
 
 ## ✅ Verificación en el Browser
 
-1. Abrir: `https://euforiateclog.cloud/operator`
+1. Abrir: `https://app.euforiateclog.cloud/operador`
 2. Login con tus credenciales
 3. Ir a **Eventos**
 4. Seleccionar un evento que tenga pedidos
