@@ -89,6 +89,58 @@ export class GuestsController {
       })
     }
   }
+
+  /**
+   * GET /api/events/:eventId/guests
+   * Lista todos los guests de un evento con contadores de requests
+   */
+  async listByEvent(req: Request, res: Response) {
+    try {
+      const { eventId } = req.params
+      const guests = await guestsService.listByEvent(eventId)
+
+      res.status(200).json({
+        success: true,
+        guests,
+      })
+    } catch (error) {
+      console.error('Error en listByEvent:', error)
+      res.status(500).json({
+        success: false,
+        error: 'Error al listar guests',
+      })
+    }
+  }
+
+  /**
+   * DELETE /api/guests/:guestId
+   * Elimina un guest y todos sus requests
+   */
+  async delete(req: Request, res: Response) {
+    try {
+      const { guestId } = req.params
+      const result = await guestsService.delete(guestId)
+
+      res.status(200).json({
+        success: true,
+        ...result,
+      })
+    } catch (error: any) {
+      console.error('Error en delete:', error)
+
+      if (error.message === 'Guest no encontrado') {
+        return res.status(404).json({
+          success: false,
+          error: error.message,
+        })
+      }
+
+      res.status(500).json({
+        success: false,
+        error: 'Error al eliminar guest',
+      })
+    }
+  }
 }
 
 export const guestsController = new GuestsController()

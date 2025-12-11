@@ -6,7 +6,7 @@ import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { LoginPage } from '@/pages/Login'
 import { DashboardPage } from '@/pages/Dashboard'
 import { ChangePasswordPage } from '@/pages/ChangePassword'
-import { EventListPage, EventFormPage, EventDetailPage, EventQRPage, EventSettingsPage } from '@/pages/Events'
+import { EventListPage, EventFormPage, EventDetailPage, EventQRPage, EventSettingsPage, EventGuestsPage, EventGuestDetailPage } from '@/pages/Events'
 import { VenueListPage, VenueFormPage } from '@/pages/Venues'
 import { ClientListPage, ClientFormPage } from '@/pages/Clients'
 import { MusicaDJPage } from '@/pages/MusicaDJ'
@@ -136,6 +136,28 @@ function App() {
           <ProtectedRoute>
             <Layout>
               <KaraokeyaPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      {/* GUESTS */}
+      <Route
+        path="/events/:id/guests"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <EventGuestsPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/events/:id/guests/:guestId"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <EventGuestDetailPage />
             </Layout>
           </ProtectedRoute>
         }

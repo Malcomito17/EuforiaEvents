@@ -10,7 +10,7 @@ import { venueRoutes } from './modules/venues'
 import { clientRoutes } from './modules/clients'
 import { musicadjRoutes } from './modules/musicadj'
 import { karaokeyaRoutes, karaokeyaGlobalRoutes } from './modules/karaokeya'
-import { guestRoutes } from './modules/guests'
+import { guestRoutes, eventGuestRoutes } from './modules/guests'
 import { usersRoutes } from './modules/users'
 import { errorHandler } from './shared/middleware/error.middleware'
 
@@ -47,6 +47,9 @@ app.use('/api/events/:eventId/musicadj', musicadjRoutes)
 
 // KARAOKEYA - rutas anidadas bajo eventos
 app.use('/api/events/:eventId/karaokeya', karaokeyaRoutes)
+
+// GUESTS - rutas anidadas bajo eventos
+app.use('/api/events/:eventId/guests', eventGuestRoutes)
 
 // KARAOKEYA - rutas globales (catálogo)
 app.use('/api/karaokeya', karaokeyaGlobalRoutes)

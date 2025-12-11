@@ -544,6 +544,41 @@ export const karaokeSongsApi = {
 }
 
 // ============================================
+// GUESTS
+// ============================================
+
+export interface Guest {
+  id: string
+  email: string
+  displayName: string
+  whatsapp: string | null
+  createdAt: string
+  songRequestsCount?: number
+  karaokeRequestsCount?: number
+}
+
+export interface GuestRequests {
+  songs: SongRequest[]
+  karaoke: KaraokeRequest[]
+}
+
+export const guestsApi = {
+  listByEvent: (eventId: string) =>
+    api.get<{ success: boolean; guests: Guest[] }>(`/events/${eventId}/guests`),
+
+  get: (guestId: string) =>
+    api.get<{ success: boolean; guest: Guest }>(`/guests/${guestId}`),
+
+  getRequests: (guestId: string, eventId?: string) =>
+    api.get<{ success: boolean; requests: GuestRequests }>(`/guests/${guestId}/requests`, {
+      params: eventId ? { eventId } : undefined
+    }),
+
+  delete: (guestId: string) =>
+    api.delete<{ success: boolean; message: string; guest: Guest }>(`/guests/${guestId}`),
+}
+
+// ============================================
 // USERS
 // ============================================
 
