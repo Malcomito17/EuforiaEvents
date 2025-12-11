@@ -97,14 +97,19 @@ export async function hybridSearch(
   // 2. Buscar en catálogo (BD)
   const catalogResults = await searchInCatalog(query, 3)
 
-  // 3. Buscar en YouTube (5 resultados)
-  const youtubeResults = await searchKaraokeVideos(query, youtubeKeywords, 5)
+  // 3. Buscar en YouTube (5 resultados) - con manejo de errores
+  let filteredYouTubeResults: YouTubeVideo[] = []
+  try {
+    const youtubeResults = await searchKaraokeVideos(query, youtubeKeywords, 5)
 
-  // 4. Filtrar duplicados de YouTube que ya están en el catálogo
-  const catalogYoutubeIds = new Set(catalogResults.map(song => song.youtubeId))
-  const filteredYouTubeResults = youtubeResults.videos.filter(
-    video => !catalogYoutubeIds.has(video.youtubeId)
-  )
+    // 4. Filtrar duplicados de YouTube que ya están en el catálogo
+    const catalogYoutubeIds = new Set(catalogResults.map(song => song.youtubeId))
+    filteredYouTubeResults = youtubeResults.videos.filter(
+      video => !catalogYoutubeIds.has(video.youtubeId)
+    )
+  } catch (error) {
+    console.warn('[KARAOKEYA] YouTube search failed, returning catalog only:', error instanceof Error ? error.message : String(error))
+  }
 
   console.log(
     `[KARAOKEYA] Búsqueda "${query}": ${catalogResults.length} del catálogo, ${filteredYouTubeResults.length} de YouTube`

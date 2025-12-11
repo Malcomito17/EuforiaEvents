@@ -80,14 +80,7 @@ export async function hybridSearch(req: Request, res: Response, next: NextFuncti
     const { eventId } = req.params
     const { q } = searchQuerySchema.parse(req.query)
 
-    // Verificar si YouTube está configurado
-    if (!youtube.isYouTubeConfigured()) {
-      return res.status(503).json({
-        error: 'Búsqueda de YouTube no disponible',
-        youtubeAvailable: false,
-      })
-    }
-
+    // Permitir búsqueda en catálogo incluso si YouTube no está configurado
     const result = await service.hybridSearch(eventId, q)
     res.json(result)
   } catch (error) {
