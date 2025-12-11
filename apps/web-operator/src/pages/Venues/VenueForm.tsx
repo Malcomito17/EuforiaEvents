@@ -20,11 +20,14 @@ interface VenueFormData {
 const VENUE_TYPES = [
   { value: 'SALON', label: 'Salón de Fiestas' },
   { value: 'HOTEL', label: 'Hotel' },
-  { value: 'RESTAURANT', label: 'Restaurant' },
-  { value: 'CLUB', label: 'Club' },
   { value: 'QUINTA', label: 'Quinta' },
-  { value: 'TERRAZA', label: 'Terraza' },
-  { value: 'PLAYA', label: 'Playa' },
+  { value: 'RESTAURANT', label: 'Restaurant' },
+  { value: 'BAR', label: 'Bar' },
+  { value: 'PUB', label: 'Pub' },
+  { value: 'DISCO', label: 'Discoteca' },
+  { value: 'CONFITERIA', label: 'Confitería' },
+  { value: 'CLUB', label: 'Club' },
+  { value: 'OUTDOOR', label: 'Al Aire Libre' },
   { value: 'OTHER', label: 'Otro' },
 ]
 

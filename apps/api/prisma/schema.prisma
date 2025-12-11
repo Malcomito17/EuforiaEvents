@@ -51,7 +51,7 @@ model UserPermission {
 model Venue {
   id           String   @id @default(cuid())
   name         String
-  type         String   @default("OTHER")  // SALON | BAR | RESTAURANT | CLUB | OUTDOOR | OTHER
+  type         String   @default("OTHER")  // SALON | BAR | DISCO | RESTAURANT | CLUB | OUTDOOR | OTHER
   address      String?
   city         String?
   capacity     Int?
