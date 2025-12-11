@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useParams, useNavigate, Link } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { guestsApi, Guest, GuestRequests, eventsApi, Event } from '@/lib/api'
 import {
   ArrowLeft, Mail, MessageSquare, Music, Mic, Loader2,
