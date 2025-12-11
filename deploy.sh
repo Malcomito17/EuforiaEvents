@@ -250,15 +250,23 @@ docker ps --filter "name=euforia-" --format "table {{.Names}}\t{{.Status}}\t{{.P
 echo ""
 
 echo "🏥 Health Check API:"
-if API_HEALTH=$(curl -s http://localhost:3000/api/health 2>/dev/null); then
-  echo "$API_HEALTH" | head -20
-  echo ""
-  echo "✓ API responde correctamente"
+# Verificar health check interno del contenedor
+if docker exec euforia-api-prod curl -s http://localhost:3000/health > /dev/null 2>&1; then
+  API_HEALTH=$(docker exec euforia-api-prod curl -s http://localhost:3000/health)
+  echo "$API_HEALTH"
+  echo "✓ API responde correctamente (interno)"
 else
-  log_error "API no responde al health check"
+  log_error "API no responde al health check interno"
   echo "Logs del API:"
   docker logs euforia-api-prod --tail 30
   exit 1
+fi
+
+# Verificar acceso vía nginx
+if NGINX_HEALTH=$(curl -s http://localhost/health 2>/dev/null); then
+  echo "✓ Nginx proxy funcionando correctamente"
+else
+  echo "⚠️  Nginx proxy puede tener problemas"
 fi
 
 echo ""
