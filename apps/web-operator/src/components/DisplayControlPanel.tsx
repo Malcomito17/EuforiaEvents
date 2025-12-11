@@ -21,7 +21,7 @@ interface DisplayControlPanelProps {
   onConfigUpdate: (config: Partial<DisplayConfig>) => Promise<void>
 }
 
-export function DisplayControlPanel({ eventId, eventSlug, config, onConfigUpdate }: DisplayControlPanelProps) {
+export function DisplayControlPanel({ eventSlug, config, onConfigUpdate }: DisplayControlPanelProps) {
   const [localConfig, setLocalConfig] = useState<DisplayConfig>(config)
   const [isSaving, setIsSaving] = useState(false)
   const [saveMessage, setSaveMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)

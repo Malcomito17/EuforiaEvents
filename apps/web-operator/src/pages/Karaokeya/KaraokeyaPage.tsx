@@ -220,7 +220,7 @@ export function KaraokeyaPage() {
 
     try {
       await karaokeyaApi.updateConfig(eventId, updatedConfig)
-      setConfig(prev => ({ ...prev, ...updatedConfig }))
+      setConfig((prev: any) => ({ ...prev, ...updatedConfig }))
     } catch (err: any) {
       console.error('Error updating config:', err)
       throw new Error(err.response?.data?.error || 'Error al actualizar configuración')
