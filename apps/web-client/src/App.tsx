@@ -9,6 +9,7 @@ import MusicaDJRequest from './pages/MusicaDJRequest'
 import MyRequests from './pages/MyRequests'
 import KaraokeyaRequest from './pages/KaraokeyaRequest'
 import KaraokeQueue from './pages/KaraokeQueue'
+import DisplayScreen from './pages/DisplayScreen'
 import NotFound from './pages/NotFound'
 import RequestSuccess from './pages/RequestSuccess'
 
@@ -27,6 +28,9 @@ function App() {
       {/* KARAOKEYA - Karaoke */}
       <Route path="/e/:slug/karaokeya" element={<KaraokeyaRequest />} />
       <Route path="/e/:slug/karaokeya/mi-cola" element={<KaraokeQueue />} />
+
+      {/* Display Screen (público - para pantalla grande) */}
+      <Route path="/display/:slug" element={<DisplayScreen />} />
 
       {/* 404 */}
       <Route path="*" element={<NotFound />} />

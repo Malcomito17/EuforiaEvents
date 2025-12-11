@@ -4,7 +4,7 @@
  */
 
 import { Server, Socket } from 'socket.io'
-import { isAuthenticated, isOperator, AuthenticatedSocket } from '../auth'
+import { isAuthenticated, isOperator, AuthenticatedSocket } from '../../modules/auth/auth.middleware'
 
 // Tipos de eventos KARAOKEYA
 export const KARAOKEYA_EVENTS = {

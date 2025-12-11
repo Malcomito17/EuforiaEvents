@@ -19,7 +19,7 @@ Tailscale proporciona acceso remoto seguro a tu Raspberry Pi mediante una VPN de
 curl -fsSL https://tailscale.com/install.sh | sh
 
 # Verificar instalación
-tailscale version
+## tailscale version
 ```
 
 ### 2. Autenticar el Dispositivo

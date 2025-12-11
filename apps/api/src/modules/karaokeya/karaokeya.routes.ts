@@ -4,7 +4,7 @@
  */
 
 import { Router } from 'express'
-import { authenticate, requireModuleAccess } from '../auth'
+import { authenticate, requireModuleAccess } from '../auth/auth.middleware'
 import * as controller from './karaokeya.controller'
 
 // Router para rutas relacionadas con eventos (incluye :eventId en params)
@@ -45,6 +45,9 @@ eventRouter.get('/stats', controller.getStats)
 globalRouter.post('/songs/:songId/like', controller.toggleLike)
 globalRouter.get('/songs/:songId/like-status', controller.getLikeStatus)
 globalRouter.get('/guests/:guestId/liked-songs', controller.getGuestLikedSongs)
+
+// Display Screen (público - para pantalla grande)
+globalRouter.get('/display/:eventSlug', controller.getDisplay)
 
 // CRUD de Catálogo de Canciones (protegido)
 globalRouter.use(authenticate)

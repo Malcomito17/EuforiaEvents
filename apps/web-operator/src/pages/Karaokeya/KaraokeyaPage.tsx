@@ -20,6 +20,7 @@ import {
 import { clsx } from 'clsx'
 import { eventsApi, karaokeyaApi, KaraokeRequest, KaraokeRequestStatus, Event, KaraokeyaStats } from '@/lib/api'
 import { connectSocket, disconnectSocket, subscribeKaraokeya } from '@/lib/socket'
+import { DisplayControlPanel } from '@/components/DisplayControlPanel'
 import {
   DndContext,
   closestCenter,
@@ -67,6 +68,7 @@ export function KaraokeyaPage() {
   const [event, setEvent] = useState<Event | null>(null)
   const [requests, setRequests] = useState<KaraokeRequest[]>([])
   const [stats, setStats] = useState<KaraokeyaStats | null>(null)
+  const [config, setConfig] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isConnected, setIsConnected] = useState(false)
@@ -82,16 +84,18 @@ export function KaraokeyaPage() {
     try {
       setError(null)
 
-      // Load event, requests, and stats in parallel
-      const [eventRes, requestsRes, statsRes] = await Promise.all([
+      // Load event, requests, stats, and config in parallel
+      const [eventRes, requestsRes, statsRes, configRes] = await Promise.all([
         eventsApi.get(eventId),
         karaokeyaApi.listRequests(eventId, { limit: 100 }),
         karaokeyaApi.getStats(eventId),
+        karaokeyaApi.getConfig(eventId),
       ])
 
       setEvent(eventRes.data)
       setRequests(requestsRes.data.requests)
       setStats(statsRes.data)
+      setConfig(configRes.data)
     } catch (err: any) {
       console.error('Error loading data:', err)
       setError(err.response?.data?.error || 'Error al cargar datos')
@@ -207,6 +211,19 @@ export function KaraokeyaPage() {
       setError(err.response?.data?.error || 'Error al reordenar cola')
       // Reload on error to get correct order from server
       loadData()
+    }
+  }
+
+  // Handle config update
+  const handleConfigUpdate = async (updatedConfig: any) => {
+    if (!eventId) return
+
+    try {
+      await karaokeyaApi.updateConfig(eventId, updatedConfig)
+      setConfig(prev => ({ ...prev, ...updatedConfig }))
+    } catch (err: any) {
+      console.error('Error updating config:', err)
+      throw new Error(err.response?.data?.error || 'Error al actualizar configuración')
     }
   }
 
@@ -363,6 +380,22 @@ export function KaraokeyaPage() {
             <div className="text-sm text-gray-600">Cancelados</div>
           </div>
         </div>
+      )}
+
+      {/* Display Control Panel */}
+      {config && event && (
+        <DisplayControlPanel
+          eventId={eventId!}
+          eventSlug={event.slug}
+          config={{
+            displayMode: config.displayMode,
+            displayLayout: config.displayLayout,
+            displayBreakMessage: config.displayBreakMessage,
+            displayStartMessage: config.displayStartMessage,
+            displayPromoImageUrl: config.displayPromoImageUrl,
+          }}
+          onConfigUpdate={handleConfigUpdate}
+        />
       )}
 
       {/* Filters */}

@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import { guestsController } from './guests.controller'
-import { authenticate } from '../../middleware/auth'
+import { authenticate } from '../auth/auth.middleware'
 
 const router = Router()
 

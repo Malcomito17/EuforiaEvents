@@ -24,28 +24,28 @@ ssh malcomito@euforiaevents
 docker ps -a
 
 # Ver qué está corriendo
-docker-compose -f docker-compose.prod.yml ps
+docker compose -f docker-compose.prod.yml ps
 
 # Ver logs de errores recientes
-docker-compose -f docker-compose.prod.yml logs --tail 50
+docker compose -f docker-compose.prod.yml logs --tail 50
 ```
 
 ### 3. Reiniciar servicios
 
 ```bash
-cd ~/EuforiaEvents
+cd ~/projects/EuforiaEvents
 
 # Detener todos los servicios
-docker-compose -f docker-compose.prod.yml down
+docker compose -f docker-compose.prod.yml down
 
 # Levantar servicios
-docker-compose -f docker-compose.prod.yml up -d
+docker compose -f docker-compose.prod.yml up -d
 
 # Verificar que estén corriendo
 docker ps
 
 # Ver logs en tiempo real
-docker-compose -f docker-compose.prod.yml logs -f
+docker compose -f docker-compose.prod.yml logs -f
 ```
 
 **Esperar a que estén healthy** (30-60 segundos):
@@ -100,9 +100,9 @@ Wants=network-online.target
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-WorkingDirectory=/home/malcomito/EuforiaEvents
-ExecStart=/usr/bin/docker-compose -f docker-compose.prod.yml up -d
-ExecStop=/usr/bin/docker-compose -f docker-compose.prod.yml down
+WorkingDirectory=/home/malcomito/projects/EuforiaEvents
+ExecStart=/usr/bin/docker compose -f docker-compose.prod.yml up -d
+ExecStop=/usr/bin/docker compose -f docker-compose.prod.yml down
 TimeoutStartSec=300
 User=malcomito
 Group=malcomito
@@ -149,7 +149,7 @@ docker ps
 ### 2. Actualizar código
 
 ```bash
-cd ~/EuforiaEvents
+cd ~/projects/EuforiaEvents
 git pull origin main
 ```
 
@@ -168,7 +168,7 @@ Debe mostrar:
 ### 3. Rebuild servicios (Zero-downtime)
 
 ```bash
-docker-compose -f docker-compose.prod.yml up -d --build --no-deps api web-operator
+docker compose -f docker-compose.prod.yml up -d --build --no-deps api web-operator
 ```
 
 Este comando:
@@ -181,7 +181,7 @@ Este comando:
 
 ```bash
 # Ver logs en tiempo real
-docker-compose -f docker-compose.prod.yml logs -f
+docker compose -f docker-compose.prod.yml logs -f
 
 # Ctrl+C para salir cuando veas que todo está OK
 ```
@@ -237,14 +237,14 @@ docker logs euforia-web-operator-prod --tail 50
 
 ### Rebuild forzado (si es necesario)
 ```bash
-docker-compose -f docker-compose.prod.yml down
-docker-compose -f docker-compose.prod.yml up -d --build
+docker compose -f docker-compose.prod.yml down
+docker compose -f docker-compose.prod.yml up -d --build
 ```
 
 ### Rollback (si algo sale mal)
 ```bash
 git checkout f5f4b17
-docker-compose -f docker-compose.prod.yml up -d --build
+docker compose -f docker-compose.prod.yml up -d --build
 ```
 
 ---

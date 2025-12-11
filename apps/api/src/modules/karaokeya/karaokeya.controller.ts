@@ -410,6 +410,20 @@ export async function getGuestLikedSongs(req: Request, res: Response, next: Next
 }
 
 // ============================================
+// DISPLAY SCREEN (Pantalla pública)
+// ============================================
+
+export async function getDisplay(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { eventSlug } = req.params
+    const data = await service.getDisplayData(eventSlug)
+    res.json(data)
+  } catch (error) {
+    next(error)
+  }
+}
+
+// ============================================
 // Error Handler
 // ============================================
 

@@ -4,7 +4,7 @@
  */
 
 import { Router } from 'express'
-import { authenticate, requireModuleAccess } from '../auth'
+import { authenticate, requireModuleAccess } from '../auth/auth.middleware'
 import * as controller from './musicadj.controller'
 
 const router = Router({ mergeParams: true })

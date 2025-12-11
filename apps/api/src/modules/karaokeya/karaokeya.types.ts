@@ -69,6 +69,12 @@ export const karaokeyaConfigSchema = z.object({
   allowedLanguages: z.string().optional(), // JSON string: ["ES", "EN"]
   youtubeSearchKeywords: z.string().optional(), // JSON string: ["letra", "lyrics"]
   customMessages: z.string().optional().nullable(), // JSON string opcional
+  // v2.0: Display Screen
+  displayMode: z.enum(['QUEUE', 'BREAK', 'START', 'PROMO']).optional(),
+  displayLayout: z.enum(['VERTICAL', 'HORIZONTAL']).optional(),
+  displayBreakMessage: z.string().max(200).optional(),
+  displayStartMessage: z.string().max(200).optional(),
+  displayPromoImageUrl: z.string().url().optional().nullable(),
 })
 
 export type KaraokeyaConfigInput = z.infer<typeof karaokeyaConfigSchema>

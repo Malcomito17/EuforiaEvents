@@ -74,7 +74,7 @@ ssh pi@100.x.x.x
 #### 3. Actualizar y Rebuild
 
 ```bash
-cd ~/euforia-events
+cd ~/projects/EuforiaEvents
 
 # Pull cambios
 git pull origin main
@@ -84,7 +84,7 @@ git log --oneline -5
 # Debe mostrar: 7ea9fce feat(guests): implement guest management feature
 
 # Rebuild servicios (con zero-downtime)
-docker-compose -f docker-compose.prod.yml up -d --build --no-deps api web-operator
+docker compose -f docker-compose.prod.yml up -d --build --no-deps api web-operator
 
 # Verificar que los contenedores se rebuildearon
 docker ps
@@ -100,7 +100,7 @@ docker logs euforia-api-prod --tail 50
 docker logs euforia-web-operator-prod --tail 20
 
 # Verificar que no hay errores
-docker-compose -f docker-compose.prod.yml logs -f
+docker compose -f docker-compose.prod.yml logs -f
 ```
 
 ---
@@ -223,7 +223,7 @@ docker logs euforia-api-prod | grep "Server running"
 # Debe mostrar que el servidor se reinició después del rebuild
 
 # Si no, forzar recreación del contenedor:
-docker-compose -f docker-compose.prod.yml up -d --force-recreate api
+docker compose -f docker-compose.prod.yml up -d --force-recreate api
 ```
 
 ### Problema: Módulo "Invitados" no aparece en EventDetail

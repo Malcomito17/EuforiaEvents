@@ -1096,6 +1096,86 @@ export async function getGuestLikedSongs(guestId: string, limit: number = 50) {
 }
 
 // ============================================
+// DISPLAY SCREEN (Pantalla pública)
+// ============================================
+
+/**
+ * Obtiene todos los datos necesarios para el Display Screen público
+ * Usado por la pantalla grande de karaoke en el evento
+ */
+export async function getDisplayData(eventSlug: string) {
+  // Buscar evento por slug
+  const event = await prisma.event.findUnique({
+    where: { slug: eventSlug },
+    include: {
+      eventData: true,
+      venue: true,
+    },
+  })
+
+  if (!event) {
+    throw new KaraokeyaError('Evento no encontrado', 404)
+  }
+
+  // Obtener configuración de karaokeya
+  const config = await getOrCreateConfig(event.id)
+
+  // Obtener requests según el estado (solo mostrar QUEUED, CALLED, ON_STAGE)
+  const allRequests = await prisma.karaokeRequest.findMany({
+    where: {
+      eventId: event.id,
+      status: {
+        in: ['QUEUED', 'CALLED', 'ON_STAGE'],
+      },
+    },
+    include: {
+      guest: {
+        select: {
+          id: true,
+          displayName: true,
+        },
+      },
+      song: {
+        select: {
+          thumbnailUrl: true,
+          youtubeShareUrl: true,
+        },
+      },
+    },
+    orderBy: { queuePosition: 'asc' },
+  })
+
+  // Separar por estado
+  const onStage = allRequests.find((r) => r.status === 'ON_STAGE') || null
+  const called = allRequests.find((r) => r.status === 'CALLED') || null
+  const queued = allRequests.filter((r) => r.status === 'QUEUED')
+
+  return {
+    event: {
+      id: event.id,
+      slug: event.slug,
+      eventName: event.eventData?.eventName || 'Evento',
+      eventDate: event.eventData?.eventDate || event.createdAt,
+      location: event.venue?.name || 'Venue',
+    },
+    config: {
+      displayMode: config.displayMode,
+      displayLayout: config.displayLayout,
+      displayBreakMessage: config.displayBreakMessage,
+      displayStartMessage: config.displayStartMessage,
+      displayPromoImageUrl: config.displayPromoImageUrl,
+    },
+    queue: {
+      onStage,
+      called,
+      next: queued[0] || null,
+      upcoming: queued.slice(1, 10), // Mostrar hasta 9 más en cola
+      total: queued.length,
+    },
+  }
+}
+
+// ============================================
 // Error Class
 // ============================================
 

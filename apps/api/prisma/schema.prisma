@@ -258,6 +258,13 @@ model KaraokeyaConfig {
   youtubeSearchKeywords String  @default("[\"letra\", \"lyrics\"]")  // Keywords para búsqueda YouTube
   customMessages        String? // JSON opcional para override de mensajes: {"search.placeholder": "..."}
 
+  // v2.0: Display Screen (Pantalla pública de karaoke)
+  displayMode           String  @default("QUEUE")  // QUEUE | BREAK | START | PROMO
+  displayLayout         String  @default("HORIZONTAL")  // VERTICAL | HORIZONTAL
+  displayBreakMessage   String  @default("¡Ya regresamos! 🎤")  // Mensaje personalizable para modo BREAK
+  displayStartMessage   String  @default("¡Ya comenzamos! 🎉")  // Mensaje personalizable para modo START
+  displayPromoImageUrl  String? // URL de imagen promocional para modo PROMO
+
   event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
 
   @@map("karaokeya_configs")
