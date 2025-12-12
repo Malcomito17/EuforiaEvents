@@ -75,13 +75,21 @@ export const eventController = {
       // Respuesta pública (sin datos sensibles)
       res.json({
         id: event.id,
+        name: event.name,
         slug: event.slug,
         status: event.status,
+        startDate: event.startDate,
+        endDate: event.endDate,
         eventData: event.eventData
           ? {
               eventName: event.eventData.eventName,
               eventType: event.eventData.eventType,
               hashtag: event.eventData.hashtag,
+              instagram: event.eventData.instagram,
+              facebook: event.eventData.facebook,
+              twitter: event.eventData.twitter,
+              website: event.eventData.website,
+              eventImage: event.eventData.eventImage,
               primaryColor: event.eventData.primaryColor,
               secondaryColor: event.eventData.secondaryColor,
               accentColor: event.eventData.accentColor,
@@ -90,6 +98,11 @@ export const eventController = {
         venue: event.venue
           ? {
               name: event.venue.name,
+            }
+          : null,
+        client: event.client
+          ? {
+              name: event.client.name,
             }
           : null,
       })
