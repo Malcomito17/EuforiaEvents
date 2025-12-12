@@ -16,12 +16,22 @@ export default function EventDetails() {
   if (!event) return null
 
   // Parse social media links if they exist (assuming they're in eventData as JSON)
-  const socialMedia = event.eventData ? {
+  const rawSocialMedia = event.eventData ? {
     instagram: (event.eventData as any).instagram,
     facebook: (event.eventData as any).facebook,
     twitter: (event.eventData as any).twitter,
     website: (event.eventData as any).website,
   } : {}
+
+  // Build Instagram URL from username if not a full URL
+  const socialMedia = {
+    ...rawSocialMedia,
+    instagram: rawSocialMedia.instagram
+      ? rawSocialMedia.instagram.startsWith('http')
+        ? rawSocialMedia.instagram
+        : `https://instagram.com/${rawSocialMedia.instagram.replace('@', '')}`
+      : undefined,
+  }
 
   // Check if there's any social media or music info to show
   const hasSocialInfo = socialMedia.instagram || socialMedia.facebook || socialMedia.twitter || socialMedia.website || musicadjConfig?.spotifyAvailable || event.eventData?.hashtag
