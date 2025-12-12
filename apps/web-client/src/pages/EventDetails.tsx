@@ -13,7 +13,6 @@ import { ClientHeader } from '../components/ClientHeader'
 import { Footer } from '../components/Footer'
 
 export default function EventDetails() {
-  const { slug } = useParams<{ slug: string }>()
   const { event, musicadjConfig, karaokeyaConfig } = useEventStore()
 
   if (!event) return null

@@ -61,7 +61,7 @@ export default function KaraokeQueue() {
   const [requests, setRequests] = useState<KaraokeRequest[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [socket, setSocket] = useState<Socket | null>(null)
+  const [_socket, setSocket] = useState<Socket | null>(null)
 
   // Hook de notificaciones (100% gratis!)
   const { notifyYourTurn, requestPermission } = useKaraokeNotifications()

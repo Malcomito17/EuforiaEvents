@@ -5,7 +5,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
-  Search, ArrowLeft, Music2, Loader2, AlertCircle,
+  Search, Music2, Loader2, AlertCircle,
   Check, X, User, Mail
 } from 'lucide-react'
 import { useEventStore } from '../stores/eventStore'

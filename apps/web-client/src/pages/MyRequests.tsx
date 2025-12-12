@@ -57,7 +57,7 @@ export default function MyRequests() {
   const [requests, setRequests] = useState<SongRequest[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [socket, setSocket] = useState<Socket | null>(null)
+  const [_socket, setSocket] = useState<Socket | null>(null)
 
   // Cargar evento si no está
   useEffect(() => {

@@ -40,7 +40,7 @@ export function useKaraokeQueue(
     })
 
     // Escuchar eliminación de pedidos
-    newSocket.on('karaokeya:request:deleted', (deletedId: string) => {
+    newSocket.on('karaokeya:request:deleted', () => {
       // Si se eliminó, asumir que ya no hay turno
       // (Podríamos mejorar esto consultando la API, pero por simplicidad...)
       setHasTurn(false)
