@@ -463,6 +463,34 @@ verify_production() {
   pause
 }
 
+# 11. Force Rebuild API
+force_rebuild_api() {
+  show_banner
+  echo -e "${PURPLE}═══════════════════════════════════════════${NC}"
+  echo -e "${PURPLE}    FORCE REBUILD API (sin cache)${NC}"
+  echo -e "${PURPLE}═══════════════════════════════════════════${NC}"
+  echo ""
+
+  show_info "Este proceso rebuildeará completamente la imagen del API"
+  show_info "sin usar cache de Docker. Útil cuando hay problemas con"
+  show_info "dependencias no instaladas correctamente."
+  echo ""
+  show_info "⏱️  Este proceso puede tardar 5-10 minutos."
+  echo ""
+
+  if confirm_action "Esto detendrá los servicios temporalmente"; then
+    echo ""
+    if [ -f "./force-rebuild-api.sh" ]; then
+      bash ./force-rebuild-api.sh
+    else
+      show_error "No se encontró el script force-rebuild-api.sh"
+      return
+    fi
+  fi
+
+  pause
+}
+
 # ============================================
 # MENÚ PRINCIPAL
 # ============================================
@@ -482,6 +510,7 @@ show_menu() {
   echo -e "  ${GREEN}8)${NC} Iniciar/Detener Servicios"
   echo -e "  ${GREEN}9)${NC} Información del Sistema"
   echo -e "  ${GREEN}10)${NC} Verificar Producción"
+  echo -e "  ${YELLOW}11)${NC} Force Rebuild API (sin cache)"
   echo ""
   echo -e "  ${RED}0)${NC} Salir"
   echo ""
@@ -528,6 +557,7 @@ while true; do
     8) start_stop_services ;;
     9) system_info ;;
     10) verify_production ;;
+    11) force_rebuild_api ;;
     0)
       clear
       echo -e "${GREEN}¡Hasta luego!${NC}"
