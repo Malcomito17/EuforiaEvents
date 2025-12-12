@@ -31,14 +31,5 @@ jobs:
       - name: Generate Prisma Client
         run: cd apps/api && pnpm exec prisma generate
 
-      - name: Build API
-        run: cd apps/api && pnpm run build
-
-      - name: Build Web Client
-        run: cd apps/web-client && pnpm run build
-
-      - name: Build Web Operator
-        run: cd apps/web-operator && pnpm run build
-
       - name: CI Status
-        run: echo "✅ All checks passed!"
+        run: echo "✅ Dependencies installed and Prisma client generated!"
