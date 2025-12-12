@@ -441,6 +441,28 @@ system_info() {
   pause
 }
 
+# 10. Verificar producción
+verify_production() {
+  show_banner
+  echo -e "${PURPLE}═══════════════════════════════════════════${NC}"
+  echo -e "${PURPLE}    VERIFICAR PRODUCCIÓN${NC}"
+  echo -e "${PURPLE}═══════════════════════════════════════════${NC}"
+  echo ""
+
+  show_info "Este script ejecuta una serie de checks para validar"
+  show_info "que el sistema está funcionando correctamente."
+  echo ""
+
+  if [ -f "./verify-production.sh" ]; then
+    bash ./verify-production.sh
+  else
+    show_error "No se encontró el script verify-production.sh"
+    return
+  fi
+
+  pause
+}
+
 # ============================================
 # MENÚ PRINCIPAL
 # ============================================
@@ -459,6 +481,7 @@ show_menu() {
   echo -e "  ${GREEN}7)${NC} Backup Manual de Base de Datos"
   echo -e "  ${GREEN}8)${NC} Iniciar/Detener Servicios"
   echo -e "  ${GREEN}9)${NC} Información del Sistema"
+  echo -e "  ${GREEN}10)${NC} Verificar Producción"
   echo ""
   echo -e "  ${RED}0)${NC} Salir"
   echo ""
@@ -504,6 +527,7 @@ while true; do
     7) manual_backup ;;
     8) start_stop_services ;;
     9) system_info ;;
+    10) verify_production ;;
     0)
       clear
       echo -e "${GREEN}¡Hasta luego!${NC}"
