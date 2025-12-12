@@ -204,7 +204,7 @@ export interface CreateVenueInput {
 
 export const venuesApi = {
   list: (filters?: { type?: string; city?: string; search?: string; includeInactive?: boolean }) =>
-    api.get<{ venues: Venue[]; total: number }>('/venues', { params: filters }),
+    api.get<{ venues: Venue[]; pagination: { total: number } }>('/venues', { params: filters }),
   
   get: (id: string) =>
     api.get<Venue>(`/venues/${id}`),
@@ -249,7 +249,7 @@ export interface CreateClientInput {
 
 export const clientsApi = {
   list: (filters?: { search?: string; includeInactive?: boolean }) =>
-    api.get<{ clients: Client[]; total: number }>('/clients', { params: filters }),
+    api.get<{ clients: Client[]; pagination: { total: number } }>('/clients', { params: filters }),
   
   get: (id: string) =>
     api.get<Client>(`/clients/${id}`),
