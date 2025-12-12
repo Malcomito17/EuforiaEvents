@@ -95,18 +95,23 @@ RUN groupadd --gid 1001 nodejs && \
 RUN npm install -g pnpm@10.23.0
 
 # Copiar archivos de package.json
-COPY --chown=nodejs:nodejs package.json pnpm-workspace.yaml ./
+COPY --chown=nodejs:nodejs package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY --chown=nodejs:nodejs apps/api/package.json ./apps/api/
 COPY --chown=nodejs:nodejs packages/shared/package.json ./packages/shared/
 
-# Instalar SOLO dependencias de producción
+# Instalar dependencias de producción para todos los workspaces
 RUN pnpm install --prod --frozen-lockfile || pnpm install --prod
 
 # Copiar código compilado y Prisma desde builder
-COPY --from=builder --chown=nodejs:nodejs /app/apps/api ./apps/api
+COPY --from=builder --chown=nodejs:nodejs /app/apps/api/src ./apps/api/src
+COPY --from=builder --chown=nodejs:nodejs /app/apps/api/prisma ./apps/api/prisma
 COPY --from=builder --chown=nodejs:nodejs /app/packages ./packages
-COPY --from=builder --chown=nodejs:nodejs /app/node_modules ./node_modules
-COPY --from=builder --chown=nodejs:nodejs /app/apps/api/node_modules ./apps/api/node_modules
+
+# Regenerar Prisma Client en el runtime
+WORKDIR /app/apps/api
+RUN npx prisma generate
+
+WORKDIR /app
 
 # Crear directorios para datos persistentes
 RUN mkdir -p /app/apps/api/prisma/data && \
