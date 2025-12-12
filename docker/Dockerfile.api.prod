@@ -94,17 +94,14 @@ RUN groupadd --gid 1001 nodejs && \
 # Instalar pnpm
 RUN npm install -g pnpm@10.23.0
 
-# Copiar archivos de package.json
-COPY --chown=nodejs:nodejs package.json pnpm-workspace.yaml pnpm-lock.yaml ./
-COPY --chown=nodejs:nodejs apps/api/package.json ./apps/api/
-COPY --chown=nodejs:nodejs packages/shared/package.json ./packages/shared/
-
-# Instalar dependencias de producción para todos los workspaces
-RUN pnpm install --prod --frozen-lockfile || pnpm install --prod
-
-# Copiar node_modules del builder (incluye tsx y otras deps del root)
+# Copiar node_modules del builder (incluye tsx y todas las deps)
 COPY --from=builder --chown=nodejs:nodejs /app/node_modules ./node_modules
 COPY --from=builder --chown=nodejs:nodejs /app/apps/api/node_modules ./apps/api/node_modules
+
+# Copiar archivos de configuración
+COPY --chown=nodejs:nodejs package.json pnpm-workspace.yaml ./
+COPY --chown=nodejs:nodejs apps/api/package.json ./apps/api/
+COPY --chown=nodejs:nodejs packages/shared/package.json ./packages/shared/
 
 # Copiar código compilado y Prisma desde builder
 COPY --from=builder --chown=nodejs:nodejs /app/apps/api/src ./apps/api/src
