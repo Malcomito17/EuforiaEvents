@@ -134,10 +134,10 @@ reset_admin_password() {
     return
   fi
 
-  # Hash de la contraseña con bcrypt (usando script helper)
+  # Hash de la contraseña con bcrypt
   echo -e "${YELLOW}Generando hash de contraseña...${NC}"
 
-  HASH=$(docker exec euforia-api-prod node /app/scripts/hash-password.js "$NEW_PASSWORD" 2>&1)
+  HASH=$(docker exec euforia-api-prod bash -c "cd /app && node -e \"const bcrypt=require('bcrypt');console.log(bcrypt.hashSync(process.argv[1],10))\" \"$NEW_PASSWORD\"" 2>&1)
 
   if [ $? -ne 0 ]; then
     show_error "No se pudo generar el hash. Error: $HASH"
