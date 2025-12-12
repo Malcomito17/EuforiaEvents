@@ -3,7 +3,6 @@
  * Muestra información completa, redes sociales, módulos, y venue
  */
 
-import { useParams } from 'react-router-dom'
 import {
   Calendar, MapPin, Music2, Mic2, Instagram,
   Facebook, Twitter, Globe, ExternalLink
