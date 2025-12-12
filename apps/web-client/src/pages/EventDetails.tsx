@@ -4,21 +4,16 @@
  */
 
 import {
-  Calendar, MapPin, Music2, Mic2, Instagram,
-  Facebook, Twitter, Globe, ExternalLink
+  Calendar, MapPin, Music2, Instagram, ExternalLink
 } from 'lucide-react'
 import { useEventStore } from '../stores/eventStore'
 import { ClientHeader } from '../components/ClientHeader'
 import { Footer } from '../components/Footer'
 
 export default function EventDetails() {
-  const { event, musicadjConfig, karaokeyaConfig } = useEventStore()
+  const { event, musicadjConfig } = useEventStore()
 
   if (!event) return null
-
-  // Extract event colors with fallbacks
-  const primaryColor = event.eventData?.primaryColor || '#8b5cf6'
-  const secondaryColor = event.eventData?.secondaryColor || '#a855f7'
 
   // Parse social media links if they exist (assuming they're in eventData as JSON)
   const socialMedia = event.eventData ? {
@@ -48,7 +43,7 @@ export default function EventDetails() {
         <h1 className="text-3xl font-bold text-center">{event.name}</h1>
 
         {/* IMAGEN DEL EVENTO (si existe) */}
-        {event.eventData?.eventImage && (
+        {(event.eventData as any)?.eventImage && (
           <div className="flex justify-center">
             <img
               src={(event.eventData as any).eventImage}
@@ -73,14 +68,14 @@ export default function EventDetails() {
         )}
 
         {/* CLIENTE */}
-        {event.client && (
+        {(event as any).client && (
           <div className="flex items-center gap-3 p-4 bg-white/5 rounded-xl">
             <div className="w-6 h-6 flex items-center justify-center flex-shrink-0">
               <span className="text-2xl">🎉</span>
             </div>
             <div>
               <p className="text-sm text-white/60">Cliente</p>
-              <p className="font-semibold text-lg">{event.client.name}</p>
+              <p className="font-semibold text-lg">{(event as any).client.name}</p>
             </div>
           </div>
         )}

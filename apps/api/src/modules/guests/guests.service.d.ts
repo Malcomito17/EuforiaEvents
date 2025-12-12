@@ -11,6 +11,10 @@ export declare class GuestsService {
      */
     getById(guestId: string): Promise<GuestResponse | null>;
     /**
+     * Busca un guest por email (para autocompletar formularios)
+     */
+    lookupByEmail(email: string): Promise<GuestResponse | null>;
+    /**
      * Obtiene los pedidos de un guest (song + karaoke)
      */
     getRequests(guestId: string, eventId?: string): Promise<{

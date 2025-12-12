@@ -11,6 +11,11 @@ export declare class GuestsController {
      */
     getById(req: Request, res: Response): Promise<Response<any, Record<string, any>> | undefined>;
     /**
+     * GET /api/guests/lookup?email=xxx
+     * Busca un guest por email (para autocompletar formularios)
+     */
+    lookupByEmail(req: Request, res: Response): Promise<Response<any, Record<string, any>> | undefined>;
+    /**
      * GET /api/guests/:guestId/requests
      * Obtiene todos los pedidos de un guest (song + karaoke)
      * Query params: ?eventId=xxx (opcional)

@@ -9,6 +9,8 @@ exports.guestRoutes = router;
 // Rutas públicas
 // POST /api/guests/identify - Identificar o crear guest
 router.post('/identify', (req, res) => guests_controller_1.guestsController.identify(req, res));
+// GET /api/guests/lookup?email=xxx - Buscar guest por email (debe ir antes de /:guestId)
+router.get('/lookup', (req, res) => guests_controller_1.guestsController.lookupByEmail(req, res));
 // GET /api/guests/:guestId - Obtener guest por ID
 router.get('/:guestId', (req, res) => guests_controller_1.guestsController.getById(req, res));
 // GET /api/guests/:guestId/requests - Obtener pedidos del guest
