@@ -102,10 +102,13 @@ COPY --chown=nodejs:nodejs packages/shared/package.json ./packages/shared/
 # Instalar dependencias de producción para todos los workspaces
 RUN pnpm install --prod --frozen-lockfile || pnpm install --prod
 
+# Copiar node_modules del builder (incluye tsx y otras deps del root)
+COPY --from=builder --chown=nodejs:nodejs /app/node_modules ./node_modules
+COPY --from=builder --chown=nodejs:nodejs /app/apps/api/node_modules ./apps/api/node_modules
+
 # Copiar código compilado y Prisma desde builder
 COPY --from=builder --chown=nodejs:nodejs /app/apps/api/src ./apps/api/src
 COPY --from=builder --chown=nodejs:nodejs /app/apps/api/prisma ./apps/api/prisma
-COPY --from=builder --chown=nodejs:nodejs /app/apps/api/node_modules ./apps/api/node_modules
 COPY --from=builder --chown=nodejs:nodejs /app/packages ./packages
 
 WORKDIR /app
