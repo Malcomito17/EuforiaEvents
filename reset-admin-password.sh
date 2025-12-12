@@ -30,9 +30,28 @@ fi
 echo "Hash generado: ${HASH:0:20}..."
 echo ""
 
-# Actualizar en la base de datos
-docker exec euforia-api-prod npx prisma db execute \
-  --stdin <<< "UPDATE users SET password = '$HASH' WHERE username = 'admin';" 2>/dev/null
+# Actualizar en la base de datos usando un script temporal
+docker exec euforia-api-prod node -e "
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
+
+async function updatePassword() {
+  try {
+    await prisma.user.update({
+      where: { username: 'admin' },
+      data: { password: '$HASH' }
+    });
+    console.log('OK');
+  } catch (error) {
+    console.error('ERROR');
+    process.exit(1);
+  } finally {
+    await prisma.\$disconnect();
+  }
+}
+
+updatePassword();
+" 2>&1 | grep -q "OK"
 
 if [ $? -eq 0 ]; then
   echo "✅ Contraseña de admin actualizada correctamente"
