@@ -5,6 +5,7 @@
 import { Routes, Route } from 'react-router-dom'
 import { ThemeProvider } from './components/ThemeProvider'
 import EventLanding from './pages/EventLanding'
+import EventDetails from './pages/EventDetails'
 import MusicaDJRequest from './pages/MusicaDJRequest'
 import MyRequests from './pages/MyRequests'
 import KaraokeyaRequest from './pages/KaraokeyaRequest'
@@ -19,6 +20,7 @@ function App() {
       <Routes>
       {/* Evento por slug */}
       <Route path="/e/:slug" element={<EventLanding />} />
+      <Route path="/e/:slug/detalles" element={<EventDetails />} />
 
       {/* MUSICADJ - Pedidos musicales */}
       <Route path="/e/:slug/musicadj" element={<MusicaDJRequest />} />

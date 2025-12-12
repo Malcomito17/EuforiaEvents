@@ -5,6 +5,7 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { CheckCircle2, Music2, ArrowLeft, Plus, ListMusic } from 'lucide-react'
 import { useEventStore } from '../stores/eventStore'
+import { ClientHeader } from '../components/ClientHeader'
 
 export default function RequestSuccess() {
   const { slug } = useParams<{ slug: string }>()
@@ -12,7 +13,10 @@ export default function RequestSuccess() {
   const { event } = useEventStore()
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 text-center">
+    <div className="min-h-screen pb-safe">
+      <ClientHeader title="¡Listo!" showBackButton={false} />
+
+      <div className="flex flex-col items-center justify-center p-4 text-center" style={{ minHeight: 'calc(100vh - 80px)' }}>
       {/* Ícono de éxito */}
       <div className="relative mb-6">
         <div className="w-24 h-24 bg-green-500/20 rounded-full flex items-center justify-center">
@@ -60,6 +64,7 @@ export default function RequestSuccess() {
       <p className="mt-8 text-sm text-white/40">
         {event?.name}
       </p>
+      </div>
     </div>
   )
 }

@@ -4,9 +4,10 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { Search, Mic2, Star, Play, User, Mail, ArrowLeft, Loader2, Check, AlertCircle } from 'lucide-react'
+import { Search, Mic2, Star, Play, User, Mail, Loader2, Check, AlertCircle, MessageSquare, ExternalLink } from 'lucide-react'
 import { useEventStore } from '../stores/eventStore'
 import { useGuestStore } from '../stores/guestStore'
+import { ClientHeader } from '../components/ClientHeader'
 import { Footer } from '../components/Footer'
 import { StarRating } from '../components/StarRating'
 import { DifficultyBadge } from '../components/DifficultyBadge'
@@ -32,6 +33,7 @@ export default function KaraokeyaRequest() {
   const [showIdentification, setShowIdentification] = useState(!guest)
   const [identEmail, setIdentEmail] = useState('')
   const [identName, setIdentName] = useState('')
+  const [identWhatsapp, setIdentWhatsapp] = useState('')
   const [identError, setIdentError] = useState<string | null>(null)
 
   const [searchQuery, setSearchQuery] = useState('')
@@ -80,7 +82,7 @@ export default function KaraokeyaRequest() {
     e.preventDefault()
     setIdentError(null)
     try {
-      await identifyGuest(identEmail, identName)
+      await identifyGuest(identEmail, identName, identWhatsapp || undefined)
       setShowIdentification(false)
     } catch (err) {
       setIdentError(err instanceof Error ? err.message : 'Error al identificarse')
@@ -150,21 +152,7 @@ export default function KaraokeyaRequest() {
   if (showIdentification) {
     return (
       <div className="min-h-screen pb-safe">
-        {/* Header */}
-        <header className="sticky top-0 bg-gray-900/80 backdrop-blur-lg border-b border-white/10 z-10">
-          <div className="max-w-lg mx-auto px-4 py-3 flex items-center gap-3">
-            <button
-              onClick={() => navigate(`/e/${slug}`)}
-              className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </button>
-            <div className="flex-1">
-              <h1 className="font-semibold">Identificación</h1>
-              <p className="text-xs text-white/60">{event?.name}</p>
-            </div>
-          </div>
-        </header>
+        <ClientHeader title="Identificación" subtitle={event?.name} showTurnNotification={false} />
 
         <main className="max-w-lg mx-auto px-4 py-8">
           {/* Logo corporativo */}
@@ -235,6 +223,26 @@ export default function KaraokeyaRequest() {
               </div>
             </div>
 
+            <div>
+              <label className="block text-sm font-medium mb-2 text-white/80">
+                WhatsApp (opcional)
+              </label>
+              <div className="relative">
+                <MessageSquare className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
+                <input
+                  type="tel"
+                  value={identWhatsapp}
+                  onChange={(e) => setIdentWhatsapp(e.target.value)}
+                  placeholder="Ej: +5491123456789"
+                  className="input-field pl-12"
+                  autoComplete="tel"
+                />
+              </div>
+              <p className="text-xs text-white/50 mt-1">
+                Para avisarte cuando llegue tu turno en Karaoke
+              </p>
+            </div>
+
             <button
               type="submit"
               disabled={isIdentifying || !identEmail.trim() || !identName.trim()}
@@ -260,22 +268,13 @@ export default function KaraokeyaRequest() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-primary-900 to-gray-900">
+      <ClientHeader
+        title="KaraokeYa"
+        subtitle={`Hola, ${guest?.displayName}`}
+      />
+
       <div className="container mx-auto px-4 py-8 max-w-2xl">
         <div className="bg-white rounded-2xl shadow-2xl p-6">
-          {/* Back button */}
-          <button
-            onClick={() => navigate(`/e/${slug}`)}
-            className="mb-4 flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
-          >
-            <ArrowLeft className="w-5 h-5" />
-            <span className="text-sm font-medium">Volver al inicio</span>
-          </button>
-
-          <div className="text-center mb-6">
-            <Mic2 className="w-12 h-12 text-primary-600 mx-auto mb-3" />
-            <h1 className="text-2xl font-bold text-gray-900">Buscá tu tema de karaoke</h1>
-            <p className="text-gray-600 text-sm mt-1">Hola, {guest?.displayName}</p>
-          </div>
 
           {!selectedSong ? (
             <>
@@ -297,9 +296,21 @@ export default function KaraokeyaRequest() {
                   <div className="space-y-2">
                     {catalogResults.map(song => (
                       <button key={song.catalogId} onClick={() => handleSelectSong(song)}
-                        className="w-full flex items-center gap-3 p-3 bg-primary-50 hover:bg-primary-100 rounded-lg transition text-left border border-primary-200">
+                        className="relative w-full flex items-center gap-3 p-3 bg-primary-50 hover:bg-primary-100 rounded-lg transition text-left border border-primary-200">
+                        {/* YouTube Preview Link */}
+                        <a
+                          href={song.youtubeShareUrl || `https://www.youtube.com/watch?v=${song.youtubeId}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="absolute top-2 right-2 p-1.5 bg-white/90 hover:bg-white rounded-full shadow-sm transition-all hover:shadow-md z-10"
+                          title="Ver en YouTube"
+                        >
+                          <ExternalLink className="w-4 h-4 text-gray-700" />
+                        </a>
+
                         {song.thumbnailUrl && <img src={song.thumbnailUrl} alt="" className="w-16 h-16 rounded object-cover" />}
-                        <div className="flex-1 min-w-0">
+                        <div className="flex-1 min-w-0 pr-8">
                           <div className="font-semibold text-gray-900 truncate">{song.title}</div>
                           <div className="text-sm text-gray-600 truncate">{song.artist}</div>
 
@@ -330,9 +341,21 @@ export default function KaraokeyaRequest() {
                   <div className="space-y-2">
                     {youtubeResults.map(song => (
                       <button key={song.youtubeId} onClick={() => handleSelectSong(song)}
-                        className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition text-left border border-gray-200">
+                        className="relative w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition text-left border border-gray-200">
+                        {/* YouTube Preview Link */}
+                        <a
+                          href={`https://www.youtube.com/watch?v=${song.youtubeId}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="absolute top-2 right-2 p-1.5 bg-white/90 hover:bg-white rounded-full shadow-sm transition-all hover:shadow-md z-10"
+                          title="Ver en YouTube"
+                        >
+                          <ExternalLink className="w-4 h-4 text-gray-700" />
+                        </a>
+
                         {song.thumbnailUrl && <img src={song.thumbnailUrl} alt="" className="w-16 h-16 rounded object-cover" />}
-                        <div className="flex-1 min-w-0">
+                        <div className="flex-1 min-w-0 pr-8">
                           <div className="font-semibold text-gray-900 truncate">{song.title}</div>
                           <div className="text-sm text-gray-600 truncate">{song.artist}</div>
                         </div>

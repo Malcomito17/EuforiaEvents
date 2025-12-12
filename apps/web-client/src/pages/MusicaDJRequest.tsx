@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 import { useEventStore } from '../stores/eventStore'
 import { useGuestStore } from '../stores/guestStore'
+import { ClientHeader } from '../components/ClientHeader'
 import * as api from '../services/api'
 import type { SpotifyTrack, CreateSongRequestInput } from '../types'
 
@@ -170,20 +171,7 @@ export default function MusicaDJRequest() {
     return (
       <div className="min-h-screen pb-safe">
         {/* Header */}
-        <header className="sticky top-0 bg-gray-900/80 backdrop-blur-lg border-b border-white/10 z-10">
-          <div className="max-w-lg mx-auto px-4 py-3 flex items-center gap-3">
-            <button
-              onClick={() => navigate(`/e/${slug}`)}
-              className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </button>
-            <div className="flex-1">
-              <h1 className="font-semibold">Identificación</h1>
-              <p className="text-xs text-white/60">{event.name}</p>
-            </div>
-          </div>
-        </header>
+        <ClientHeader title="Identificación" subtitle={event?.name} />
 
         <main className="max-w-lg mx-auto px-4 py-8">
           {/* Logo corporativo */}
@@ -295,22 +283,7 @@ export default function MusicaDJRequest() {
   return (
     <div className="min-h-screen pb-safe">
       {/* Header */}
-      <header className="sticky top-0 bg-gray-900/80 backdrop-blur-lg border-b border-white/10 z-10">
-        <div className="max-w-lg mx-auto px-4 py-3 flex items-center gap-3">
-          <button
-            onClick={() => navigate(`/e/${slug}`)}
-            className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </button>
-          <div className="flex-1">
-            <h1 className="font-semibold">Pedí tu tema</h1>
-            <p className="text-xs text-white/60">
-              {guest.displayName} • {event.name}
-            </p>
-          </div>
-        </div>
-      </header>
+      <ClientHeader title="MusicaDJ" subtitle={event?.name} />
 
       <main className="max-w-lg mx-auto px-4 py-6">
         {/* Error global */}

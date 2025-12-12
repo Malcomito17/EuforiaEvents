@@ -5,11 +5,12 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
-  ArrowLeft, Music2, Loader2, AlertCircle, Plus,
+  Music2, Loader2, AlertCircle, Plus,
   Clock, Star, Zap, CheckCircle2, XCircle
 } from 'lucide-react'
 import { useEventStore } from '../stores/eventStore'
 import { useGuestStore } from '../stores/guestStore'
+import { ClientHeader } from '../components/ClientHeader'
 import * as api from '../services/api'
 import type { SongRequest, SongRequestStatus } from '../types'
 import { io, Socket } from 'socket.io-client'
@@ -148,25 +149,7 @@ export default function MyRequests() {
   return (
     <div className="min-h-screen pb-safe">
       {/* Header */}
-      <header className="sticky top-0 bg-gray-900/80 backdrop-blur-lg border-b border-white/10 z-10">
-        <div className="max-w-lg mx-auto px-4 py-3 flex items-center gap-3">
-          <button
-            onClick={() => navigate(`/e/${slug}`)}
-            className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </button>
-          <div className="flex-1">
-            <h1 className="font-semibold">Mis pedidos</h1>
-            <p className="text-xs text-white/60">
-              {guest.displayName} • {event.name}
-            </p>
-          </div>
-          {socket?.connected && (
-            <div className="w-2 h-2 bg-green-500 rounded-full" title="Conectado" />
-          )}
-        </div>
-      </header>
+      <ClientHeader title="Mis Pedidos" subtitle={event?.name} />
 
       <main className="max-w-lg mx-auto px-4 py-6">
         {/* Error */}

@@ -663,6 +663,33 @@ export async function getGuestRequests(eventId: string, guestId: string) {
 }
 
 /**
+ * Obtiene la cola pública del evento (solo QUEUED, CALLED, ON_STAGE)
+ */
+export async function getPublicQueue(eventId: string) {
+  return await prisma.karaokeRequest.findMany({
+    where: {
+      eventId,
+      status: {
+        in: ['QUEUED', 'CALLED', 'ON_STAGE']
+      }
+    },
+    include: {
+      song: true,
+      guest: {
+        select: {
+          id: true,
+          displayName: true
+        }
+      }
+    },
+    orderBy: [
+      { queuePosition: 'asc' },
+      { createdAt: 'asc' }
+    ]
+  })
+}
+
+/**
  * Obtiene una solicitud específica
  */
 export async function getRequestById(eventId: string, requestId: string) {

@@ -5,11 +5,12 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
-  ArrowLeft, Mic2, Loader2, AlertCircle, Plus,
-  Clock, Phone, Users, CheckCircle2, UserX, XCircle
+  Mic2, Loader2, AlertCircle, Plus,
+  Clock, Phone, Users, CheckCircle2, UserX, XCircle, Trash2
 } from 'lucide-react'
 import { useEventStore } from '../stores/eventStore'
 import { useGuestStore } from '../stores/guestStore'
+import { ClientHeader } from '../components/ClientHeader'
 import { StarRating } from '../components/StarRating'
 import { DifficultyBadge } from '../components/DifficultyBadge'
 import * as api from '../services/api'
@@ -70,6 +71,21 @@ export default function KaraokeQueue() {
     requestPermission()
   }, [])
 
+  // Handler para cancelar un pedido
+  const handleCancelRequest = async (requestId: string, title: string) => {
+    if (!confirm(`¿Estás seguro que querés cancelar "${title}"?`)) {
+      return
+    }
+
+    try {
+      await api.deleteKaraokeRequest(event!.id, requestId)
+      // El socket se encargará de actualizar la lista
+    } catch (err) {
+      console.error('Error al cancelar pedido:', err)
+      alert('No se pudo cancelar el pedido. Intentá de nuevo.')
+    }
+  }
+
   // Cargar evento si no está
   useEffect(() => {
     if (slug && !event) {
@@ -84,7 +100,7 @@ export default function KaraokeQueue() {
     }
   }, [guest, slug, navigate])
 
-  // Cargar pedidos
+  // Cargar pedidos (cola pública)
   useEffect(() => {
     if (!guest || !event) return
 
@@ -93,7 +109,7 @@ export default function KaraokeQueue() {
       setError(null)
 
       try {
-        const result = await api.getGuestKaraokeQueue(event.id, guest.id)
+        const result = await api.getPublicKaraokeQueue(event.id)
         setRequests(result.requests)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Error al cargar cola')
@@ -117,26 +133,36 @@ export default function KaraokeQueue() {
       newSocket.emit('join', `event:${event.id}`)
     })
 
-    // Listen for request updates
+    // Listen for request updates (todos los pedidos del evento)
     newSocket.on('karaokeya:request:updated', (updatedRequest: KaraokeRequest) => {
-      if (updatedRequest.guestId === guest.id) {
-        setRequests((prev) => {
-          const prevRequest = prev.find(r => r.id === updatedRequest.id)
+      setRequests((prev) => {
+        const prevRequest = prev.find(r => r.id === updatedRequest.id)
 
-          // Si cambió a CALLED, mostrar notificación!
-          if (prevRequest && prevRequest.status !== 'CALLED' && updatedRequest.status === 'CALLED') {
-            notifyYourTurn(updatedRequest.title, updatedRequest.artist || undefined)
+        // Si es del usuario actual y cambió a CALLED, mostrar notificación!
+        if (updatedRequest.guestId === guest.id && prevRequest && prevRequest.status !== 'CALLED' && updatedRequest.status === 'CALLED') {
+          notifyYourTurn(updatedRequest.title, updatedRequest.artist || undefined)
+        }
+
+        // Si el pedido actualizado está en cola/llamado/escenario, actualizarlo
+        if (['QUEUED', 'CALLED', 'ON_STAGE'].includes(updatedRequest.status)) {
+          const exists = prev.find(r => r.id === updatedRequest.id)
+          if (exists) {
+            return prev.map((req) => (req.id === updatedRequest.id ? updatedRequest : req))
+          } else {
+            // Agregar si no estaba (cambió de otro estado a activo)
+            return [...prev, updatedRequest].sort((a, b) => (a.queuePosition || 0) - (b.queuePosition || 0))
           }
-
-          return prev.map((req) => (req.id === updatedRequest.id ? updatedRequest : req))
-        })
-      }
+        } else {
+          // Remover si cambió a otro estado (COMPLETED, CANCELLED, etc)
+          return prev.filter((req) => req.id !== updatedRequest.id)
+        }
+      })
     })
 
-    // Listen for new requests
+    // Listen for new requests (todos los del evento)
     newSocket.on('karaokeya:request:new', (newRequest: KaraokeRequest) => {
-      if (newRequest.guestId === guest.id) {
-        setRequests((prev) => [newRequest, ...prev])
+      if (['QUEUED', 'CALLED', 'ON_STAGE'].includes(newRequest.status)) {
+        setRequests((prev) => [...prev, newRequest].sort((a, b) => (a.queuePosition || 0) - (b.queuePosition || 0)))
       }
     })
 
@@ -169,26 +195,11 @@ export default function KaraokeQueue() {
 
   return (
     <div className="min-h-screen pb-safe">
-      {/* Header */}
-      <header className="sticky top-0 bg-gray-900/80 backdrop-blur-lg border-b border-white/10 z-10">
-        <div className="max-w-lg mx-auto px-4 py-3 flex items-center gap-3">
-          <button
-            onClick={() => navigate(`/e/${slug}`)}
-            className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </button>
-          <div className="flex-1">
-            <h1 className="font-semibold">Mi Cola</h1>
-            <p className="text-xs text-white/60">
-              {guest.displayName} • {event.name}
-            </p>
-          </div>
-          {socket?.connected && (
-            <div className="w-2 h-2 bg-green-500 rounded-full" title="Conectado" />
-          )}
-        </div>
-      </header>
+      <ClientHeader
+        title="Cola del Evento"
+        subtitle={event.name}
+        showTurnNotification={false}
+      />
 
       <main className="max-w-lg mx-auto px-4 py-6">
         {/* Banner "ES TU TURNO" */}
@@ -246,21 +257,21 @@ export default function KaraokeQueue() {
             <div className="grid grid-cols-3 gap-3">
               <div className="card text-center">
                 <p className="text-2xl font-bold text-yellow-400">
-                  {requests.filter((r) => r.status === 'QUEUED' || r.status === 'CALLED').length}
+                  {requests.length}
                 </p>
                 <p className="text-xs text-white/60 mt-1">En Cola</p>
               </div>
               <div className="card text-center">
-                <p className="text-2xl font-bold text-green-400">
-                  {requests.filter((r) => r.status === 'COMPLETED').length}
+                <p className="text-2xl font-bold text-primary-400">
+                  {requests.filter((r) => r.guestId === guest.id).length}
                 </p>
-                <p className="text-xs text-white/60 mt-1">Completados</p>
+                <p className="text-xs text-white/60 mt-1">Tus Pedidos</p>
               </div>
               <div className="card text-center">
-                <p className="text-2xl font-bold text-white/40">
-                  {requests.length}
+                <p className="text-2xl font-bold text-purple-400">
+                  {requests.filter((r) => r.status === 'ON_STAGE').length}
                 </p>
-                <p className="text-xs text-white/60 mt-1">Total</p>
+                <p className="text-xs text-white/60 mt-1">En Escenario</p>
               </div>
             </div>
 
@@ -269,9 +280,24 @@ export default function KaraokeQueue() {
               {requests.map((request) => {
                 const thumbnailUrl = request.song?.thumbnailUrl || null
                 const youtubeShareUrl = request.song?.youtubeShareUrl || null
+                const isMyRequest = request.guestId === guest.id
 
                 return (
-                  <div key={request.id} className="card">
+                  <div
+                    key={request.id}
+                    className={`card relative ${isMyRequest ? 'border-2 border-primary-500 bg-primary-500/10' : ''}`}
+                  >
+                    {/* Cancel button - only for user's own requests */}
+                    {isMyRequest && (
+                      <button
+                        onClick={() => handleCancelRequest(request.id, request.title)}
+                        className="absolute top-3 right-3 p-2 bg-red-500/20 hover:bg-red-500/30 rounded-full transition-colors group"
+                        title="Cancelar pedido"
+                      >
+                        <Trash2 className="w-4 h-4 text-red-400 group-hover:text-red-300" />
+                      </button>
+                    )}
+
                     <div className="flex items-start gap-4">
                       {/* Thumbnail */}
                       {thumbnailUrl ? (
@@ -296,8 +322,11 @@ export default function KaraokeQueue() {
                             </span>
                           )}
                         </div>
-                        <p className="text-sm text-white/60 truncate mb-2">
+                        <p className="text-sm text-white/60 truncate">
                           {request.artist || 'Artista desconocido'}
+                        </p>
+                        <p className="text-xs text-white/50 truncate mb-2">
+                          Pedido por: {isMyRequest ? 'Vos' : (request.guest?.displayName || 'Invitado')}
                         </p>
 
                         {/* Rating + Difficulty */}

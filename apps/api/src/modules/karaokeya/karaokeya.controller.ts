@@ -182,6 +182,22 @@ export async function getGuestRequests(req: Request, res: Response, next: NextFu
 }
 
 /**
+ * GET /api/events/:eventId/karaokeya/queue
+ * Obtiene la cola pública del evento (solo QUEUED, CALLED, ON_STAGE)
+ */
+export async function getPublicQueue(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { eventId } = req.params
+
+    const requests = await service.getPublicQueue(eventId)
+
+    res.json({ requests, total: requests.length })
+  } catch (error) {
+    next(error)
+  }
+}
+
+/**
  * GET /api/events/:eventId/karaokeya/requests/:requestId
  * Obtiene una solicitud específica
  */

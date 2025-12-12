@@ -107,11 +107,25 @@ export async function createKaraokeRequest(
   return data
 }
 
+export async function deleteKaraokeRequest(
+  eventId: string,
+  requestId: string
+): Promise<void> {
+  await api.delete(`/events/${eventId}/karaokeya/requests/${requestId}`)
+}
+
 export async function getGuestKaraokeQueue(
   eventId: string,
   guestId: string
 ): Promise<{ requests: KaraokeRequest[]; total: number }> {
   const { data } = await api.get(`/events/${eventId}/karaokeya/guests/${guestId}/requests`)
+  return data
+}
+
+export async function getPublicKaraokeQueue(
+  eventId: string
+): Promise<{ requests: KaraokeRequest[]; total: number }> {
+  const { data } = await api.get(`/events/${eventId}/karaokeya/queue`)
   return data
 }
 

@@ -12,14 +12,16 @@ import { Footer } from '../components/Footer'
 export default function EventLanding() {
   const { slug } = useParams<{ slug: string }>()
   const navigate = useNavigate()
-  const { event, musicadjConfig, karaokeyaConfig, loading, error, loadEvent } = useEventStore()
+  const { event, musicadjConfig, karaokeyaConfig, loading, error, loadEvent, reset } = useEventStore()
   const { guest, clearGuest } = useGuestStore()
 
   useEffect(() => {
+    // Limpiar estado anterior para evitar mostrar errores de carga previa
+    reset()
     if (slug) {
       loadEvent(slug)
     }
-  }, [slug, loadEvent])
+  }, [slug, loadEvent, reset])
 
   // Loading
   if (loading) {
@@ -145,6 +147,10 @@ export default function EventLanding() {
 
   if (!event) return null
 
+  // Extract event colors with fallbacks
+  const primaryColor = event.eventData?.primaryColor || '#8b5cf6' // purple-600 default
+  const secondaryColor = event.eventData?.secondaryColor || '#a855f7' // purple-500 default
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4">
       {/* Header */}
@@ -174,7 +180,7 @@ export default function EventLanding() {
         {musicadjConfig?.enabled && (
           <div className="bg-gradient-to-br from-primary-600/20 to-primary-800/20 rounded-2xl p-4 backdrop-blur-sm border border-primary-400/30">
             <div className="flex items-center gap-2 mb-3">
-              <Music2 className="w-5 h-5 text-primary-300" />
+              <Music2 className="w-5 h-5" style={{ color: primaryColor }} />
               <h3 className="font-semibold text-primary-100 text-sm uppercase tracking-wide">
                 MUSICADJ
               </h3>
@@ -184,8 +190,8 @@ export default function EventLanding() {
                 onClick={() => navigate(`/e/${slug}/musicadj`)}
                 className="w-full card hover:bg-white/20 transition-all flex items-center gap-4 text-left"
               >
-                <div className="w-14 h-14 bg-primary-600 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <Music2 className="w-7 h-7" />
+                <div className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: primaryColor }}>
+                  <Music2 className="w-7 h-7" style={{ color: 'white' }} />
                 </div>
                 <div>
                   <h2 className="text-lg font-semibold">Pedí tu tema</h2>
@@ -199,8 +205,8 @@ export default function EventLanding() {
                   onClick={() => navigate(`/e/${slug}/musicadj/mis-pedidos`)}
                   className="w-full card hover:bg-white/20 transition-all flex items-center gap-4 text-left"
                 >
-                  <div className="w-14 h-14 bg-primary-500/30 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <ListMusic className="w-7 h-7" />
+                  <div className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${primaryColor}30` }}>
+                    <ListMusic className="w-7 h-7" style={{ color: primaryColor }} />
                   </div>
                   <div className="flex-1">
                     <h2 className="text-lg font-semibold">Mis pedidos</h2>
@@ -216,7 +222,7 @@ export default function EventLanding() {
         {karaokeyaConfig?.enabled && (
           <div className="bg-gradient-to-br from-purple-600/20 to-purple-800/20 rounded-2xl p-4 backdrop-blur-sm border border-purple-400/30">
             <div className="flex items-center gap-2 mb-3">
-              <Mic2 className="w-5 h-5 text-purple-300" />
+              <Mic2 className="w-5 h-5" style={{ color: secondaryColor }} />
               <h3 className="font-semibold text-purple-100 text-sm uppercase tracking-wide">
                 KARAOKEYA
               </h3>
@@ -226,8 +232,8 @@ export default function EventLanding() {
                 onClick={() => navigate(`/e/${slug}/karaokeya`)}
                 className="w-full card hover:bg-white/20 transition-all flex items-center gap-4 text-left"
               >
-                <div className="w-14 h-14 bg-purple-600 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <Mic2 className="w-7 h-7" />
+                <div className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: secondaryColor }}>
+                  <Mic2 className="w-7 h-7" style={{ color: 'white' }} />
                 </div>
                 <div>
                   <h2 className="text-lg font-semibold">Pedí tu canción</h2>
@@ -241,8 +247,8 @@ export default function EventLanding() {
                   onClick={() => navigate(`/e/${slug}/karaokeya/mi-cola`)}
                   className="w-full card hover:bg-white/20 transition-all flex items-center gap-4 text-left"
                 >
-                  <div className="w-14 h-14 bg-purple-500/30 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <Mic2 className="w-7 h-7" />
+                  <div className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${secondaryColor}30` }}>
+                    <Mic2 className="w-7 h-7" style={{ color: secondaryColor }} />
                   </div>
                   <div className="flex-1">
                     <h2 className="text-lg font-semibold">Mi Cola</h2>
