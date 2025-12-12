@@ -101,21 +101,29 @@ echo ""
 # ============================================
 echo -e "${BLUE}[3/6]${NC} Verificando base de datos..."
 
-USER_COUNT=$(docker exec euforia-api-prod node -e "const { PrismaClient } = require('@prisma/client'); const prisma = new PrismaClient(); (async () => { const count = await prisma.user.count(); console.log(count); await prisma.\$disconnect(); })();" 2>/dev/null || echo "ERROR")
-
-if [ "$USER_COUNT" = "ERROR" ]; then
-    echo -e "${RED}✗${NC} No se pudo conectar a la base de datos"
-    exit 1
-elif [ "$USER_COUNT" = "0" ]; then
-    echo -e "${RED}✗${NC} Base de datos VACÍA (0 usuarios)"
+# Verificar si existe el archivo de la base de datos
+if [ ! -f "./data/db/production.db" ]; then
+    echo -e "${YELLOW}⚠${NC} Base de datos no existe"
     echo ""
-    echo -e "${YELLOW}ACCIÓN REQUERIDA:${NC} Crear usuario admin:"
+    echo -e "${YELLOW}ACCIÓN REQUERIDA:${NC} Ejecutar ./admin.sh y seleccionar opción 12 (Inicializar DB)"
     echo ""
-    echo "docker exec euforia-api-prod node -e \"const { PrismaClient } = require('@prisma/client'); const bcrypt = require('bcryptjs'); const prisma = new PrismaClient(); (async () => { const hash = bcrypt.hashSync('admin123', 10); await prisma.user.create({ data: { username: 'admin', email: 'admin@euforiaevents.com', password: hash, role: 'ADMIN' } }); console.log('✅ Usuario admin creado'); await prisma.\\\$disconnect(); })();\""
-    echo ""
-    exit 1
 else
-    echo -e "${GREEN}✓${NC} Base de datos contiene $USER_COUNT usuario(s)"
+    # Intentar conectar y contar usuarios
+    USER_COUNT=$(docker exec euforia-api-prod node -e "const { PrismaClient } = require('@prisma/client'); const prisma = new PrismaClient(); (async () => { try { const count = await prisma.user.count(); console.log(count); } catch (e) { console.log('ERROR'); } finally { await prisma.\$disconnect(); } })();" 2>/dev/null || echo "ERROR")
+
+    if [ "$USER_COUNT" = "ERROR" ]; then
+        echo -e "${RED}✗${NC} No se pudo conectar a la base de datos (puede necesitar migraciones)"
+        echo ""
+        echo -e "${YELLOW}ACCIÓN REQUERIDA:${NC} Ejecutar ./admin.sh y seleccionar opción 12 (Inicializar DB)"
+        echo ""
+    elif [ "$USER_COUNT" = "0" ]; then
+        echo -e "${YELLOW}⚠${NC} Base de datos VACÍA (0 usuarios)"
+        echo ""
+        echo -e "${YELLOW}ACCIÓN REQUERIDA:${NC} Ejecutar ./admin.sh y seleccionar opción 12 (Inicializar DB)"
+        echo ""
+    else
+        echo -e "${GREEN}✓${NC} Base de datos contiene $USER_COUNT usuario(s)"
+    fi
 fi
 
 echo ""

@@ -491,6 +491,36 @@ force_rebuild_api() {
   pause
 }
 
+# 12. Inicializar Base de Datos
+init_database() {
+  show_banner
+  echo -e "${PURPLE}═══════════════════════════════════════════${NC}"
+  echo -e "${PURPLE}    INICIALIZAR BASE DE DATOS${NC}"
+  echo -e "${PURPLE}═══════════════════════════════════════════${NC}"
+  echo ""
+
+  show_info "Este proceso inicializará la base de datos SQLite:"
+  echo ""
+  echo "  1. Crear directorio /data/db si no existe"
+  echo "  2. Ejecutar migraciones de Prisma (db push)"
+  echo "  3. Crear usuario admin si no existe"
+  echo ""
+  show_warning "Es seguro ejecutar esto múltiples veces, no afectará datos existentes."
+  echo ""
+
+  if confirm_action "Inicializar la base de datos"; then
+    echo ""
+    if [ -f "./init-database.sh" ]; then
+      bash ./init-database.sh
+    else
+      show_error "No se encontró el script init-database.sh"
+      return
+    fi
+  fi
+
+  pause
+}
+
 # ============================================
 # MENÚ PRINCIPAL
 # ============================================
@@ -511,6 +541,7 @@ show_menu() {
   echo -e "  ${GREEN}9)${NC} Información del Sistema"
   echo -e "  ${GREEN}10)${NC} Verificar Producción"
   echo -e "  ${YELLOW}11)${NC} Force Rebuild API (sin cache)"
+  echo -e "  ${BLUE}12)${NC} Inicializar Base de Datos"
   echo ""
   echo -e "  ${RED}0)${NC} Salir"
   echo ""
@@ -558,6 +589,7 @@ while true; do
     9) system_info ;;
     10) verify_production ;;
     11) force_rebuild_api ;;
+    12) init_database ;;
     0)
       clear
       echo -e "${GREEN}¡Hasta luego!${NC}"
