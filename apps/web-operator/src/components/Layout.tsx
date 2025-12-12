@@ -193,7 +193,7 @@ export function Layout({ children }: LayoutProps) {
             )}
           </button>
 
-          {isExpanded && (
+          {isExpanded && item.children && (
             <div className="mt-1 space-y-1">
               {item.children.map((child) => renderNavItem(child, depth + 1))}
             </div>
