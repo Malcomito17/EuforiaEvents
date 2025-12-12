@@ -368,7 +368,7 @@ export default function KaraokeQueue() {
                     </div>
 
                     {/* Message based on status */}
-                    {request.status === 'QUEUED' && (
+                    {request.status === 'QUEUED' && isMyRequest && (
                       <p className="mt-3 text-sm text-yellow-300 bg-yellow-500/10 px-3 py-2 rounded-lg">
                         Estás en la posición {request.queuePosition} de la cola
                       </p>

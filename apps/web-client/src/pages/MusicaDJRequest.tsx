@@ -286,6 +286,15 @@ export default function MusicaDJRequest() {
       <ClientHeader title="MusicaDJ" subtitle={event?.name} />
 
       <main className="max-w-lg mx-auto px-4 py-6">
+        {/* Mensaje de bienvenida */}
+        {musicadjConfig?.welcomeMessage && (
+          <div className="mb-6 p-4 bg-primary-500/10 border border-primary-500/30 rounded-xl">
+            <p className="text-white/90 leading-relaxed text-center">
+              {musicadjConfig.welcomeMessage}
+            </p>
+          </div>
+        )}
+
         {/* Error global */}
         {error && (
           <div className="mb-4 p-4 bg-red-500/20 border border-red-500/50 rounded-xl flex items-start gap-3">

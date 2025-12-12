@@ -43,176 +43,108 @@ export default function EventDetails() {
     <div className="min-h-screen pb-20">
       <ClientHeader title="Detalles del Evento" />
 
-      <main className="max-w-lg mx-auto px-4 py-6 space-y-6">
-        {/* Event Header */}
-        <div className="card text-center">
-          <div
-            className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4"
-            style={{ backgroundColor: primaryColor }}
-          >
-            <Music2 className="w-10 h-10 text-white" />
+      <main className="max-w-lg mx-auto px-4 py-6 space-y-4">
+        {/* NOMBRE DEL EVENTO */}
+        <h1 className="text-3xl font-bold text-center">{event.name}</h1>
+
+        {/* IMAGEN DEL EVENTO (si existe) */}
+        {event.eventData?.eventImage && (
+          <div className="flex justify-center">
+            <img
+              src={(event.eventData as any).eventImage}
+              alt={event.name}
+              className="w-full max-w-md aspect-square object-cover rounded-2xl shadow-lg"
+            />
           </div>
-          <h1 className="text-2xl font-bold mb-2">{event.name}</h1>
-          {event.eventData?.eventType && (
-            <p className="text-white/60">{event.eventData.eventType}</p>
+        )}
+
+        {/* Separador */}
+        <div className="h-px bg-white/10 my-4" />
+
+        {/* VENUE */}
+        {event.venue && (
+          <div className="flex items-center gap-3 p-4 bg-white/5 rounded-xl">
+            <MapPin className="w-6 h-6 text-primary-400 flex-shrink-0" />
+            <div>
+              <p className="text-sm text-white/60">Lugar</p>
+              <p className="font-semibold text-lg">{event.venue.name}</p>
+            </div>
+          </div>
+        )}
+
+        {/* CLIENTE */}
+        {event.client && (
+          <div className="flex items-center gap-3 p-4 bg-white/5 rounded-xl">
+            <div className="w-6 h-6 flex items-center justify-center flex-shrink-0">
+              <span className="text-2xl">🎉</span>
+            </div>
+            <div>
+              <p className="text-sm text-white/60">Cliente</p>
+              <p className="font-semibold text-lg">{event.client.name}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Separador */}
+        <div className="h-px bg-white/10 my-4" />
+
+        {/* FECHA DE INICIO */}
+        {event.startDate && (
+          <div className="flex items-center gap-3 p-4 bg-white/5 rounded-xl">
+            <Calendar className="w-6 h-6 text-primary-400 flex-shrink-0" />
+            <div>
+              <p className="text-sm text-white/60">Fecha y Hora</p>
+              <p className="font-semibold text-lg">{formatDate(event.startDate)}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Separador */}
+        <div className="h-px bg-white/10 my-4" />
+
+        {/* REDES SOCIALES (Instagram, Spotify, Hashtag) */}
+        <div className="space-y-3">
+          {/* Instagram */}
+          {socialMedia.instagram && (
+            <a
+              href={socialMedia.instagram}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 p-4 bg-gradient-to-r from-purple-500/10 to-pink-500/10 hover:from-purple-500/20 hover:to-pink-500/20 rounded-xl transition-colors border border-pink-500/30"
+            >
+              <Instagram className="w-6 h-6 text-pink-400 flex-shrink-0" />
+              <div className="flex-1">
+                <p className="font-semibold">Instagram</p>
+                <p className="text-sm text-white/60">Seguinos en Instagram</p>
+              </div>
+              <ExternalLink className="w-5 h-5 text-white/40" />
+            </a>
           )}
+
+          {/* Spotify */}
+          {musicadjConfig?.spotifyAvailable && (
+            <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-green-500/10 to-emerald-500/10 rounded-xl border border-green-500/30">
+              <Music2 className="w-6 h-6 text-green-400 flex-shrink-0" />
+              <div className="flex-1">
+                <p className="font-semibold">Spotify Disponible</p>
+                <p className="text-sm text-white/60">Pedí música desde Spotify</p>
+              </div>
+            </div>
+          )}
+
+          {/* Hashtag */}
           {event.eventData?.hashtag && (
-            <p className="text-primary-400 mt-2 font-medium">
-              {event.eventData.hashtag}
-            </p>
-          )}
-        </div>
-
-        {/* Event Info */}
-        <div className="card space-y-4">
-          <h2 className="text-lg font-semibold mb-3">Información</h2>
-
-          {/* Dates */}
-          {event.startDate && (
-            <div className="flex items-start gap-3">
-              <Calendar className="w-5 h-5 text-primary-400 mt-0.5 flex-shrink-0" />
-              <div>
-                <p className="text-sm text-white/60">Inicio</p>
-                <p className="font-medium">{formatDate(event.startDate)}</p>
+            <div className="flex items-center gap-3 p-4 bg-primary-500/10 rounded-xl border border-primary-500/30">
+              <div className="w-6 h-6 flex items-center justify-center flex-shrink-0">
+                <span className="text-2xl">#</span>
               </div>
-            </div>
-          )}
-
-          {event.endDate && (
-            <div className="flex items-start gap-3">
-              <Calendar className="w-5 h-5 text-primary-400 mt-0.5 flex-shrink-0" />
-              <div>
-                <p className="text-sm text-white/60">Fin</p>
-                <p className="font-medium">{formatDate(event.endDate)}</p>
-              </div>
-            </div>
-          )}
-
-          {/* Venue */}
-          {event.venue && (
-            <div className="flex items-start gap-3">
-              <MapPin className="w-5 h-5 text-primary-400 mt-0.5 flex-shrink-0" />
-              <div>
-                <p className="text-sm text-white/60">Lugar</p>
-                <p className="font-medium">{event.venue.name}</p>
+              <div className="flex-1">
+                <p className="font-semibold text-primary-300">{(event.eventData as any).hashtag}</p>
+                <p className="text-sm text-white/60">Usá este hashtag en tus publicaciones</p>
               </div>
             </div>
           )}
         </div>
-
-        {/* Social Media */}
-        {(socialMedia.instagram || socialMedia.facebook || socialMedia.twitter || socialMedia.website) && (
-          <div className="card">
-            <h2 className="text-lg font-semibold mb-4">Redes Sociales</h2>
-            <div className="grid grid-cols-2 gap-3">
-              {socialMedia.instagram && (
-                <a
-                  href={socialMedia.instagram}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 p-3 bg-white/5 hover:bg-white/10 rounded-lg transition-colors"
-                >
-                  <Instagram className="w-5 h-5 text-pink-400" />
-                  <span className="text-sm">Instagram</span>
-                  <ExternalLink className="w-3 h-3 ml-auto text-white/40" />
-                </a>
-              )}
-
-              {socialMedia.facebook && (
-                <a
-                  href={socialMedia.facebook}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 p-3 bg-white/5 hover:bg-white/10 rounded-lg transition-colors"
-                >
-                  <Facebook className="w-5 h-5 text-blue-400" />
-                  <span className="text-sm">Facebook</span>
-                  <ExternalLink className="w-3 h-3 ml-auto text-white/40" />
-                </a>
-              )}
-
-              {socialMedia.twitter && (
-                <a
-                  href={socialMedia.twitter}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 p-3 bg-white/5 hover:bg-white/10 rounded-lg transition-colors"
-                >
-                  <Twitter className="w-5 h-5 text-sky-400" />
-                  <span className="text-sm">Twitter</span>
-                  <ExternalLink className="w-3 h-3 ml-auto text-white/40" />
-                </a>
-              )}
-
-              {socialMedia.website && (
-                <a
-                  href={socialMedia.website}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 p-3 bg-white/5 hover:bg-white/10 rounded-lg transition-colors"
-                >
-                  <Globe className="w-5 h-5 text-green-400" />
-                  <span className="text-sm">Sitio Web</span>
-                  <ExternalLink className="w-3 h-3 ml-auto text-white/40" />
-                </a>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Active Modules */}
-        <div className="card">
-          <h2 className="text-lg font-semibold mb-4">Módulos Activos</h2>
-          <div className="space-y-3">
-            {musicadjConfig?.enabled && (
-              <div className="flex items-center gap-3 p-3 bg-white/5 rounded-lg">
-                <div
-                  className="w-10 h-10 rounded-lg flex items-center justify-center"
-                  style={{ backgroundColor: primaryColor }}
-                >
-                  <Music2 className="w-5 h-5 text-white" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold">MusicaDJ</h3>
-                  <p className="text-xs text-white/60">Pedí tu tema musical</p>
-                </div>
-                {musicadjConfig.spotifyAvailable && (
-                  <span className="text-xs bg-green-500/20 text-green-300 px-2 py-1 rounded-full">
-                    Spotify
-                  </span>
-                )}
-              </div>
-            )}
-
-            {karaokeyaConfig?.enabled && (
-              <div className="flex items-center gap-3 p-3 bg-white/5 rounded-lg">
-                <div
-                  className="w-10 h-10 rounded-lg flex items-center justify-center"
-                  style={{ backgroundColor: secondaryColor }}
-                >
-                  <Mic2 className="w-5 h-5 text-white" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold">KaraokeYa</h3>
-                  <p className="text-xs text-white/60">Cantá tu canción favorita</p>
-                </div>
-                <span className="text-xs bg-purple-500/20 text-purple-300 px-2 py-1 rounded-full">
-                  Activo
-                </span>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Music Configuration (if MusicaDJ is enabled) */}
-        {musicadjConfig?.enabled && musicadjConfig.welcomeMessage && (
-          <div className="card">
-            <h2 className="text-lg font-semibold mb-3">Mensaje de Bienvenida</h2>
-            <p className="text-white/80 leading-relaxed">
-              {musicadjConfig.welcomeMessage}
-            </p>
-          </div>
-        )}
       </main>
 
       <Footer />
