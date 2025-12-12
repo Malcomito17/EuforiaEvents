@@ -121,10 +121,10 @@ export default function EventLanding() {
                     <span>{event.venue.name}</span>
                   </div>
                 )}
-                {event.eventData.startDate && (
+                {event.startDate && (
                   <div className="flex items-center gap-2 text-white/60">
                     <div className="w-1.5 h-1.5 bg-primary-500 rounded-full"></div>
-                    <span>{new Date(event.eventData.startDate).toLocaleDateString('es-AR', {
+                    <span>{new Date(event.startDate).toLocaleDateString('es-AR', {
                       weekday: 'long',
                       year: 'numeric',
                       month: 'long',
