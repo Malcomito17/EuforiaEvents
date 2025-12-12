@@ -290,6 +290,11 @@ export interface SongRequest {
     displayName: string
     email: string
   }
+  event?: {
+    id: string
+    slug: string
+    eventData: EventData | null
+  }
 }
 
 export interface MusicadjConfig {
@@ -390,6 +395,11 @@ export interface KaraokeRequest {
     duration: number | null
     timesRequested: number
   } | null
+  event?: {
+    id: string
+    slug: string
+    eventData: EventData | null
+  }
 }
 
 export interface KaraokeyaConfig {

@@ -27,11 +27,14 @@ interface EventFormData {
 const EVENT_TYPES = [
   { value: 'BIRTHDAY', label: 'Cumpleaños' },
   { value: 'WEDDING', label: 'Casamiento' },
+  { value: 'FIFTEEN', label: '15 Años' },
   { value: 'CORPORATE', label: 'Corporativo' },
-  { value: 'QUINCEAÑERA', label: 'Fiesta de 15' },
-  { value: 'GRADUATION', label: 'Graduación' },
-  { value: 'ANNIVERSARY', label: 'Aniversario' },
-  { value: 'BAPTISM', label: 'Bautismo' },
+  { value: 'PARTY', label: 'Fiesta' },
+  { value: 'BAR', label: 'Bar' },
+  { value: 'PRIVATE_PARTY', label: 'Fiesta Privada' },
+  { value: 'COMMERCIAL', label: 'Evento Comercial' },
+  { value: 'SHOW', label: 'Show' },
+  { value: 'DJ_SET', label: 'DJ' },
   { value: 'OTHER', label: 'Otro' },
 ]
 

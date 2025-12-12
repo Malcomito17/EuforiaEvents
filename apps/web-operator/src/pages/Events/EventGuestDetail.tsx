@@ -1,16 +1,15 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { guestsApi, Guest, GuestRequests, eventsApi, Event } from '@/lib/api'
+import { guestsApi, Guest, GuestRequests } from '@/lib/api'
 import {
   ArrowLeft, Mail, MessageSquare, Music, Mic, Loader2,
-  Calendar, ExternalLink, Play
+  Calendar, ExternalLink, Play, MapPin
 } from 'lucide-react'
 import clsx from 'clsx'
 
 export function EventGuestDetailPage() {
-  const { id: eventId, guestId } = useParams()
+  const { guestId } = useParams()
   const navigate = useNavigate()
-  const [event, setEvent] = useState<Event | null>(null)
   const [guest, setGuest] = useState<Guest | null>(null)
   const [requests, setRequests] = useState<GuestRequests | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -18,20 +17,18 @@ export function EventGuestDetailPage() {
 
   useEffect(() => {
     loadData()
-  }, [eventId, guestId])
+  }, [guestId])
 
   const loadData = async () => {
-    if (!eventId || !guestId) return
+    if (!guestId) return
 
     setIsLoading(true)
     try {
-      const [eventRes, guestRes, requestsRes] = await Promise.all([
-        eventsApi.get(eventId),
+      const [guestRes, requestsRes] = await Promise.all([
         guestsApi.get(guestId),
-        guestsApi.getRequests(guestId, eventId)
+        guestsApi.getRequests(guestId) // No eventId filter - get ALL requests
       ])
 
-      setEvent(eventRes.data)
       setGuest(guestRes.data.guest)
       setRequests(requestsRes.data.requests)
     } catch (err) {
@@ -118,16 +115,14 @@ export function EventGuestDetailPage() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <button
-            onClick={() => navigate(`/events/${eventId}/guests`)}
+            onClick={() => navigate('/guests')}
             className="p-2 hover:bg-gray-100 rounded-lg transition"
           >
             <ArrowLeft className="h-5 w-5" />
           </button>
           <div>
             <h1 className="text-2xl font-bold text-gray-900">{guest.displayName}</h1>
-            {event?.eventData?.eventName && (
-              <p className="text-sm text-gray-500">{event.eventData.eventName}</p>
-            )}
+            <p className="text-sm text-gray-500">Historial completo de pedidos</p>
           </div>
         </div>
       </div>
@@ -253,8 +248,14 @@ export function EventGuestDetailPage() {
                     <div className="flex-1">
                       <div className="font-semibold text-gray-900">{request.title}</div>
                       <div className="text-sm text-gray-600">{request.artist}</div>
-                      <div className="flex items-center gap-2 mt-1">
+                      <div className="flex items-center gap-2 mt-1 flex-wrap">
                         {getStatusBadge(request.status, 'song')}
+                        {request.event?.eventData?.eventName && (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-700 border border-indigo-200">
+                            <MapPin className="h-3 w-3" />
+                            {request.event.eventData.eventName}
+                          </span>
+                        )}
                         <span className="text-xs text-gray-500">
                           {formatDate(request.createdAt)}
                         </span>
@@ -309,8 +310,14 @@ export function EventGuestDetailPage() {
                       {request.artist && (
                         <div className="text-sm text-gray-600">{request.artist}</div>
                       )}
-                      <div className="flex items-center gap-2 mt-1">
+                      <div className="flex items-center gap-2 mt-1 flex-wrap">
                         {getStatusBadge(request.status, 'karaoke')}
+                        {request.event?.eventData?.eventName && (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-700 border border-indigo-200">
+                            <MapPin className="h-3 w-3" />
+                            {request.event.eventData.eventName}
+                          </span>
+                        )}
                         <span className="text-xs text-gray-500">
                           {formatDate(request.createdAt)}
                         </span>

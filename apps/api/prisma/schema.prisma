@@ -140,7 +140,7 @@ model EventData {
   id              String    @id @default(cuid())
   eventId         String    @unique
   eventName       String
-  eventType       String    @default("OTHER")  // WEDDING | FIFTEEN | CORPORATE | BIRTHDAY | PARTY | OTHER
+  eventType       String    @default("OTHER")  // WEDDING | FIFTEEN | CORPORATE | BIRTHDAY | PARTY | BAR | PRIVATE_PARTY | COMMERCIAL | SHOW | DJ_SET | OTHER
   startDate       DateTime
   endDate         DateTime?
   guestCount      Int?

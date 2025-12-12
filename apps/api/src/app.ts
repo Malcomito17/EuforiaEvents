@@ -29,7 +29,7 @@ app.get('/health', (req, res) => {
 app.get('/api', (req, res) => {
   res.json({
     name: 'EUFORIA EVENTS API',
-    version: '0.5.0',
+    version: '0.6.0',
     modules: ['auth', 'users', 'events', 'venues', 'clients', 'musicadj', 'karaokeya'],
   })
 })
