@@ -23,6 +23,9 @@ export default function EventDetails() {
     website: (event.eventData as any).website,
   } : {}
 
+  // Check if there's any social media or music info to show
+  const hasSocialInfo = socialMedia.instagram || socialMedia.facebook || socialMedia.twitter || socialMedia.website || musicadjConfig?.spotifyAvailable || event.eventData?.hashtag
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('es-AR', {
       weekday: 'long',
@@ -94,11 +97,14 @@ export default function EventDetails() {
           </div>
         )}
 
-        {/* Separador */}
-        <div className="h-px bg-white/10 my-4" />
+        {/* Solo mostrar separador y sección de redes sociales si hay datos */}
+        {hasSocialInfo && (
+          <>
+            {/* Separador */}
+            <div className="h-px bg-white/10 my-4" />
 
-        {/* REDES SOCIALES (Instagram, Spotify, Hashtag) */}
-        <div className="space-y-3">
+            {/* REDES SOCIALES (Instagram, Spotify, Hashtag) */}
+            <div className="space-y-3">
           {/* Instagram */}
           {socialMedia.instagram && (
             <a
@@ -139,7 +145,9 @@ export default function EventDetails() {
               </div>
             </div>
           )}
-        </div>
+            </div>
+          </>
+        )}
       </main>
 
       <Footer />
