@@ -230,6 +230,23 @@ echo ""
 echo "Regenerando Prisma Client..."
 docker exec euforia-api-prod npx prisma generate
 
+# Ejecutar seed si la DB está vacía
+echo ""
+echo "Verificando si necesita seed..."
+USER_COUNT=$(docker exec euforia-api-prod node -e "const { PrismaClient } = require('@prisma/client'); const prisma = new PrismaClient(); (async () => { const count = await prisma.user.count(); console.log(count); await prisma.\$disconnect(); })();" 2>/dev/null || echo "0")
+
+if [ "$USER_COUNT" = "0" ]; then
+  echo "⚠️  Base de datos vacía, ejecutando seed..."
+  if docker exec euforia-api-prod npx prisma db seed 2>/dev/null; then
+    echo "✓ Seed ejecutado exitosamente"
+  else
+    echo "⚠️  Seed falló, creando usuario admin manualmente..."
+    docker exec euforia-api-prod node -e "const { PrismaClient } = require('@prisma/client'); const bcrypt = require('bcryptjs'); const prisma = new PrismaClient(); (async () => { const hash = bcrypt.hashSync('admin123', 10); await prisma.user.create({ data: { username: 'admin', email: 'admin@euforiaevents.com', password: hash, role: 'ADMIN' } }); console.log('✓ Usuario admin creado'); await prisma.\$disconnect(); })();"
+  fi
+else
+  echo "✓ Base de datos contiene $USER_COUNT usuarios"
+fi
+
 # ============================================
 # PASO 8: Reiniciar API
 # ============================================
