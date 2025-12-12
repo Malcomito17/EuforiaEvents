@@ -10,7 +10,8 @@ import {
   LogOut,
   Menu,
   X,
-  Key
+  Key,
+  UserPlus
 } from 'lucide-react'
 import { useState } from 'react'
 import clsx from 'clsx'
@@ -22,6 +23,7 @@ interface LayoutProps {
 const baseNavigation = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard },
   { name: 'Eventos', href: '/events', icon: Calendar },
+  { name: 'Invitados', href: '/guests', icon: UserPlus },
   { name: 'Venues', href: '/venues', icon: Building2 },
   { name: 'Clientes', href: '/clients', icon: Users },
   { name: 'Karaoke', href: '/karaoke-songs', icon: Music2 },

@@ -141,9 +141,9 @@ function App() {
         }
       />
 
-      {/* GUESTS */}
+      {/* GUESTS - Sección global (no atada a evento específico) */}
       <Route
-        path="/events/:id/guests"
+        path="/guests"
         element={
           <ProtectedRoute>
             <Layout>
@@ -153,7 +153,7 @@ function App() {
         }
       />
       <Route
-        path="/events/:id/guests/:guestId"
+        path="/guests/:guestId"
         element={
           <ProtectedRoute>
             <Layout>

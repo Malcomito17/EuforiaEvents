@@ -46,16 +46,99 @@ export default function EventLanding() {
   // Evento no activo
   if (event && event.status !== 'ACTIVE') {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="text-center">
-          <Music2 className="w-16 h-16 text-primary-500 mx-auto mb-4 opacity-50" />
-          <h1 className="text-2xl font-bold mb-2">{event.name}</h1>
-          <p className="text-white/60">
-            {event.status === 'DRAFT' && 'Este evento aún no ha comenzado'}
-            {event.status === 'PAUSED' && 'El evento está pausado temporalmente'}
-            {event.status === 'FINISHED' && 'Este evento ya finalizó'}
-          </p>
+      <div className="min-h-screen flex flex-col items-center justify-center p-6">
+        <div className="max-w-md w-full">
+          {/* Icono animado */}
+          <div className="relative mb-6">
+            <div className="absolute inset-0 bg-primary-500/20 blur-3xl rounded-full animate-pulse"></div>
+            <div className="relative w-24 h-24 bg-gradient-to-br from-primary-600 to-primary-800 rounded-full flex items-center justify-center mx-auto">
+              <Music2 className="w-12 h-12 opacity-70" />
+            </div>
+          </div>
+
+          {/* Título del evento */}
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold mb-3 bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">
+              {event.name}
+            </h1>
+
+            {/* Mensaje según estado */}
+            <div className="card border-2 border-white/10">
+              {event.status === 'DRAFT' && (
+                <div className="space-y-3">
+                  <div className="inline-flex items-center gap-2 px-4 py-2 bg-yellow-500/20 rounded-full">
+                    <div className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></div>
+                    <span className="text-sm font-medium text-yellow-300">Próximamente</span>
+                  </div>
+                  <p className="text-white/80 text-lg leading-relaxed">
+                    Este evento aún no ha comenzado.
+                  </p>
+                  <p className="text-white/50 text-sm">
+                    ¡Volvé pronto! En breve podrás pedir tus temas favoritos.
+                  </p>
+                </div>
+              )}
+
+              {event.status === 'PAUSED' && (
+                <div className="space-y-3">
+                  <div className="inline-flex items-center gap-2 px-4 py-2 bg-orange-500/20 rounded-full">
+                    <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                    <span className="text-sm font-medium text-orange-300">En Pausa</span>
+                  </div>
+                  <p className="text-white/80 text-lg leading-relaxed">
+                    El evento está pausado temporalmente.
+                  </p>
+                  <p className="text-white/50 text-sm">
+                    Esperá un momento, pronto volveremos a estar activos.
+                  </p>
+                </div>
+              )}
+
+              {event.status === 'FINISHED' && (
+                <div className="space-y-3">
+                  <div className="inline-flex items-center gap-2 px-4 py-2 bg-gray-500/20 rounded-full">
+                    <div className="w-2 h-2 bg-gray-500 rounded-full"></div>
+                    <span className="text-sm font-medium text-gray-300">Finalizado</span>
+                  </div>
+                  <p className="text-white/80 text-lg leading-relaxed">
+                    Este evento ya ha finalizado.
+                  </p>
+                  <p className="text-white/50 text-sm">
+                    ¡Gracias por participar! Esperamos verte en el próximo evento.
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Información del evento si existe */}
+          {event.eventData && (
+            <div className="card bg-white/5 border border-white/10">
+              <div className="space-y-2 text-sm">
+                {event.venue && (
+                  <div className="flex items-center gap-2 text-white/60">
+                    <div className="w-1.5 h-1.5 bg-primary-500 rounded-full"></div>
+                    <span>{event.venue.name}</span>
+                  </div>
+                )}
+                {event.eventData.startDate && (
+                  <div className="flex items-center gap-2 text-white/60">
+                    <div className="w-1.5 h-1.5 bg-primary-500 rounded-full"></div>
+                    <span>{new Date(event.eventData.startDate).toLocaleDateString('es-AR', {
+                      weekday: 'long',
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
+
+        {/* Footer */}
+        <Footer />
       </div>
     )
   }
