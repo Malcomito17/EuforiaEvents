@@ -79,17 +79,18 @@ echo ""
 echo -e "${BLUE}[8/8]${NC} Verificando instalación de dependencias..."
 echo ""
 
-# Verificar cuántos paquetes se instalaron
-DEPS_COUNT=$(docker exec euforia-api-prod ls /app/node_modules 2>/dev/null | wc -l || echo "0")
+# En pnpm workspaces, las deps del API están en /app/apps/api/node_modules
+DEPS_COUNT=$(docker exec euforia-api-prod ls /app/apps/api/node_modules 2>/dev/null | wc -l || echo "0")
+PNPM_STORE_COUNT=$(docker exec euforia-api-prod ls /app/node_modules/.pnpm 2>/dev/null | wc -l || echo "0")
 
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 if [ "$DEPS_COUNT" -lt 10 ]; then
     echo -e "${RED}✗ FALLO CRÍTICO${NC}"
     echo ""
-    echo "Solo $DEPS_COUNT paquetes instalados (debería ser 50+)"
+    echo "Solo $DEPS_COUNT paquetes instalados en /app/apps/api/node_modules"
     echo ""
     echo "Paquetes encontrados:"
-    docker exec euforia-api-prod ls /app/node_modules
+    docker exec euforia-api-prod ls /app/apps/api/node_modules
     echo ""
     echo -e "${YELLOW}Mostrando últimas líneas del build log:${NC}"
     echo ""
@@ -106,10 +107,11 @@ if [ "$DEPS_COUNT" -lt 10 ]; then
 else
     echo -e "${GREEN}✅ ¡ÉXITO!${NC}"
     echo ""
-    echo "Paquetes instalados: $DEPS_COUNT"
+    echo "Dependencias del API: $DEPS_COUNT paquetes"
+    echo "pnpm store: $PNPM_STORE_COUNT paquetes totales"
     echo ""
-    echo "Muestra de paquetes:"
-    docker exec euforia-api-prod ls /app/node_modules | head -30
+    echo "Muestra de dependencias del API:"
+    docker exec euforia-api-prod ls /app/apps/api/node_modules | head -30
     echo "..."
     echo ""
     echo -e "${GREEN}🎉 Sistema rebuildeado correctamente${NC}"

@@ -72,13 +72,14 @@ echo ""
 echo -e "${BLUE}[6/6]${NC} Verificando dependencias instaladas..."
 echo ""
 
-DEPS_COUNT=$(docker exec euforia-api-prod ls /app/node_modules 2>/dev/null | wc -l || echo "0")
+# En pnpm workspaces, las deps del API están en /app/apps/api/node_modules
+DEPS_COUNT=$(docker exec euforia-api-prod ls /app/apps/api/node_modules 2>/dev/null | wc -l || echo "0")
 
 if [ "$DEPS_COUNT" -lt 10 ]; then
     echo -e "${RED}✗${NC} FALLO: Solo $DEPS_COUNT paquetes instalados"
     echo ""
     echo "Paquetes encontrados:"
-    docker exec euforia-api-prod ls /app/node_modules
+    docker exec euforia-api-prod ls /app/apps/api/node_modules
     echo ""
     echo -e "${YELLOW}El problema persiste. Posibles causas:${NC}"
     echo "1. Docker compose build no usó el Dockerfile correcto"
@@ -87,11 +88,16 @@ if [ "$DEPS_COUNT" -lt 10 ]; then
     echo ""
     exit 1
 else
-    echo -e "${GREEN}✓${NC} ¡ÉXITO! $DEPS_COUNT paquetes instalados"
+    echo -e "${GREEN}✓${NC} ¡ÉXITO! $DEPS_COUNT dependencias del API instaladas"
     echo ""
     echo "Muestra de paquetes instalados:"
-    docker exec euforia-api-prod ls /app/node_modules | head -20
+    docker exec euforia-api-prod ls /app/apps/api/node_modules | head -20
     echo "..."
+    echo ""
+
+    # Verificar también el pnpm store
+    PNPM_STORE_COUNT=$(docker exec euforia-api-prod ls /app/node_modules/.pnpm 2>/dev/null | wc -l || echo "0")
+    echo -e "${GREEN}✓${NC} pnpm store contiene $PNPM_STORE_COUNT paquetes totales"
 fi
 
 echo ""

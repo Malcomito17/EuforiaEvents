@@ -50,19 +50,20 @@ echo ""
 # ============================================
 echo -e "${BLUE}[2/6]${NC} Verificando dependencias instaladas..."
 
-DEPS_COUNT=$(docker exec euforia-api-prod ls /app/node_modules 2>/dev/null | wc -l || echo "0")
+# En pnpm workspaces, las deps del API están en /app/apps/api/node_modules
+DEPS_COUNT=$(docker exec euforia-api-prod ls /app/apps/api/node_modules 2>/dev/null | wc -l || echo "0")
 
 if [ "$DEPS_COUNT" -lt 10 ]; then
-    echo -e "${RED}✗${NC} Solo $DEPS_COUNT paquetes instalados (debería ser 50+)"
+    echo -e "${RED}✗${NC} Solo $DEPS_COUNT paquetes instalados (debería ser 15+)"
     echo "Paquetes encontrados:"
-    docker exec euforia-api-prod ls /app/node_modules
+    docker exec euforia-api-prod ls /app/apps/api/node_modules
     exit 1
 else
-    echo -e "${GREEN}✓${NC} $DEPS_COUNT paquetes instalados"
+    echo -e "${GREEN}✓${NC} $DEPS_COUNT dependencias del API instaladas"
 fi
 
 # Verificar bcryptjs específicamente
-if docker exec euforia-api-prod ls /app/node_modules | grep -q "bcryptjs"; then
+if docker exec euforia-api-prod ls /app/apps/api/node_modules | grep -q "bcryptjs"; then
     echo -e "${GREEN}✓${NC} bcryptjs está instalado"
 else
     echo -e "${RED}✗${NC} bcryptjs NO está instalado"
@@ -70,7 +71,7 @@ else
 fi
 
 # Verificar express
-if docker exec euforia-api-prod ls /app/node_modules | grep -q "express"; then
+if docker exec euforia-api-prod ls /app/apps/api/node_modules | grep -q "express"; then
     echo -e "${GREEN}✓${NC} express está instalado"
 else
     echo -e "${RED}✗${NC} express NO está instalado"
@@ -78,11 +79,19 @@ else
 fi
 
 # Verificar prisma client
-if docker exec euforia-api-prod ls /app/node_modules | grep -q "@prisma"; then
+if docker exec euforia-api-prod ls /app/apps/api/node_modules | grep -q "@prisma"; then
     echo -e "${GREEN}✓${NC} @prisma/client está instalado"
 else
     echo -e "${RED}✗${NC} @prisma/client NO está instalado"
     exit 1
+fi
+
+# Verificar que existe el store de pnpm con todos los paquetes
+PNPM_STORE_COUNT=$(docker exec euforia-api-prod ls /app/node_modules/.pnpm 2>/dev/null | wc -l || echo "0")
+if [ "$PNPM_STORE_COUNT" -gt 200 ]; then
+    echo -e "${GREEN}✓${NC} pnpm store contiene $PNPM_STORE_COUNT paquetes"
+else
+    echo -e "${YELLOW}⚠${NC} pnpm store solo tiene $PNPM_STORE_COUNT paquetes"
 fi
 
 echo ""
