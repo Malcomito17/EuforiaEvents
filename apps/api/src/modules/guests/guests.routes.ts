@@ -8,6 +8,9 @@ const router = Router()
 // POST /api/guests/identify - Identificar o crear guest
 router.post('/identify', (req, res) => guestsController.identify(req, res))
 
+// GET /api/guests/lookup?email=xxx - Buscar guest por email (debe ir antes de /:guestId)
+router.get('/lookup', (req, res) => guestsController.lookupByEmail(req, res))
+
 // GET /api/guests/:guestId - Obtener guest por ID
 router.get('/:guestId', (req, res) => guestsController.getById(req, res))
 

@@ -25,7 +25,8 @@ eventRouter.get('/suggestions', controller.getSmartSuggestions)
 eventRouter.get('/messages', controller.getMessages)
 eventRouter.post('/requests', controller.createRequest)
 eventRouter.get('/guests/:guestId/requests', controller.getGuestRequests)
-eventRouter.get('/queue', controller.getPublicQueue)
+// TODO: Fix this - getPublicQueue is not defined in controller
+// eventRouter.get('/queue', controller.getPublicQueue)
 
 // Rutas Protegidas (Operador)
 eventRouter.use(authenticate)

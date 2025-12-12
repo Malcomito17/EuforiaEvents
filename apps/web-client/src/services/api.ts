@@ -36,6 +36,18 @@ export async function identifyGuest(input: GuestIdentifyInput): Promise<Guest> {
   return data.guest
 }
 
+export async function lookupGuestByEmail(email: string): Promise<Guest | null> {
+  try {
+    const { data } = await api.get<{ success: boolean; guest: Guest | null }>('/guests/lookup', {
+      params: { email },
+    })
+    return data.guest
+  } catch (error) {
+    console.error('Error looking up guest:', error)
+    return null
+  }
+}
+
 export async function getGuestRequests(guestId: string, eventId?: string): Promise<GuestRequestsResponse> {
   const { data } = await api.get<GuestRequestsResponse>(`/guests/${guestId}/requests`, {
     params: eventId ? { eventId } : undefined,

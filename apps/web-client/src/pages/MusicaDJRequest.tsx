@@ -36,6 +36,7 @@ export default function MusicaDJRequest() {
   const [identName, setIdentName] = useState('')
   const [identWhatsapp, setIdentWhatsapp] = useState('')
   const [identError, setIdentError] = useState<string | null>(null)
+  const [isLookingUp, setIsLookingUp] = useState(false)
 
   // Estados de búsqueda
   const [searchQuery, setSearchQuery] = useState('')
@@ -78,6 +79,28 @@ export default function MusicaDJRequest() {
       setShowIdentification(false)
     } catch (err) {
       setIdentError(err instanceof Error ? err.message : 'Error al identificarse')
+    }
+  }
+
+  // Autocompletar datos por email
+  const handleEmailBlur = async () => {
+    if (!identEmail || !identEmail.includes('@')) return
+
+    setIsLookingUp(true)
+    try {
+      const existingGuest = await api.lookupGuestByEmail(identEmail)
+
+      if (existingGuest) {
+        // Auto-fill name and whatsapp, but keep them editable
+        setIdentName(existingGuest.displayName)
+        if (existingGuest.whatsapp) {
+          setIdentWhatsapp(existingGuest.whatsapp)
+        }
+      }
+    } catch (error) {
+      console.error('Error looking up guest:', error)
+    } finally {
+      setIsLookingUp(false)
     }
   }
 
@@ -213,11 +236,15 @@ export default function MusicaDJRequest() {
                   type="email"
                   value={identEmail}
                   onChange={(e) => setIdentEmail(e.target.value)}
+                  onBlur={handleEmailBlur}
                   placeholder="tu@email.com"
                   className="input-field pl-12"
                   required
                   autoComplete="email"
                 />
+                {isLookingUp && (
+                  <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 animate-spin text-primary-400" />
+                )}
               </div>
               <p className="text-xs text-white/50 mt-1">
                 Usaremos tu email para reconocerte en futuros eventos

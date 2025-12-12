@@ -63,6 +63,37 @@ export class GuestsController {
   }
 
   /**
+   * GET /api/guests/lookup?email=xxx
+   * Busca un guest por email (para autocompletar formularios)
+   */
+  async lookupByEmail(req: Request, res: Response) {
+    try {
+      const { email } = req.query
+
+      if (!email || typeof email !== 'string') {
+        return res.status(400).json({
+          success: false,
+          error: 'Email es requerido',
+        })
+      }
+
+      const guest = await guestsService.lookupByEmail(email)
+
+      // Retornar success:true incluso si no se encuentra (no es un error)
+      res.status(200).json({
+        success: true,
+        guest: guest || null,
+      })
+    } catch (error) {
+      console.error('Error en lookupByEmail:', error)
+      res.status(500).json({
+        success: false,
+        error: 'Error al buscar guest',
+      })
+    }
+  }
+
+  /**
    * GET /api/guests/:guestId/requests
    * Obtiene todos los pedidos de un guest (song + karaoke)
    * Query params: ?eventId=xxx (opcional)

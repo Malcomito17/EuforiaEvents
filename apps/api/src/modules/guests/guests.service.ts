@@ -39,6 +39,17 @@ export class GuestsService {
   }
 
   /**
+   * Busca un guest por email (para autocompletar formularios)
+   */
+  async lookupByEmail(email: string): Promise<GuestResponse | null> {
+    const guest = await prisma.guest.findUnique({
+      where: { email },
+    })
+
+    return guest ? this.sanitizeGuest(guest) : null
+  }
+
+  /**
    * Obtiene los pedidos de un guest (song + karaoke)
    */
   async getRequests(guestId: string, eventId?: string) {
