@@ -138,8 +138,8 @@ export function Layout({ children }: LayoutProps) {
         icon: Music2,
       },
       {
-        name: 'Invitados',
-        href: '/guests',
+        name: 'Participantes',
+        href: '/participants',
         icon: UserPlus,
       },
       {

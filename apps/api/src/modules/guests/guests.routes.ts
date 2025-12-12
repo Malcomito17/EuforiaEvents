@@ -15,6 +15,9 @@ router.get('/:guestId', (req, res) => guestsController.getById(req, res))
 router.get('/:guestId/requests', (req, res) => guestsController.getRequests(req, res))
 
 // Rutas protegidas (requieren autenticación)
+// GET /api/guests - Listar TODOS los guests (nuevo)
+router.get('/', authenticate, (req, res) => guestsController.listAll(req, res))
+
 // DELETE /api/guests/:guestId - Eliminar guest
 router.delete('/:guestId', authenticate, (req, res) => guestsController.delete(req, res))
 

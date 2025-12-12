@@ -6,13 +6,14 @@ import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { LoginPage } from '@/pages/Login'
 import { DashboardPage } from '@/pages/Dashboard'
 import { ChangePasswordPage } from '@/pages/ChangePassword'
-import { EventListPage, EventFormPage, EventDetailPage, EventQRPage, EventSettingsPage, EventGuestsPage, EventGuestDetailPage } from '@/pages/Events'
+import { EventListPage, EventFormPage, EventDetailPage, EventQRPage, EventSettingsPage } from '@/pages/Events'
 import { VenueListPage, VenueFormPage } from '@/pages/Venues'
 import { ClientListPage, ClientFormPage } from '@/pages/Clients'
 import { MusicaDJPage } from '@/pages/MusicaDJ'
 import { KaraokeyaPage } from '@/pages/Karaokeya'
 import { SongListPage, SongFormPage } from '@/pages/KaraokeSongs'
 import { UserListPage, UserFormPage } from '@/pages/Users'
+import { ParticipantsListPage, ParticipantDetailPage } from '@/pages/Participants'
 
 function App() {
   const { checkAuth, isAuthenticated } = useAuthStore()
@@ -141,23 +142,23 @@ function App() {
         }
       />
 
-      {/* GUESTS - Sección global (no atada a evento específico) */}
+      {/* PARTICIPANTS - Sección global (no atada a evento específico) */}
       <Route
-        path="/guests"
+        path="/participants"
         element={
           <ProtectedRoute>
             <Layout>
-              <EventGuestsPage />
+              <ParticipantsListPage />
             </Layout>
           </ProtectedRoute>
         }
       />
       <Route
-        path="/guests/:guestId"
+        path="/participants/:guestId"
         element={
           <ProtectedRoute>
             <Layout>
-              <EventGuestDetailPage />
+              <ParticipantDetailPage />
             </Layout>
           </ProtectedRoute>
         }

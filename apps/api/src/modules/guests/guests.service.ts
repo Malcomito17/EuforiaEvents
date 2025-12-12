@@ -77,6 +77,36 @@ export class GuestsService {
   }
 
   /**
+   * Lista TODOS los guests (sin filtrar por evento)
+   */
+  async listAll() {
+    // Obtener todos los guests que tienen al menos un request
+    const guests = await prisma.guest.findMany({
+      where: {
+        OR: [
+          { songRequests: { some: {} } },
+          { karaokeRequests: { some: {} } },
+        ],
+      },
+      include: {
+        _count: {
+          select: {
+            songRequests: true,
+            karaokeRequests: true,
+          },
+        },
+      },
+      orderBy: { lastSeenAt: 'desc' },
+    })
+
+    return guests.map(guest => ({
+      ...this.sanitizeGuest(guest),
+      songRequestsCount: guest._count.songRequests,
+      karaokeRequestsCount: guest._count.karaokeRequests,
+    }))
+  }
+
+  /**
    * Lista todos los guests de un evento
    */
   async listByEvent(eventId: string) {

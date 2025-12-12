@@ -91,6 +91,27 @@ export class GuestsController {
   }
 
   /**
+   * GET /api/guests
+   * Lista TODOS los guests (sin filtrar por evento)
+   */
+  async listAll(req: Request, res: Response) {
+    try {
+      const guests = await guestsService.listAll()
+
+      res.status(200).json({
+        success: true,
+        guests,
+      })
+    } catch (error) {
+      console.error('Error en listAll:', error)
+      res.status(500).json({
+        success: false,
+        error: 'Error al listar guests',
+      })
+    }
+  }
+
+  /**
    * GET /api/events/:eventId/guests
    * Lista todos los guests de un evento con contadores de requests
    */

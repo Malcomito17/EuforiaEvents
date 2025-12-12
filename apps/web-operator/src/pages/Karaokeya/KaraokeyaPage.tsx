@@ -611,7 +611,16 @@ function RequestCard({ request, onStatusChange, formatTime, timeAgo, dragHandleP
               <p className="text-gray-600 truncate">{request.artist}</p>
             )}
             <div className="flex items-center gap-3 mt-1 text-sm text-gray-500">
-              <span>De: {request.guest.displayName}</span>
+              <span>
+                De:{' '}
+                <Link
+                  to={`/participants/${request.guest.id}`}
+                  className="text-primary-600 hover:text-primary-700 hover:underline"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {request.guest.displayName}
+                </Link>
+              </span>
               <span>•</span>
               <span title={formatTime(request.createdAt)}>{timeAgo(request.createdAt)}</span>
               {request.calledAt && (

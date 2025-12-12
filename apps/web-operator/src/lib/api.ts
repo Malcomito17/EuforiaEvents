@@ -575,6 +575,9 @@ export interface GuestRequests {
 }
 
 export const guestsApi = {
+  listAll: () =>
+    api.get<{ success: boolean; guests: Guest[] }>('/guests'),
+
   listByEvent: (eventId: string) =>
     api.get<{ success: boolean; guests: Guest[] }>(`/events/${eventId}/guests`),
 
