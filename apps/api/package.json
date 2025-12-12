@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "NODE_TLS_REJECT_UNAUTHORIZED=0 tsx watch src/server.ts",
-    "build": "tsc",
-    "start": "node dist/server.js",
+    "build": "prisma generate",
+    "start": "tsx src/server.ts",
     "lint": "eslint src/",
     "test": "vitest",
     "db:generate": "prisma generate",
