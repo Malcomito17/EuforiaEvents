@@ -146,6 +146,11 @@ model EventData {
   guestCount      Int?
   instagramUrl    String?
   instagramUser   String?
+  instagram       String?   // Instagram handle or URL
+  facebook        String?   // Facebook page URL
+  twitter         String?   // Twitter/X handle or URL
+  website         String?   // Event website URL
+  eventImage      String?   // Event image URL
   hashtag         String?
   spotifyPlaylist String?
   notes           String?

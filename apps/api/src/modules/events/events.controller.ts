@@ -75,11 +75,11 @@ export const eventController = {
       // Respuesta pública (sin datos sensibles)
       res.json({
         id: event.id,
-        name: event.name,
+        name: event.eventData?.eventName || null,  // Virtual field mapped from eventData.eventName
         slug: event.slug,
         status: event.status,
-        startDate: event.startDate,
-        endDate: event.endDate,
+        startDate: event.eventData?.startDate || null,
+        endDate: event.eventData?.endDate || null,
         eventData: event.eventData
           ? {
               eventName: event.eventData.eventName,
