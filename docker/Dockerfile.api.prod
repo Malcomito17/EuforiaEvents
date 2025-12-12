@@ -105,11 +105,8 @@ RUN pnpm install --prod --frozen-lockfile || pnpm install --prod
 # Copiar código compilado y Prisma desde builder
 COPY --from=builder --chown=nodejs:nodejs /app/apps/api/src ./apps/api/src
 COPY --from=builder --chown=nodejs:nodejs /app/apps/api/prisma ./apps/api/prisma
+COPY --from=builder --chown=nodejs:nodejs /app/apps/api/node_modules ./apps/api/node_modules
 COPY --from=builder --chown=nodejs:nodejs /app/packages ./packages
-
-# Regenerar Prisma Client en el runtime
-WORKDIR /app/apps/api
-RUN npx prisma generate
 
 WORKDIR /app
 
