@@ -134,17 +134,13 @@ reset_admin_password() {
     return
   fi
 
-  # Hash de la contraseña con bcrypt (usando Node.js)
+  # Hash de la contraseña con bcrypt (usando script helper)
   echo -e "${YELLOW}Generando hash de contraseña...${NC}"
 
-  HASH=$(docker exec euforia-api-prod node -e "
-    const bcrypt = require('bcrypt');
-    const hash = bcrypt.hashSync('$NEW_PASSWORD', 10);
-    console.log(hash);
-  " 2>/dev/null)
+  HASH=$(docker exec euforia-api-prod node /app/scripts/hash-password.js "$NEW_PASSWORD" 2>&1)
 
   if [ $? -ne 0 ]; then
-    show_error "No se pudo generar el hash. ¿Está el contenedor API corriendo?"
+    show_error "No se pudo generar el hash. Error: $HASH"
     return
   fi
 
