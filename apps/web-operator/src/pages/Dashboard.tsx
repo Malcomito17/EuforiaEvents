@@ -33,8 +33,8 @@ export function DashboardPage() {
       setStats({
         totalEvents: eventsRes.data.total,
         activeEvents: eventsRes.data.events.filter(e => e.status === 'ACTIVE').length,
-        totalVenues: venuesRes.data.total,
-        totalClients: clientsRes.data.total,
+        totalVenues: venuesRes.data.pagination.total,
+        totalClients: clientsRes.data.pagination.total,
         totalUsers: usersRes.data.pagination.total,
       })
       setRecentEvents(eventsRes.data.events)
