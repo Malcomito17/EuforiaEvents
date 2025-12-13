@@ -48,6 +48,7 @@ router.get('/stats', controller.getStats)
 // Playlist Import
 router.post('/import-playlist', controller.importPlaylist)
 router.get('/playlists', controller.listPlaylists)
+router.get('/playlists/:playlistId/tracks', controller.getPlaylistTracks)
 router.delete('/playlists/:playlistId', controller.deletePlaylist)
 
 export { router as musicadjRoutes }

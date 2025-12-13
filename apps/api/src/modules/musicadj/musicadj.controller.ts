@@ -299,6 +299,20 @@ export async function listPlaylists(req: Request, res: Response, next: NextFunct
 }
 
 /**
+ * GET /api/events/:eventId/musicadj/playlists/:playlistId/tracks
+ * Obtiene los tracks de una playlist específica
+ */
+export async function getPlaylistTracks(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { eventId, playlistId } = req.params
+    const result = await service.getPlaylistTracks(eventId, playlistId)
+    res.json(result)
+  } catch (error) {
+    next(error)
+  }
+}
+
+/**
  * DELETE /api/events/:eventId/musicadj/playlists/:playlistId
  * Elimina una playlist importada
  */

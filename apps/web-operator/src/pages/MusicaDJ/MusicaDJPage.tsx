@@ -84,6 +84,8 @@ export function MusicaDJPage() {
   // Playlists management
   const [playlists, setPlaylists] = useState<any[]>([])
   const [showPlaylistsSection, setShowPlaylistsSection] = useState(false)
+  const [expandedPlaylistId, setExpandedPlaylistId] = useState<string | null>(null)
+  const [playlistTracks, setPlaylistTracks] = useState<Record<string, SongRequest[]>>({})
   
   // Load data
   const loadData = useCallback(async () => {
@@ -215,6 +217,30 @@ export function MusicaDJPage() {
       setError(err.response?.data?.error || 'Error al reordenar cola')
       // Reload on error to get correct order from server
       loadData()
+    }
+  }
+
+  // Toggle playlist expansion and load tracks
+  const handleTogglePlaylist = async (playlistId: string) => {
+    if (expandedPlaylistId === playlistId) {
+      setExpandedPlaylistId(null)
+      return
+    }
+
+    setExpandedPlaylistId(playlistId)
+
+    // Load tracks if not already loaded
+    if (!playlistTracks[playlistId] && eventId) {
+      try {
+        const result = await musicadjApi.getPlaylistTracks(eventId, playlistId)
+        setPlaylistTracks(prev => ({
+          ...prev,
+          [playlistId]: result.data.tracks
+        }))
+      } catch (err: any) {
+        console.error('Error loading playlist tracks:', err)
+        setError(err.response?.data?.error || 'Error al cargar tracks de la playlist')
+      }
     }
   }
 
@@ -414,32 +440,97 @@ export function MusicaDJPage() {
 
           {showPlaylistsSection && (
             <div className="border-t border-gray-100 p-4 space-y-3">
-              {playlists.map(playlist => (
-                <div
-                  key={playlist.id}
-                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-                >
-                  <div className="flex-1">
-                    <h4 className="font-medium text-gray-900">{playlist.name}</h4>
-                    <div className="flex items-center gap-4 mt-1 text-sm text-gray-600">
-                      <span>{playlist.trackCount} canciones</span>
-                      <span>•</span>
-                      <span>{playlist._count?.songRequests || 0} pedidos creados</span>
-                      <span>•</span>
-                      <span className="text-xs text-gray-500">
-                        {new Date(playlist.importedAt).toLocaleString('es-AR')}
-                      </span>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => handleDeletePlaylist(playlist.id, playlist.name)}
-                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                    title="Eliminar playlist"
+              {playlists.map(playlist => {
+                const isExpanded = expandedPlaylistId === playlist.id
+                const tracks = playlistTracks[playlist.id] || []
+
+                return (
+                  <div
+                    key={playlist.id}
+                    className="bg-gray-50 rounded-lg overflow-hidden"
                   >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </div>
-              ))}
+                    {/* Playlist header */}
+                    <div className="flex items-center justify-between p-3">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <h4 className="font-medium text-gray-900">{playlist.name}</h4>
+                          {playlist._count?.songRequests > 0 && (
+                            <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-xs font-medium">
+                              {playlist._count.songRequests} pedidos
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-4 mt-1 text-sm text-gray-600">
+                          <span>{playlist.trackCount} canciones</span>
+                          <span>•</span>
+                          <span className="text-xs text-gray-500">
+                            {new Date(playlist.importedAt).toLocaleString('es-AR')}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => handleTogglePlaylist(playlist.id)}
+                          className="p-2 text-gray-600 hover:bg-gray-200 rounded-lg transition-colors"
+                          title={isExpanded ? "Ocultar canciones" : "Ver canciones"}
+                        >
+                          {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                        </button>
+                        <button
+                          onClick={() => handleDeletePlaylist(playlist.id, playlist.name)}
+                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          title="Eliminar playlist"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Expanded tracks */}
+                    {isExpanded && (
+                      <div className="border-t border-gray-200 bg-white p-3 space-y-2 max-h-96 overflow-y-auto">
+                        {tracks.length === 0 ? (
+                          <div className="text-center py-8 text-gray-500">
+                            <Music className="h-8 w-8 mx-auto mb-2 text-gray-300" />
+                            <p className="text-sm">No se crearon pedidos de esta playlist</p>
+                          </div>
+                        ) : (
+                          tracks.map((track, index) => (
+                            <div
+                              key={track.id}
+                              className="flex items-center gap-3 p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                            >
+                              <span className="text-xs text-gray-400 font-mono w-8">{index + 1}</span>
+                              {track.albumArtUrl && (
+                                <img
+                                  src={track.albumArtUrl}
+                                  alt={track.title}
+                                  className="w-10 h-10 rounded object-cover"
+                                />
+                              )}
+                              <div className="flex-1 min-w-0">
+                                <div className="font-medium text-sm text-gray-900 truncate">{track.title}</div>
+                                <div className="text-xs text-gray-600 truncate">{track.artist}</div>
+                              </div>
+                              {track.spotifyId && (
+                                <a
+                                  href={`https://open.spotify.com/track/${track.spotifyId}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-green-600 hover:text-green-700 p-1"
+                                  title="Abrir en Spotify"
+                                >
+                                  <ExternalLink className="h-4 w-4" />
+                                </a>
+                              )}
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
             </div>
           )}
         </div>

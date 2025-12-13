@@ -388,6 +388,18 @@ export const musicadjApi = {
       total: number;
     }>(`/events/${eventId}/musicadj/playlists`),
 
+  getPlaylistTracks: (eventId: string, playlistId: string) =>
+    api.get<{
+      playlist: {
+        id: string;
+        name: string;
+        description: string | null;
+        trackCount: number;
+      };
+      tracks: SongRequest[];
+      tracksCount: number;
+    }>(`/events/${eventId}/musicadj/playlists/${playlistId}/tracks`),
+
   deletePlaylist: (eventId: string, playlistId: string) =>
     api.delete(`/events/${eventId}/musicadj/playlists/${playlistId}`),
 }

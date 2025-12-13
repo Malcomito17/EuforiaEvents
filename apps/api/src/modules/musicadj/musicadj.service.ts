@@ -210,12 +210,17 @@ export async function getRequestById(eventId: string, requestId: string) {
  * Lista solicitudes de un evento
  */
 export async function listRequests(eventId: string, query: ListRequestsQuery) {
-  const { status, search, limit, offset } = query
+  const { status, search, limit, offset, excludePlaylistTracks } = query
 
   const where: any = { eventId }
 
   if (status) {
     where.status = status
+  }
+
+  // Por defecto excluir tracks que vienen de playlists importadas
+  if (excludePlaylistTracks) {
+    where.fromClientPlaylist = false
   }
 
   if (search) {
@@ -617,6 +622,47 @@ export async function listEventPlaylists(eventId: string) {
   return {
     playlists,
     total: playlists.length
+  }
+}
+
+/**
+ * Obtiene los tracks de una playlist específica
+ */
+export async function getPlaylistTracks(eventId: string, playlistId: string) {
+  // Verificar que la playlist existe y pertenece al evento
+  const playlist = await prisma.clientPlaylist.findFirst({
+    where: {
+      id: playlistId,
+      eventId
+    }
+  })
+
+  if (!playlist) {
+    throw new MusicadjError('Playlist no encontrada', 404)
+  }
+
+  // Obtener los tracks que fueron importados de esta playlist
+  const tracks = await prisma.songRequest.findMany({
+    where: {
+      playlistId,
+      eventId
+    },
+    include: {
+      guest: {
+        select: {
+          id: true,
+          displayName: true,
+          email: true
+        }
+      }
+    },
+    orderBy: { createdAt: 'asc' }
+  })
+
+  return {
+    playlist,
+    tracks,
+    tracksCount: tracks.length
   }
 }
 
