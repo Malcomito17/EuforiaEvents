@@ -470,11 +470,24 @@ export async function importPlaylistToEvent(
 
   // Verificar si la playlist ya fue importada
   const existingPlaylist = await prisma.clientPlaylist.findUnique({
-    where: { spotifyPlaylistId }
+    where: { spotifyPlaylistId },
+    include: {
+      _count: {
+        select: { songRequests: true }
+      }
+    }
   })
 
   if (existingPlaylist && existingPlaylist.eventId === eventId) {
-    throw new MusicadjError('Esta playlist ya fue importada a este evento', 409)
+    // Si existe pero no tiene requests (importación fallida), permitir eliminar y reimportar
+    if (existingPlaylist._count.songRequests === 0) {
+      console.log('[MUSICADJ] Playlist existente sin requests, eliminando registro corrupto...')
+      await prisma.clientPlaylist.delete({
+        where: { id: existingPlaylist.id }
+      })
+    } else {
+      throw new MusicadjError('Esta playlist ya fue importada a este evento', 409)
+    }
   }
 
   // Obtener tracks de Spotify
@@ -544,8 +557,7 @@ export async function importPlaylistToEvent(
 
     // Usar createMany para inserción en batch
     await prisma.songRequest.createMany({
-      data: requestsData,
-      skipDuplicates: true
+      data: requestsData
     })
 
     // Obtener los requests creados para retornar
