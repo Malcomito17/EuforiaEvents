@@ -4,7 +4,7 @@ import { z } from 'zod'
 // ENUMS
 // ============================================
 
-export const ROLES = ['ADMIN', 'OPERATOR', 'VIEWER'] as const
+export const ROLES = ['ADMIN', 'OPERATOR', 'DJ', 'VIEWER'] as const
 export const MODULES = ['MUSICADJ', 'KARAOKEYA', 'VENUES', 'EVENTS', 'CLIENTS', 'USERS'] as const
 
 export type Role = typeof ROLES[number]
@@ -81,6 +81,15 @@ export const ROLE_PRESETS: Record<Role, Permission[]> = {
     { module: 'VENUES', canView: true, canEdit: false, canDelete: false, canExport: false },
     { module: 'EVENTS', canView: true, canEdit: false, canDelete: false, canExport: false },
     { module: 'CLIENTS', canView: true, canEdit: false, canDelete: false, canExport: false },
+    { module: 'USERS', canView: false, canEdit: false, canDelete: false, canExport: false },
+  ],
+
+  DJ: [
+    { module: 'MUSICADJ', canView: true, canEdit: false, canDelete: false, canExport: false },
+    { module: 'KARAOKEYA', canView: true, canEdit: false, canDelete: false, canExport: false },
+    { module: 'VENUES', canView: false, canEdit: false, canDelete: false, canExport: false },
+    { module: 'EVENTS', canView: false, canEdit: false, canDelete: false, canExport: false },
+    { module: 'CLIENTS', canView: false, canEdit: false, canDelete: false, canExport: false },
     { module: 'USERS', canView: false, canEdit: false, canDelete: false, canExport: false },
   ],
 

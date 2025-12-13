@@ -89,6 +89,7 @@ export default function UserForm() {
           <select {...register('role', { required: true })} className="border rounded px-3 py-2 w-full">
             <option value="ADMIN">ADMIN</option>
             <option value="OPERATOR">OPERATOR</option>
+            <option value="DJ">DJ</option>
             <option value="VIEWER">VIEWER</option>
           </select>
         </div>
