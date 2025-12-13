@@ -77,6 +77,10 @@ export interface EventData {
   guestCount: number | null
   instagramUrl: string | null
   instagramUser: string | null
+  facebook: string | null
+  twitter: string | null
+  website: string | null
+  eventImage: string | null
   hashtag: string | null
   spotifyPlaylist: string | null
   notes: string | null
