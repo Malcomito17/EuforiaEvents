@@ -1196,7 +1196,7 @@ export async function getDisplayData(eventSlug: string) {
       onStage,
       called,
       next: queued[0] || null,
-      upcoming: queued.slice(1, 10), // Mostrar hasta 9 más en cola
+      upcoming: queued, // Mostrar TODOS los items QUEUED en la cola
       total: queued.length,
     },
   }
