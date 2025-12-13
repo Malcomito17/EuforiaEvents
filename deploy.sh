@@ -100,10 +100,10 @@ mkdir -p backups
 # Intentar backup desde contenedor corriendo
 if docker ps | grep -q euforia-api-prod; then
   echo "Intentando backup desde contenedor corriendo..."
-  docker exec euforia-api-prod sh -c "cp /app/prisma/euforia.db /tmp/euforia.db.backup" 2>/dev/null || true
-  docker cp euforia-api-prod:/tmp/euforia.db.backup ./backups/euforia.db.backup-$(date +%Y%m%d-%H%M%S) 2>/dev/null || true
+  docker exec euforia-api-prod sh -c "cp /app/apps/api/prisma/data/production.db /tmp/production.db.backup" 2>/dev/null || true
+  docker cp euforia-api-prod:/tmp/production.db.backup ./backups/production.db.backup-$(date +%Y%m%d-%H%M%S) 2>/dev/null || true
 
-  if [ -f "./backups/euforia.db.backup-$(date +%Y%m%d)-"* ]; then
+  if ls ./backups/production.db.backup-$(date +%Y%m%d)-* 1> /dev/null 2>&1; then
     echo "✓ Backup creado exitosamente"
     ls -lh backups/ | tail -1
   else

@@ -349,7 +349,7 @@ manual_backup() {
   show_info "Creando backup de la base de datos..."
   echo ""
 
-  if docker exec euforia-api-prod sh -c "cat /app/prisma/euforia.db" > "$BACKUP_FILE" 2>/dev/null; then
+  if docker exec euforia-api-prod sh -c "cat /app/apps/api/prisma/data/production.db" > "$BACKUP_FILE" 2>/dev/null; then
     echo -e "${GREEN}✓ Backup creado exitosamente${NC}"
     echo ""
     echo -e "${CYAN}Archivo: ${YELLOW}$BACKUP_FILE${NC}"
