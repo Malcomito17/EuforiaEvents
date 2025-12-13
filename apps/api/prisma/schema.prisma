@@ -92,12 +92,13 @@ model Client {
 // Guest = usuario final que accede via QR (sin password)
 // Identificación por email, cross-evento
 model Guest {
-  id          String   @id @default(cuid())
-  email       String   @unique
-  displayName String   // "Juancho", "La Voz de Oro", etc.
-  whatsapp    String?  // Opcional, para notificaciones de turno
-  createdAt   DateTime @default(now())
-  lastSeenAt  DateTime @updatedAt
+  id            String   @id @default(cuid())
+  email         String   @unique
+  displayName   String   // "Juancho", "La Voz de Oro", etc.
+  whatsapp      String?  // Opcional, para notificaciones de turno
+  isSystemGuest Boolean  @default(false)  // true para guests internos (ej: IMPORTACION)
+  createdAt     DateTime @default(now())
+  lastSeenAt    DateTime @updatedAt
 
   songRequests    SongRequest[]
   karaokeRequests KaraokeRequest[]

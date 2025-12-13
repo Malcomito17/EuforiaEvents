@@ -89,11 +89,13 @@ export class GuestsService {
 
   /**
    * Lista TODOS los guests (sin filtrar por evento)
+   * Excluye guests del sistema
    */
   async listAll() {
     // Obtener todos los guests que tienen al menos un request
     const guests = await prisma.guest.findMany({
       where: {
+        isSystemGuest: false,  // Excluir guests del sistema
         OR: [
           { songRequests: { some: {} } },
           { karaokeRequests: { some: {} } },
@@ -119,6 +121,7 @@ export class GuestsService {
 
   /**
    * Lista todos los guests de un evento
+   * Excluye guests del sistema
    */
   async listByEvent(eventId: string) {
     // Obtener IDs únicos de guests que tienen requests en este evento
@@ -146,8 +149,12 @@ export class GuestsService {
     }
 
     // Obtener datos completos de guests con contadores de requests
+    // Excluir guests del sistema
     const guests = await prisma.guest.findMany({
-      where: { id: { in: guestIds } },
+      where: {
+        id: { in: guestIds },
+        isSystemGuest: false  // Excluir guests del sistema
+      },
       include: {
         _count: {
           select: {

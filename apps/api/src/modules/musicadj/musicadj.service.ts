@@ -415,6 +415,31 @@ export async function getStats(eventId: string) {
 // ============================================
 
 /**
+ * Obtiene o crea el guest especial del sistema para importaciones
+ */
+async function getOrCreateSystemGuest(): Promise<string> {
+  const SYSTEM_EMAIL = 'system-import@euforia.internal'
+  const SYSTEM_NAME = 'IMPORTACION'
+
+  let systemGuest = await prisma.guest.findUnique({
+    where: { email: SYSTEM_EMAIL }
+  })
+
+  if (!systemGuest) {
+    systemGuest = await prisma.guest.create({
+      data: {
+        email: SYSTEM_EMAIL,
+        displayName: SYSTEM_NAME,
+        isSystemGuest: true
+      }
+    })
+    console.log('[MUSICADJ] Guest del sistema creado:', SYSTEM_NAME)
+  }
+
+  return systemGuest.id
+}
+
+/**
  * Importa una playlist de Spotify y opcionalmente crea song requests
  */
 export async function importPlaylistToEvent(
@@ -426,7 +451,8 @@ export async function importPlaylistToEvent(
     guestId?: string
   } = {}
 ) {
-  const { createRequests = false, guestId } = options
+  const { createRequests = false } = options
+  let { guestId } = options
 
   // Verificar que el evento existe
   const event = await prisma.event.findUnique({
@@ -487,17 +513,19 @@ export async function importPlaylistToEvent(
 
   // Opcionalmente crear song requests
   if (createRequests) {
+    // Si no se proporciona guestId, usar el guest del sistema
     if (!guestId) {
-      throw new MusicadjError('guestId es requerido para crear requests', 400)
-    }
+      guestId = await getOrCreateSystemGuest()
+      console.log('[MUSICADJ] Usando guest del sistema para requests de playlist importada')
+    } else {
+      // Verificar que el guest proporcionado existe
+      const guest = await prisma.guest.findUnique({
+        where: { id: guestId }
+      })
 
-    // Verificar que el guest existe
-    const guest = await prisma.guest.findUnique({
-      where: { id: guestId }
-    })
-
-    if (!guest) {
-      throw new MusicadjError('Guest no encontrado', 404)
+      if (!guest) {
+        throw new MusicadjError('Guest no encontrado', 404)
+      }
     }
 
     // Crear requests en batch
