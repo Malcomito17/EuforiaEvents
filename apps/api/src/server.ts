@@ -5,10 +5,15 @@
 
 // Cargar variables de entorno ANTES de todo
 import { config } from 'dotenv'
-import { resolve } from 'path'
+import { resolve, dirname } from 'path'
+import { fileURLToPath } from 'url'
 
-// Cargar .env desde el working directory (apps/api)
-config({ path: resolve(process.cwd(), '.env') })
+// Resolver __dirname en módulos ES
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
+
+// Cargar .env desde la raíz del proyecto API (apps/api)
+config({ path: resolve(__dirname, '../.env') })
 
 import { createServer } from 'http'
 import app from './app'
