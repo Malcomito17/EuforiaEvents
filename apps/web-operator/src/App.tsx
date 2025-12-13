@@ -14,6 +14,7 @@ import { KaraokeyaPage } from '@/pages/Karaokeya'
 import { SongListPage, SongFormPage } from '@/pages/KaraokeSongs'
 import { UserListPage, UserFormPage } from '@/pages/Users'
 import { ParticipantsListPage, ParticipantDetailPage } from '@/pages/Participants'
+import { DJEvents, DJMusicaDJ, DJKaraokeYa } from '@/pages/DJ'
 
 function App() {
   const { checkAuth, isAuthenticated } = useAuthStore()
@@ -288,6 +289,32 @@ function App() {
             <Layout>
               <UserFormPage />
             </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      {/* DJ Routes */}
+      <Route
+        path="/dj/events"
+        element={
+          <ProtectedRoute>
+            <DJEvents />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/dj/events/:eventId/musicadj"
+        element={
+          <ProtectedRoute>
+            <DJMusicaDJ />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/dj/events/:eventId/karaokeya"
+        element={
+          <ProtectedRoute>
+            <DJKaraokeYa />
           </ProtectedRoute>
         }
       />

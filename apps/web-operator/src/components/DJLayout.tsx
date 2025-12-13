@@ -40,23 +40,33 @@ export function DJLayout({ children }: DJLayoutProps) {
           </div>
         </div>
 
-        {/* Navigation tabs */}
-        <nav className="flex border-t border-white/10">
-          <Link
-            to="/dj/musicadj"
-            className="flex-1 flex items-center justify-center gap-2 py-3 px-4 text-sm font-medium hover:bg-white/10 transition-colors border-b-2 border-transparent hover:border-white"
-          >
-            <Music className="h-4 w-4" />
-            <span>MUSICADJ</span>
-          </Link>
-          <Link
-            to="/dj/karaokeya"
-            className="flex-1 flex items-center justify-center gap-2 py-3 px-4 text-sm font-medium hover:bg-white/10 transition-colors border-b-2 border-transparent hover:border-white"
-          >
-            <Mic2 className="h-4 w-4" />
-            <span>KARAOKEYA</span>
-          </Link>
-        </nav>
+        {/* Navigation - Show when on module pages, not on events list */}
+        {window.location.pathname.includes('/musicadj') || window.location.pathname.includes('/karaokeya') ? (
+          <nav className="flex border-t border-white/10">
+            <Link
+              to={window.location.pathname.replace(/\/(musicadj|karaokeya).*/, '/musicadj')}
+              className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 text-sm font-medium hover:bg-white/10 transition-colors border-b-2 ${
+                window.location.pathname.includes('/musicadj')
+                  ? 'border-white bg-white/10'
+                  : 'border-transparent hover:border-white'
+              }`}
+            >
+              <Music className="h-4 w-4" />
+              <span>MUSICADJ</span>
+            </Link>
+            <Link
+              to={window.location.pathname.replace(/\/(musicadj|karaokeya).*/, '/karaokeya')}
+              className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 text-sm font-medium hover:bg-white/10 transition-colors border-b-2 ${
+                window.location.pathname.includes('/karaokeya')
+                  ? 'border-white bg-white/10'
+                  : 'border-transparent hover:border-white'
+              }`}
+            >
+              <Mic2 className="h-4 w-4" />
+              <span>KARAOKEYA</span>
+            </Link>
+          </nav>
+        ) : null}
       </header>
 
       {/* Main content */}
