@@ -198,7 +198,7 @@ export function EventDetailPage() {
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">Módulos del Evento</h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* MUSICADJ Module */}
           <Link
             to={`/events/${event.id}/musicadj`}
@@ -227,23 +227,6 @@ export function EventDetailPage() {
             <div className="flex-1">
               <h3 className="font-semibold text-gray-900 group-hover:text-primary-700">KARAOKEYA</h3>
               <p className="text-sm text-gray-500">Gestionar cola de karaoke</p>
-            </div>
-            <div className="text-gray-400 group-hover:text-primary-500">
-              →
-            </div>
-          </Link>
-
-          {/* GUESTS Module */}
-          <Link
-            to={`/events/${event.id}/guests`}
-            className="flex items-center gap-4 p-4 border border-gray-200 rounded-xl hover:border-primary-300 hover:bg-primary-50 transition-all group"
-          >
-            <div className="p-3 bg-blue-100 rounded-xl group-hover:bg-blue-200 transition-colors">
-              <Users className="h-6 w-6 text-blue-600" />
-            </div>
-            <div className="flex-1">
-              <h3 className="font-semibold text-gray-900 group-hover:text-primary-700">Invitados</h3>
-              <p className="text-sm text-gray-500">Ver pedidos por invitado</p>
             </div>
             <div className="text-gray-400 group-hover:text-primary-500">
               →

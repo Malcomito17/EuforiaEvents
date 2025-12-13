@@ -15,7 +15,7 @@ export interface AuthenticatedRequest extends Request {
   user?: JwtPayload
 }
 
-export type Role = 'ADMIN' | 'MANAGER' | 'OPERATOR'
+export type Role = 'ADMIN' | 'MANAGER' | 'OPERATOR' | 'DJ'
 
 export type Module = 'MUSICADJ' | 'KARAOKEYA'
 

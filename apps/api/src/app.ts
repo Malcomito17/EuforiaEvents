@@ -12,6 +12,7 @@ import { musicadjRoutes } from './modules/musicadj'
 import { karaokeyaRoutes, karaokeyaGlobalRoutes } from './modules/karaokeya'
 import { guestRoutes, eventGuestRoutes } from './modules/guests'
 import { usersRoutes } from './modules/users'
+import { djRoutes } from './modules/dj'
 import { errorHandler } from './shared/middleware/error.middleware'
 
 const app = express()
@@ -30,7 +31,7 @@ app.get('/api', (req, res) => {
   res.json({
     name: 'EUFORIA EVENTS API',
     version: '0.6.0',
-    modules: ['auth', 'users', 'events', 'venues', 'clients', 'musicadj', 'karaokeya'],
+    modules: ['auth', 'users', 'events', 'venues', 'clients', 'musicadj', 'karaokeya', 'dj'],
   })
 })
 
@@ -38,6 +39,7 @@ app.get('/api', (req, res) => {
 app.use('/api/auth', authRoutes)
 app.use('/api/guests', guestRoutes)
 app.use('/api/users', usersRoutes)
+app.use('/api/dj', djRoutes)
 app.use('/api/events', eventRoutes)
 app.use('/api/venues', venueRoutes)
 app.use('/api/clients', clientRoutes)

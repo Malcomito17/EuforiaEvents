@@ -16,7 +16,7 @@ model User {
   username  String   @unique
   email     String?  @unique
   password  String
-  role      String   @default("OPERATOR")  // ADMIN | OPERATOR | VIEWER
+  role      String   @default("OPERATOR")  // ADMIN | OPERATOR | VIEWER | DJ
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

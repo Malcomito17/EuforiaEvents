@@ -45,7 +45,7 @@ export interface User {
   id: string
   username: string
   email: string | null
-  role: 'ADMIN' | 'MANAGER' | 'OPERATOR'
+  role: 'ADMIN' | 'MANAGER' | 'OPERATOR' | 'DJ'
 }
 
 export interface LoginResponse {
@@ -623,4 +623,34 @@ export const usersApi = {
   
   getRolePreset: (role: string) =>
     api.get('/users/roles/' + role + '/preset'),
+}
+
+// ============================================
+// DJ
+// ============================================
+
+export const djApi = {
+  getEvents: () =>
+    api.get('/dj/events'),
+
+  getMusicaDJRequests: (eventId: string) =>
+    api.get(`/dj/events/${eventId}/musicadj`),
+
+  updateMusicaDJRequestStatus: (eventId: string, requestId: string, status: string) =>
+    api.patch(`/dj/events/${eventId}/musicadj/${requestId}`, { status }),
+
+  reorderMusicaDJQueue: (eventId: string, requestIds: string[]) =>
+    api.post(`/dj/events/${eventId}/musicadj/reorder`, { requestIds }),
+
+  getKaraokeyaRequests: (eventId: string) =>
+    api.get(`/dj/events/${eventId}/karaokeya`),
+
+  updateKaraokeyaRequestStatus: (eventId: string, requestId: string, status: string) =>
+    api.patch(`/dj/events/${eventId}/karaokeya/${requestId}`, { status }),
+
+  reorderKaraokeyaQueue: (eventId: string, requestIds: string[]) =>
+    api.post(`/dj/events/${eventId}/karaokeya/reorder`, { requestIds }),
+
+  getGuestHistory: (guestId: string) =>
+    api.get(`/dj/guests/${guestId}/history`),
 }
