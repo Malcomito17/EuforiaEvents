@@ -263,7 +263,7 @@ export async function importPlaylist(req: Request, res: Response, next: NextFunc
     const input = importPlaylistSchema.parse(req.body)
 
     // Obtener userId del request autenticado
-    const userId = (req as any).user?.id
+    const userId = (req as any).user?.userId
     if (!userId) {
       return res.status(401).json({ error: 'No autenticado' })
     }
