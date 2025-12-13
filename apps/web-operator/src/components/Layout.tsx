@@ -62,7 +62,19 @@ export function Layout({ children }: LayoutProps) {
   }
 
   // Estructura de navegación con grupos
-  const navigationStructure: NavigationStructure = {
+  // Menú simplificado para DJ - solo eventos
+  const djNavigationStructure: NavigationStructure = {
+    items: [
+      {
+        name: 'Eventos',
+        href: '/events',
+        icon: Calendar,
+      },
+    ],
+  }
+
+  // Menú completo para ADMIN/OPERATOR
+  const fullNavigationStructure: NavigationStructure = {
     items: [
       {
         name: 'Dashboard',
@@ -150,6 +162,9 @@ export function Layout({ children }: LayoutProps) {
       },
     ],
   }
+
+  // Seleccionar estructura de navegación según rol
+  const navigationStructure = user?.role === 'DJ' ? djNavigationStructure : fullNavigationStructure
 
   const handleLogout = () => {
     logout()

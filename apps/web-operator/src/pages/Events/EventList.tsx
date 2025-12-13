@@ -3,8 +3,12 @@ import { Link } from 'react-router-dom'
 import { eventsApi, Event } from '@/lib/api'
 import { Plus, Search, Filter, Calendar, QrCode, Copy, Trash2 } from 'lucide-react'
 import clsx from 'clsx'
+import { useAuthStore } from '@/stores/authStore'
 
 export function EventListPage() {
+  const { user } = useAuthStore()
+  const isDJ = user?.role === 'DJ'
+
   const [events, setEvents] = useState<Event[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -74,13 +78,15 @@ export function EventListPage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Eventos</h1>
-        <Link
-          to="/events/new"
-          className="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors"
-        >
-          <Plus className="h-5 w-5" />
-          Nuevo Evento
-        </Link>
+        {!isDJ && (
+          <Link
+            to="/events/new"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors"
+          >
+            <Plus className="h-5 w-5" />
+            Nuevo Evento
+          </Link>
+        )}
       </div>
 
       {/* Search & Filters */}
@@ -150,14 +156,18 @@ export function EventListPage() {
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
           <Calendar className="h-12 w-12 text-gray-300 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">No hay eventos</h3>
-          <p className="text-gray-500 mb-4">Creá tu primer evento para empezar</p>
-          <Link
-            to="/events/new"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors"
-          >
-            <Plus className="h-5 w-5" />
-            Crear Evento
-          </Link>
+          <p className="text-gray-500 mb-4">
+            {isDJ ? 'No hay eventos disponibles en este momento' : 'Creá tu primer evento para empezar'}
+          </p>
+          {!isDJ && (
+            <Link
+              to="/events/new"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors"
+            >
+              <Plus className="h-5 w-5" />
+              Crear Evento
+            </Link>
+          )}
         </div>
       ) : (
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
@@ -210,28 +220,32 @@ export function EventListPage() {
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center justify-end gap-2">
-                      <Link
-                        to={`/events/${event.id}/qr`}
-                        className="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
-                        title="Ver QR"
-                      >
-                        <QrCode className="h-5 w-5" />
-                      </Link>
-                      <button
-                        onClick={() => handleDuplicate(event.id)}
-                        className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                        title="Duplicar"
-                      >
-                        <Copy className="h-5 w-5" />
-                      </button>
-                      {event.status !== 'FINISHED' && (
-                        <button
-                          onClick={() => handleDelete(event.id)}
-                          className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                          title="Finalizar"
-                        >
-                          <Trash2 className="h-5 w-5" />
-                        </button>
+                      {!isDJ && (
+                        <>
+                          <Link
+                            to={`/events/${event.id}/qr`}
+                            className="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
+                            title="Ver QR"
+                          >
+                            <QrCode className="h-5 w-5" />
+                          </Link>
+                          <button
+                            onClick={() => handleDuplicate(event.id)}
+                            className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                            title="Duplicar"
+                          >
+                            <Copy className="h-5 w-5" />
+                          </button>
+                          {event.status !== 'FINISHED' && (
+                            <button
+                              onClick={() => handleDelete(event.id)}
+                              className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                              title="Finalizar"
+                            >
+                              <Trash2 className="h-5 w-5" />
+                            </button>
+                          )}
+                        </>
                       )}
                     </div>
                   </td>

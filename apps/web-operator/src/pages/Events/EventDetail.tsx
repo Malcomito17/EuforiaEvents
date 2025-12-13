@@ -6,10 +6,14 @@ import {
   Calendar, MapPin, Users, Music, Instagram, Hash, Loader2, Mic, Settings
 } from 'lucide-react'
 import clsx from 'clsx'
+import { useAuthStore } from '@/stores/authStore'
 
 export function EventDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const { user } = useAuthStore()
+  const isDJ = user?.role === 'DJ'
+
   const [event, setEvent] = useState<Event | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isUpdating, setIsUpdating] = useState(false)
@@ -136,63 +140,65 @@ export function EventDetailPage() {
         </div>
       </div>
 
-      {/* Actions */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6">
-        <div className="flex flex-wrap gap-3">
-          <Link
-            to={`/events/${event.id}/edit`}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-lg transition-colors"
-          >
-            <Edit className="h-4 w-4" />
-            Editar
-          </Link>
-
-          <Link
-            to={`/events/${event.id}/settings`}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors"
-          >
-            <Settings className="h-4 w-4" />
-            Configuración
-          </Link>
-
-          <Link
-            to={`/events/${event.id}/qr`}
-            className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors"
-          >
-            <QrCode className="h-4 w-4" />
-            Ver QR
-          </Link>
-
-          <button
-            onClick={handleDuplicate}
-            className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors"
-          >
-            <Copy className="h-4 w-4" />
-            Duplicar
-          </button>
-
-          {/* Status change buttons */}
-          {getStatusActions().map(({ action, label, icon: Icon, color }) => (
-            <button
-              key={action}
-              onClick={() => handleStatusChange(action)}
-              disabled={isUpdating}
-              className={clsx(
-                'inline-flex items-center gap-2 px-4 py-2 text-white rounded-lg transition-colors',
-                color,
-                isUpdating && 'opacity-50 cursor-not-allowed'
-              )}
+      {/* Actions - Solo para ADMIN/OPERATOR */}
+      {!isDJ && (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6">
+          <div className="flex flex-wrap gap-3">
+            <Link
+              to={`/events/${event.id}/edit`}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-lg transition-colors"
             >
-              {isUpdating ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Icon className="h-4 w-4" />
-              )}
-              {label}
+              <Edit className="h-4 w-4" />
+              Editar
+            </Link>
+
+            <Link
+              to={`/events/${event.id}/settings`}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors"
+            >
+              <Settings className="h-4 w-4" />
+              Configuración
+            </Link>
+
+            <Link
+              to={`/events/${event.id}/qr`}
+              className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors"
+            >
+              <QrCode className="h-4 w-4" />
+              Ver QR
+            </Link>
+
+            <button
+              onClick={handleDuplicate}
+              className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors"
+            >
+              <Copy className="h-4 w-4" />
+              Duplicar
             </button>
-          ))}
+
+            {/* Status change buttons */}
+            {getStatusActions().map(({ action, label, icon: Icon, color }) => (
+              <button
+                key={action}
+                onClick={() => handleStatusChange(action)}
+                disabled={isUpdating}
+                className={clsx(
+                  'inline-flex items-center gap-2 px-4 py-2 text-white rounded-lg transition-colors',
+                  color,
+                  isUpdating && 'opacity-50 cursor-not-allowed'
+                )}
+              >
+                {isUpdating ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Icon className="h-4 w-4" />
+                )}
+                {label}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Modules Section */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
