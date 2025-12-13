@@ -220,6 +220,7 @@ model ClientPlaylist {
   name               String
   description        String?
   trackCount         Int
+  tracksData         String?  // JSON con los tracks de la playlist
   importedAt         DateTime @default(now())
   importedBy         String   // userId
 

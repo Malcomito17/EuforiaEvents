@@ -89,7 +89,7 @@ export const listRequestsQuerySchema = z.object({
   search: z.string().optional(),
   limit: z.coerce.number().int().min(1).max(100).default(50),
   offset: z.coerce.number().int().min(0).default(0),
-  excludePlaylistTracks: z.coerce.boolean().default(true), // Por defecto excluir tracks de playlist
+  excludePlaylistTracks: z.coerce.boolean().default(false), // Por defecto INCLUIR todos los tracks
 })
 
 export type ListRequestsQuery = z.infer<typeof listRequestsQuerySchema>

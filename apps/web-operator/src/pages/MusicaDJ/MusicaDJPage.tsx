@@ -501,12 +501,16 @@ export function MusicaDJPage() {
                               className="flex items-center gap-3 p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
                             >
                               <span className="text-xs text-gray-400 font-mono w-8">{index + 1}</span>
-                              {track.albumArtUrl && (
+                              {track.albumArtUrl ? (
                                 <img
                                   src={track.albumArtUrl}
                                   alt={track.title}
                                   className="w-10 h-10 rounded object-cover"
                                 />
+                              ) : (
+                                <div className="w-10 h-10 bg-gray-200 rounded flex items-center justify-center">
+                                  <Music className="h-5 w-5 text-gray-400" />
+                                </div>
                               )}
                               <div className="flex-1 min-w-0">
                                 <div className="font-medium text-sm text-gray-900 truncate">{track.title}</div>

@@ -511,7 +511,7 @@ export async function importPlaylistToEvent(
     throw new MusicadjError(`Error al obtener playlist: ${error.message}`, 502)
   }
 
-  // Crear el registro de ClientPlaylist
+  // Crear el registro de ClientPlaylist con los tracks guardados en JSON
   const clientPlaylist = await prisma.clientPlaylist.create({
     data: {
       eventId,
@@ -519,6 +519,7 @@ export async function importPlaylistToEvent(
       name: playlistData.playlistName,
       description: playlistData.playlistDescription,
       trackCount: playlistData.totalTracks,
+      tracksData: JSON.stringify(playlistData.tracks), // Guardar tracks como JSON
       importedBy: userId
     }
   })
@@ -641,8 +642,8 @@ export async function getPlaylistTracks(eventId: string, playlistId: string) {
     throw new MusicadjError('Playlist no encontrada', 404)
   }
 
-  // Obtener los tracks que fueron importados de esta playlist
-  const tracks = await prisma.songRequest.findMany({
+  // Primero intentar obtener los SongRequests creados de esta playlist
+  const songRequests = await prisma.songRequest.findMany({
     where: {
       playlistId,
       eventId
@@ -659,10 +660,46 @@ export async function getPlaylistTracks(eventId: string, playlistId: string) {
     orderBy: { createdAt: 'asc' }
   })
 
+  // Si hay SongRequests, devolver esos
+  if (songRequests.length > 0) {
+    return {
+      playlist,
+      tracks: songRequests,
+      tracksCount: songRequests.length
+    }
+  }
+
+  // Si no hay SongRequests, devolver los tracks guardados en tracksData (JSON)
+  if (playlist.tracksData) {
+    try {
+      const tracksFromJSON = JSON.parse(playlist.tracksData)
+      // Formatear los tracks para que tengan la misma estructura que SongRequest
+      const formattedTracks = tracksFromJSON.map((track: any, index: number) => ({
+        id: `track-${index}`,
+        spotifyId: track.spotifyId,
+        title: track.title,
+        artist: track.artist,
+        albumArtUrl: track.albumArtUrl,
+        status: 'N/A', // No es un request real
+        fromClientPlaylist: true,
+        guest: null // No tiene guest porque no se creó como request
+      }))
+
+      return {
+        playlist,
+        tracks: formattedTracks,
+        tracksCount: formattedTracks.length
+      }
+    } catch (error) {
+      console.error('[MUSICADJ] Error parsing tracksData:', error)
+    }
+  }
+
+  // Si no hay ni requests ni tracksData, devolver vacío
   return {
     playlist,
-    tracks,
-    tracksCount: tracks.length
+    tracks: [],
+    tracksCount: 0
   }
 }
 
