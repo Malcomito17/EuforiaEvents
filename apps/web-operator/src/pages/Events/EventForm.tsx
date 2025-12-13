@@ -15,6 +15,10 @@ interface EventFormData {
   clientId: string
   instagramUrl: string
   instagramUser: string
+  facebook: string
+  twitter: string
+  website: string
+  eventImage: string
   hashtag: string
   spotifyPlaylist: string
   notes: string
@@ -90,17 +94,21 @@ export function EventFormPage() {
       reset({
         eventName: data.eventData?.eventName || '',
         eventType: data.eventData?.eventType || 'BIRTHDAY',
-        startDate: data.eventData?.startDate 
-          ? new Date(data.eventData.startDate).toISOString().slice(0, 16) 
+        startDate: data.eventData?.startDate
+          ? new Date(data.eventData.startDate).toISOString().slice(0, 16)
           : '',
-        endDate: data.eventData?.endDate 
-          ? new Date(data.eventData.endDate).toISOString().slice(0, 16) 
+        endDate: data.eventData?.endDate
+          ? new Date(data.eventData.endDate).toISOString().slice(0, 16)
           : '',
         guestCount: data.eventData?.guestCount?.toString() || '',
         venueId: data.venueId || '',
         clientId: data.clientId || '',
         instagramUrl: data.eventData?.instagramUrl || '',
         instagramUser: data.eventData?.instagramUser || '',
+        facebook: data.eventData?.facebook || '',
+        twitter: data.eventData?.twitter || '',
+        website: data.eventData?.website || '',
+        eventImage: data.eventData?.eventImage || '',
         hashtag: data.eventData?.hashtag || '',
         spotifyPlaylist: data.eventData?.spotifyPlaylist || '',
         notes: data.eventData?.notes || '',
@@ -129,12 +137,16 @@ export function EventFormPage() {
         guestCount: formData.guestCount ? parseInt(formData.guestCount) : undefined,
         instagramUrl: formData.instagramUrl || undefined,
         instagramUser: formData.instagramUser || undefined,
+        facebook: formData.facebook || undefined,
+        twitter: formData.twitter || undefined,
+        website: formData.website || undefined,
+        eventImage: formData.eventImage || undefined,
         hashtag: formData.hashtag || undefined,
         spotifyPlaylist: formData.spotifyPlaylist || undefined,
         notes: formData.notes || undefined,
-        primaryColor: formData.primaryColor || '#7C3AED',
-        secondaryColor: formData.secondaryColor || '#EC4899',
-        accentColor: formData.accentColor || '#F59E0B',
+        primaryColor: formData.primaryColor,
+        secondaryColor: formData.secondaryColor,
+        accentColor: formData.accentColor,
       }
 
       if (isEditing) {
@@ -312,7 +324,7 @@ export function EventFormPage() {
         {/* Redes y música */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Redes Sociales y Música</h2>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -344,6 +356,50 @@ export function EventFormPage() {
                 {...register('instagramUrl')}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none"
                 placeholder="https://instagram.com/..."
+              />
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                URL Facebook
+              </label>
+              <input
+                {...register('facebook')}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none"
+                placeholder="https://facebook.com/..."
+              />
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                URL Twitter/X
+              </label>
+              <input
+                {...register('twitter')}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none"
+                placeholder="https://twitter.com/... o https://x.com/..."
+              />
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Sitio Web
+              </label>
+              <input
+                {...register('website')}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none"
+                placeholder="https://..."
+              />
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Imagen del Evento (URL)
+              </label>
+              <input
+                {...register('eventImage')}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none"
+                placeholder="https://... (URL de la imagen)"
               />
             </div>
 

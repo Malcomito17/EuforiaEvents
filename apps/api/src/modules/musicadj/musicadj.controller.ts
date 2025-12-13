@@ -242,3 +242,72 @@ export async function getStats(req: Request, res: Response, next: NextFunction) 
     next(error)
   }
 }
+
+// ============================================
+// Playlist Import Endpoints
+// ============================================
+
+const importPlaylistSchema = z.object({
+  spotifyPlaylistId: z.string().min(1),
+  createRequests: z.boolean().default(false),
+  guestId: z.string().optional(),
+})
+
+/**
+ * POST /api/events/:eventId/musicadj/import-playlist
+ * Importa una playlist de Spotify al evento
+ */
+export async function importPlaylist(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { eventId } = req.params
+    const input = importPlaylistSchema.parse(req.body)
+
+    // Obtener userId del request autenticado
+    const userId = (req as any).user?.id
+    if (!userId) {
+      return res.status(401).json({ error: 'No autenticado' })
+    }
+
+    const result = await service.importPlaylistToEvent(
+      eventId,
+      input.spotifyPlaylistId,
+      userId,
+      {
+        createRequests: input.createRequests,
+        guestId: input.guestId,
+      }
+    )
+
+    res.status(201).json(result)
+  } catch (error) {
+    next(error)
+  }
+}
+
+/**
+ * GET /api/events/:eventId/musicadj/playlists
+ * Lista las playlists importadas para un evento
+ */
+export async function listPlaylists(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { eventId } = req.params
+    const result = await service.listEventPlaylists(eventId)
+    res.json(result)
+  } catch (error) {
+    next(error)
+  }
+}
+
+/**
+ * DELETE /api/events/:eventId/musicadj/playlists/:playlistId
+ * Elimina una playlist importada
+ */
+export async function deletePlaylist(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { eventId, playlistId } = req.params
+    await service.deleteEventPlaylist(eventId, playlistId)
+    res.status(204).send()
+  } catch (error) {
+    next(error)
+  }
+}

@@ -101,6 +101,20 @@ export default function KaraokeyaRequest() {
       const result = await api.searchKaraoke(event.id, query)
       setCatalogResults(result.fromCatalog)
       setYoutubeResults(result.fromYouTube)
+
+      // Cargar estados de likes para los resultados del catálogo
+      if (guest && result.fromCatalog.length > 0) {
+        const songIds = result.fromCatalog
+          .map(s => s.catalogId)
+          .filter(Boolean) as string[]
+        if (songIds.length > 0) {
+          api.batchGetLikeStatuses(songIds, guest.id)
+            .then(newStatuses => {
+              setLikeStatuses(prev => ({ ...prev, ...newStatuses }))
+            })
+            .catch(console.error)
+        }
+      }
     } catch (err) {
       console.error('Error buscando:', err)
       setCatalogResults([])
@@ -108,7 +122,7 @@ export default function KaraokeyaRequest() {
     } finally {
       setSearching(false)
     }
-  }, [event])
+  }, [event, guest])
 
   useEffect(() => {
     if (debouncedQuery.length >= 2) {
@@ -294,43 +308,60 @@ export default function KaraokeyaRequest() {
                     Otras estrellas eligieron anteriormente
                   </div>
                   <div className="space-y-2">
-                    {catalogResults.map(song => (
-                      <button key={song.catalogId} onClick={() => handleSelectSong(song)}
-                        className="relative w-full flex items-center gap-3 p-3 bg-primary-50 hover:bg-primary-100 rounded-lg transition text-left border border-primary-200">
-                        {/* YouTube Preview Link */}
-                        <a
-                          href={song.youtubeShareUrl || `https://www.youtube.com/watch?v=${song.youtubeId}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={(e) => e.stopPropagation()}
-                          className="absolute top-2 right-2 p-1.5 bg-white/90 hover:bg-white rounded-full shadow-sm transition-all hover:shadow-md z-10"
-                          title="Ver en YouTube"
-                        >
-                          <ExternalLink className="w-4 h-4 text-gray-700" />
-                        </a>
+                    {catalogResults.map(song => {
+                      const songId = song.catalogId
+                      return (
+                        <button key={songId} onClick={() => handleSelectSong(song)}
+                          className="relative w-full flex items-center gap-3 p-3 bg-primary-50 hover:bg-primary-100 rounded-lg transition text-left border border-primary-200">
 
-                        {song.thumbnailUrl && <img src={song.thumbnailUrl} alt="" className="w-16 h-16 rounded object-cover" />}
-                        <div className="flex-1 min-w-0 pr-8">
-                          <div className="font-semibold text-gray-900 truncate">{song.title}</div>
-                          <div className="text-sm text-gray-600 truncate">{song.artist}</div>
-
-                          {/* Rating + Difficulty */}
-                          <div className="flex items-center gap-2 mt-1">
-                            {song.ranking && <StarRating rating={song.ranking} size="sm" />}
-                            {song.difficulty && <DifficultyBadge difficulty={song.difficulty as any} size="sm" />}
-                          </div>
-
-                          {/* Opinion */}
-                          {song.opinion && (
-                            <p className="text-xs text-gray-500 italic mt-1 line-clamp-2">
-                              "{song.opinion}"
-                            </p>
+                          {/* Like button - absolute top-right */}
+                          {guest && songId && (
+                            <div className="absolute top-2 right-2 z-10">
+                              <LikeButton
+                                songId={songId}
+                                guestId={guest.id}
+                                initialLiked={likeStatuses[songId] || false}
+                                initialLikesCount={song.likesCount || 0}
+                                size="sm"
+                              />
+                            </div>
                           )}
 
-                          <div className="text-xs text-primary-600 mt-1">{song.timesRequested} veces pedida</div>
-                        </div>
-                      </button>
-                    ))}
+                          {/* YouTube Preview Link */}
+                          <a
+                            href={song.youtubeShareUrl || `https://www.youtube.com/watch?v=${song.youtubeId}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="absolute top-2 right-10 p-1.5 bg-white/90 hover:bg-white rounded-full shadow-sm transition-all hover:shadow-md z-10"
+                            title="Ver en YouTube"
+                          >
+                            <ExternalLink className="w-4 h-4 text-gray-700" />
+                          </a>
+
+                          {song.thumbnailUrl && <img src={song.thumbnailUrl} alt="" className="w-16 h-16 rounded object-cover" />}
+                          <div className="flex-1 min-w-0 pr-16">
+                            <div className="font-semibold text-gray-900 truncate">{song.title}</div>
+                            <div className="text-sm text-gray-600 truncate">{song.artist}</div>
+
+                            {/* Rating + Difficulty */}
+                            <div className="flex items-center gap-2 mt-1">
+                              {song.ranking && <StarRating rating={song.ranking} size="sm" />}
+                              {song.difficulty && <DifficultyBadge difficulty={song.difficulty as any} size="sm" />}
+                            </div>
+
+                            {/* Opinion */}
+                            {song.opinion && (
+                              <p className="text-xs text-gray-500 italic mt-1 line-clamp-2">
+                                "{song.opinion}"
+                              </p>
+                            )}
+
+                            <div className="text-xs text-primary-600 mt-1">{song.timesRequested} veces pedida</div>
+                          </div>
+                        </button>
+                      )
+                    })}
                   </div>
                 </div>
               )}

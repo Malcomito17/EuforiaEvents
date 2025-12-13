@@ -45,4 +45,9 @@ router.post('/requests/reorder', controller.reorderQueue)
 // Stats
 router.get('/stats', controller.getStats)
 
+// Playlist Import
+router.post('/import-playlist', controller.importPlaylist)
+router.get('/playlists', controller.listPlaylists)
+router.delete('/playlists/:playlistId', controller.deletePlaylist)
+
 export { router as musicadjRoutes }

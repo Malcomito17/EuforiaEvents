@@ -4,7 +4,7 @@
  */
 
 import {
-  Calendar, MapPin, Music2, Instagram, ExternalLink
+  Calendar, MapPin, Music2, Instagram, ExternalLink, Facebook, Twitter, Globe
 } from 'lucide-react'
 import { useEventStore } from '../stores/eventStore'
 import { ClientHeader } from '../components/ClientHeader'
@@ -17,7 +17,8 @@ export default function EventDetails() {
 
   // Parse social media links if they exist (assuming they're in eventData as JSON)
   const rawSocialMedia = event.eventData ? {
-    instagram: (event.eventData as any).instagram,
+    // Try new 'instagram' field first, fallback to old 'instagramUser' or 'instagramUrl'
+    instagram: (event.eventData as any).instagram || (event.eventData as any).instagramUser || (event.eventData as any).instagramUrl,
     facebook: (event.eventData as any).facebook,
     twitter: (event.eventData as any).twitter,
     website: (event.eventData as any).website,
@@ -127,6 +128,57 @@ export default function EventDetails() {
               <div className="flex-1">
                 <p className="font-semibold">Instagram</p>
                 <p className="text-sm text-white/60">Seguinos en Instagram</p>
+              </div>
+              <ExternalLink className="w-5 h-5 text-white/40" />
+            </a>
+          )}
+
+          {/* Facebook */}
+          {socialMedia.facebook && (
+            <a
+              href={socialMedia.facebook}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 p-4 bg-gradient-to-r from-blue-500/10 to-blue-600/10 hover:from-blue-500/20 hover:to-blue-600/20 rounded-xl transition-colors border border-blue-500/30"
+            >
+              <Facebook className="w-6 h-6 text-blue-400 flex-shrink-0" />
+              <div className="flex-1">
+                <p className="font-semibold">Facebook</p>
+                <p className="text-sm text-white/60">Seguinos en Facebook</p>
+              </div>
+              <ExternalLink className="w-5 h-5 text-white/40" />
+            </a>
+          )}
+
+          {/* Twitter / X */}
+          {socialMedia.twitter && (
+            <a
+              href={socialMedia.twitter}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 p-4 bg-gradient-to-r from-sky-500/10 to-cyan-500/10 hover:from-sky-500/20 hover:to-cyan-500/20 rounded-xl transition-colors border border-sky-500/30"
+            >
+              <Twitter className="w-6 h-6 text-sky-400 flex-shrink-0" />
+              <div className="flex-1">
+                <p className="font-semibold">Twitter</p>
+                <p className="text-sm text-white/60">Seguinos en Twitter</p>
+              </div>
+              <ExternalLink className="w-5 h-5 text-white/40" />
+            </a>
+          )}
+
+          {/* Website */}
+          {socialMedia.website && (
+            <a
+              href={socialMedia.website}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 p-4 bg-gradient-to-r from-gray-500/10 to-gray-600/10 hover:from-gray-500/20 hover:to-gray-600/20 rounded-xl transition-colors border border-gray-500/30"
+            >
+              <Globe className="w-6 h-6 text-gray-300 flex-shrink-0" />
+              <div className="flex-1">
+                <p className="font-semibold">Sitio Web</p>
+                <p className="text-sm text-white/60">Visitá nuestro sitio web</p>
               </div>
               <ExternalLink className="w-5 h-5 text-white/40" />
             </a>

@@ -130,6 +130,7 @@ model Event {
   eventData       EventData?
   musicadjConfig  MusicadjConfig?
   songRequests    SongRequest[]
+  clientPlaylists ClientPlaylist[]
   karaokeyaConfig KaraokeyaConfig?
   karaokeRequests KaraokeRequest[]
 
@@ -186,25 +187,47 @@ model MusicadjConfig {
 }
 
 model SongRequest {
-  id          String   @id @default(cuid())
-  eventId     String
-  guestId     String   // FK al Guest (identificación unificada)
-  spotifyId   String?
-  title       String
-  artist      String
-  albumArtUrl String?
-  status      String   @default("PENDING")  // PENDING | HIGHLIGHTED | URGENT | PLAYED | DISCARDED
-  priority    Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id                  String   @id @default(cuid())
+  eventId             String
+  guestId             String   // FK al Guest (identificación unificada)
+  spotifyId           String?
+  title               String
+  artist              String
+  albumArtUrl         String?
+  status              String   @default("PENDING")  // PENDING | HIGHLIGHTED | URGENT | PLAYED | DISCARDED
+  priority            Int      @default(0)
+  playlistId          String?  // ID de la playlist de origen (opcional)
+  fromClientPlaylist  Boolean  @default(false)  // Marca visual para pedidos de playlist
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
 
-  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  guest Guest @relation(fields: [guestId], references: [id])
+  event    Event           @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  guest    Guest           @relation(fields: [guestId], references: [id])
+  playlist ClientPlaylist? @relation(fields: [playlistId], references: [id])
 
   @@index([eventId, status])
   @@index([eventId, createdAt])
   @@index([guestId])
+  @@index([playlistId])
   @@map("song_requests")
+}
+
+model ClientPlaylist {
+  id                 String   @id @default(cuid())
+  eventId            String
+  spotifyPlaylistId  String   @unique
+  name               String
+  description        String?
+  trackCount         Int
+  importedAt         DateTime @default(now())
+  importedBy         String   // userId
+
+  event        Event         @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  songRequests SongRequest[]
+
+  @@index([eventId])
+  @@index([spotifyPlaylistId])
+  @@map("client_playlists")
 }
 
 // ================================

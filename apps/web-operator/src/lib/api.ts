@@ -283,6 +283,8 @@ export interface SongRequest {
   albumArtUrl: string | null
   status: SongRequestStatus
   priority: number
+  playlistId: string | null
+  fromClientPlaylist: boolean
   createdAt: string
   updatedAt: string
   guest: {
@@ -359,6 +361,31 @@ export const musicadjApi = {
   // Reorder (drag & drop)
   reorderRequests: (eventId: string, orderedIds: string[]) =>
     api.post(`/events/${eventId}/musicadj/requests/reorder`, { orderedIds }),
+
+  // Playlist Import
+  importPlaylist: (eventId: string, data: { spotifyPlaylistId: string; createRequests?: boolean; guestId?: string }) =>
+    api.post<{
+      playlist: { id: string; name: string; trackCount: number };
+      tracksCount: number;
+      requestsCreated: number;
+    }>(`/events/${eventId}/musicadj/import-playlist`, data),
+
+  listPlaylists: (eventId: string) =>
+    api.get<{
+      playlists: Array<{
+        id: string;
+        spotifyPlaylistId: string;
+        name: string;
+        description: string | null;
+        trackCount: number;
+        importedAt: string;
+        _count: { songRequests: number };
+      }>;
+      total: number;
+    }>(`/events/${eventId}/musicadj/playlists`),
+
+  deletePlaylist: (eventId: string, playlistId: string) =>
+    api.delete(`/events/${eventId}/musicadj/playlists/${playlistId}`),
 }
 
 // ============================================

@@ -197,6 +197,106 @@ export async function getTrackById(trackId: string): Promise<SpotifyTrack | null
   }
 }
 
+/**
+ * Obtiene los tracks de una playlist pública de Spotify
+ */
+export async function getPlaylistTracks(playlistId: string): Promise<{
+  tracks: Array<{
+    spotifyId: string
+    title: string
+    artist: string
+    albumArtUrl: string | null
+  }>
+  playlistName: string
+  playlistDescription: string | null
+  totalTracks: number
+}> {
+  const token = await getAccessToken()
+
+  // Primero, obtener metadata de la playlist
+  const playlistResponse = await fetch(
+    `https://api.spotify.com/v1/playlists/${playlistId}?market=AR&fields=name,description,tracks.total`,
+    {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    }
+  )
+
+  if (!playlistResponse.ok) {
+    if (playlistResponse.status === 404) {
+      throw new SpotifyError('Playlist no encontrada', 404)
+    }
+    if (playlistResponse.status === 401) {
+      cachedToken = null
+      return getPlaylistTracks(playlistId)
+    }
+    if (playlistResponse.status === 403) {
+      throw new SpotifyError('La playlist es privada o no tienes acceso', 403)
+    }
+    throw new SpotifyError('Error al obtener playlist de Spotify', 502)
+  }
+
+  const playlistData = await playlistResponse.json()
+  const playlistName = playlistData.name
+  const playlistDescription = playlistData.description
+  const totalTracks = playlistData.tracks.total
+
+  // Ahora obtener los tracks (máximo 100 por request)
+  const allTracks: Array<{
+    spotifyId: string
+    title: string
+    artist: string
+    albumArtUrl: string | null
+  }> = []
+
+  let offset = 0
+  const limit = 100
+
+  while (offset < totalTracks) {
+    const tracksResponse = await fetch(
+      `https://api.spotify.com/v1/playlists/${playlistId}/tracks?market=AR&limit=${limit}&offset=${offset}&fields=items(track(id,name,artists,album))`,
+      {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      }
+    )
+
+    if (!tracksResponse.ok) {
+      if (tracksResponse.status === 401) {
+        cachedToken = null
+        return getPlaylistTracks(playlistId)
+      }
+      throw new SpotifyError('Error al obtener tracks de la playlist', 502)
+    }
+
+    const tracksData = await tracksResponse.json()
+
+    for (const item of tracksData.items) {
+      if (item.track && item.track.id) {
+        allTracks.push({
+          spotifyId: item.track.id,
+          title: item.track.name,
+          artist: item.track.artists.map((a: any) => a.name).join(', '),
+          albumArtUrl: item.track.album?.images?.[0]?.url || null,
+        })
+      }
+    }
+
+    offset += limit
+  }
+
+  console.log(`[SPOTIFY] Playlist "${playlistName}": ${allTracks.length} tracks obtenidos`)
+
+  return {
+    tracks: allTracks,
+    playlistName,
+    playlistDescription,
+    totalTracks: allTracks.length,
+  }
+}
+
 // ============================================
 // Error Class
 // ============================================

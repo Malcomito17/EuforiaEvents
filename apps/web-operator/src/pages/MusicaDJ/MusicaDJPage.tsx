@@ -14,11 +14,17 @@ import {
   WifiOff,
   Settings,
   ExternalLink,
-  GripVertical
+  GripVertical,
+  Upload,
+  ListMusic,
+  ChevronDown,
+  ChevronUp,
+  Trash2
 } from 'lucide-react'
 import { clsx } from 'clsx'
 import { eventsApi, musicadjApi, SongRequest, SongRequestStatus, Event, MusicadjStats } from '@/lib/api'
 import { connectSocket, disconnectSocket, subscribeMusicadj } from '@/lib/socket'
+import { ImportPlaylistModal } from '@/components/ImportPlaylistModal'
 import {
   DndContext,
   closestCenter,
@@ -71,6 +77,13 @@ export function MusicaDJPage() {
   // Filters
   const [activeTab, setActiveTab] = useState<FilterTab>('active')
   const [searchQuery, setSearchQuery] = useState('')
+
+  // Import playlist modal
+  const [showImportModal, setShowImportModal] = useState(false)
+
+  // Playlists management
+  const [playlists, setPlaylists] = useState<any[]>([])
+  const [showPlaylistsSection, setShowPlaylistsSection] = useState(false)
   
   // Load data
   const loadData = useCallback(async () => {
@@ -79,15 +92,17 @@ export function MusicaDJPage() {
     try {
       setError(null)
 
-      // Load event and requests in parallel
-      const [eventRes, requestsRes] = await Promise.all([
+      // Load event, requests, and playlists in parallel
+      const [eventRes, requestsRes, playlistsRes] = await Promise.all([
         eventsApi.get(eventId),
         musicadjApi.listRequests(eventId, { limit: 100 }),
+        musicadjApi.listPlaylists(eventId),
       ])
 
       setEvent(eventRes.data)
       setRequests(requestsRes.data.requests)
       setStats(requestsRes.data.stats)
+      setPlaylists(playlistsRes.data.playlists)
     } catch (err: any) {
       console.error('Error loading data:', err)
       setError(err.response?.data?.error || 'Error al cargar datos')
@@ -202,7 +217,24 @@ export function MusicaDJPage() {
       loadData()
     }
   }
-  
+
+  // Delete playlist handler
+  const handleDeletePlaylist = async (playlistId: string, playlistName: string) => {
+    if (!eventId) return
+
+    if (!window.confirm(`¿Eliminar playlist "${playlistName}"? Esto NO eliminará los pedidos ya creados.`)) {
+      return
+    }
+
+    try {
+      await musicadjApi.deletePlaylist(eventId, playlistId)
+      setPlaylists(prev => prev.filter(p => p.id !== playlistId))
+    } catch (err: any) {
+      console.error('Error deleting playlist:', err)
+      setError(err.response?.data?.error || 'Error al eliminar playlist')
+    }
+  }
+
   // Filter requests
   const filteredRequests = requests.filter(request => {
     // Filter by tab
@@ -303,6 +335,16 @@ export function MusicaDJPage() {
             {isConnected ? 'Conectado' : 'Desconectado'}
           </div>
           
+          {/* Import Playlist button */}
+          <button
+            onClick={() => setShowImportModal(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+            title="Importar Playlist de Spotify"
+          >
+            <Upload className="h-4 w-4" />
+            Importar Playlist
+          </button>
+
           {/* Refresh button */}
           <button
             onClick={loadData}
@@ -311,7 +353,7 @@ export function MusicaDJPage() {
           >
             <RefreshCw className="h-5 w-5" />
           </button>
-          
+
           {/* Config link */}
           <Link
             to={`/events/${eventId}/musicadj/config`}
@@ -346,6 +388,60 @@ export function MusicaDJPage() {
             <div className="text-2xl font-bold text-green-700">{stats.played}</div>
             <div className="text-sm text-green-600">Reproducidos</div>
           </div>
+        </div>
+      )}
+
+      {/* Imported Playlists Section */}
+      {playlists.length > 0 && (
+        <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+          <button
+            onClick={() => setShowPlaylistsSection(!showPlaylistsSection)}
+            className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              <ListMusic className="h-5 w-5 text-green-600" />
+              <h3 className="font-semibold text-gray-900">Playlists Importadas</h3>
+              <span className="px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full text-sm">
+                {playlists.length}
+              </span>
+            </div>
+            {showPlaylistsSection ? (
+              <ChevronUp className="h-5 w-5 text-gray-400" />
+            ) : (
+              <ChevronDown className="h-5 w-5 text-gray-400" />
+            )}
+          </button>
+
+          {showPlaylistsSection && (
+            <div className="border-t border-gray-100 p-4 space-y-3">
+              {playlists.map(playlist => (
+                <div
+                  key={playlist.id}
+                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                >
+                  <div className="flex-1">
+                    <h4 className="font-medium text-gray-900">{playlist.name}</h4>
+                    <div className="flex items-center gap-4 mt-1 text-sm text-gray-600">
+                      <span>{playlist.trackCount} canciones</span>
+                      <span>•</span>
+                      <span>{playlist._count?.songRequests || 0} pedidos creados</span>
+                      <span>•</span>
+                      <span className="text-xs text-gray-500">
+                        {new Date(playlist.importedAt).toLocaleString('es-AR')}
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => handleDeletePlaylist(playlist.id, playlist.name)}
+                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    title="Eliminar playlist"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -439,6 +535,14 @@ export function MusicaDJPage() {
           ))
         )}
       </div>
+
+      {/* Import Playlist Modal */}
+      <ImportPlaylistModal
+        isOpen={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        eventId={eventId!}
+        onSuccess={loadData}
+      />
     </div>
   )
 }
@@ -547,7 +651,18 @@ function RequestCard({ request, onStatusChange, formatTime, timeAgo, dragHandleP
           
           {/* Song info */}
           <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-gray-900 truncate">{request.title}</h3>
+            <div className="flex items-center gap-2">
+              <h3 className="font-semibold text-gray-900 truncate">{request.title}</h3>
+              {request.fromClientPlaylist && (
+                <span
+                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700 border border-green-200 flex-shrink-0"
+                  title="De playlist importada"
+                >
+                  <ListMusic className="h-3 w-3" />
+                  Playlist
+                </span>
+              )}
+            </div>
             <p className="text-gray-600 truncate">{request.artist}</p>
             <div className="flex items-center gap-3 mt-1 text-sm text-gray-500">
               <span>

@@ -14,6 +14,7 @@ import {
   createSongRequestSchema
 } from './musicadj.types'
 import { getIO } from '../../socket'
+import * as spotifyService from './spotify.service'
 
 const prisma = new PrismaClient()
 
@@ -407,6 +408,201 @@ export async function getStats(eventId: string) {
     played: byStatus.PLAYED || 0,
     discarded: byStatus.DISCARDED || 0
   }
+}
+
+// ============================================
+// Playlist Import Operations
+// ============================================
+
+/**
+ * Importa una playlist de Spotify y opcionalmente crea song requests
+ */
+export async function importPlaylistToEvent(
+  eventId: string,
+  spotifyPlaylistId: string,
+  userId: string,
+  options: {
+    createRequests?: boolean
+    guestId?: string
+  } = {}
+) {
+  const { createRequests = false, guestId } = options
+
+  // Verificar que el evento existe
+  const event = await prisma.event.findUnique({
+    where: { id: eventId }
+  })
+
+  if (!event) {
+    throw new MusicadjError('Evento no encontrado', 404)
+  }
+
+  // Verificar que Spotify está configurado
+  if (!spotifyService.isSpotifyConfigured()) {
+    throw new MusicadjError('Spotify no está configurado en el servidor', 503)
+  }
+
+  // Verificar si la playlist ya fue importada
+  const existingPlaylist = await prisma.clientPlaylist.findUnique({
+    where: { spotifyPlaylistId }
+  })
+
+  if (existingPlaylist && existingPlaylist.eventId === eventId) {
+    throw new MusicadjError('Esta playlist ya fue importada a este evento', 409)
+  }
+
+  // Obtener tracks de Spotify
+  console.log(`[MUSICADJ] Importando playlist ${spotifyPlaylistId} al evento ${eventId}...`)
+
+  let playlistData
+  try {
+    playlistData = await spotifyService.getPlaylistTracks(spotifyPlaylistId)
+  } catch (error: any) {
+    if (error.statusCode === 404) {
+      throw new MusicadjError('Playlist no encontrada en Spotify', 404)
+    }
+    if (error.statusCode === 403) {
+      throw new MusicadjError('La playlist es privada o no tienes acceso', 403)
+    }
+    throw new MusicadjError(`Error al obtener playlist: ${error.message}`, 502)
+  }
+
+  // Crear el registro de ClientPlaylist
+  const clientPlaylist = await prisma.clientPlaylist.create({
+    data: {
+      eventId,
+      spotifyPlaylistId,
+      name: playlistData.playlistName,
+      description: playlistData.playlistDescription,
+      trackCount: playlistData.totalTracks,
+      importedBy: userId
+    }
+  })
+
+  console.log(
+    `[MUSICADJ] Playlist importada: "${playlistData.playlistName}" (${playlistData.totalTracks} tracks)`
+  )
+
+  let createdRequests: any[] = []
+
+  // Opcionalmente crear song requests
+  if (createRequests) {
+    if (!guestId) {
+      throw new MusicadjError('guestId es requerido para crear requests', 400)
+    }
+
+    // Verificar que el guest existe
+    const guest = await prisma.guest.findUnique({
+      where: { id: guestId }
+    })
+
+    if (!guest) {
+      throw new MusicadjError('Guest no encontrado', 404)
+    }
+
+    // Crear requests en batch
+    const requestsData = playlistData.tracks.map((track) => ({
+      eventId,
+      guestId,
+      spotifyId: track.spotifyId,
+      title: track.title,
+      artist: track.artist,
+      albumArtUrl: track.albumArtUrl,
+      status: 'PENDING' as const,
+      priority: 0,
+      playlistId: clientPlaylist.id,
+      fromClientPlaylist: true
+    }))
+
+    // Usar createMany para inserción en batch
+    await prisma.songRequest.createMany({
+      data: requestsData,
+      skipDuplicates: true
+    })
+
+    // Obtener los requests creados para retornar
+    createdRequests = await prisma.songRequest.findMany({
+      where: {
+        eventId,
+        playlistId: clientPlaylist.id
+      },
+      include: {
+        guest: {
+          select: {
+            id: true,
+            displayName: true,
+            email: true
+          }
+        }
+      }
+    })
+
+    console.log(
+      `[MUSICADJ] ${createdRequests.length} song requests creados desde la playlist`
+    )
+
+    // Emitir evento Socket.io para cada request (o un bulk event)
+    try {
+      getIO().to(`event:${eventId}`).emit('musicadj:playlistImported', {
+        playlist: clientPlaylist,
+        requestsCount: createdRequests.length
+      })
+    } catch (e) {
+      console.warn('[MUSICADJ] Socket.io no disponible')
+    }
+  }
+
+  return {
+    playlist: clientPlaylist,
+    tracksCount: playlistData.totalTracks,
+    requestsCreated: createdRequests.length,
+    requests: createRequests ? createdRequests : undefined
+  }
+}
+
+/**
+ * Lista las playlists importadas para un evento
+ */
+export async function listEventPlaylists(eventId: string) {
+  const playlists = await prisma.clientPlaylist.findMany({
+    where: { eventId },
+    include: {
+      _count: {
+        select: { songRequests: true }
+      }
+    },
+    orderBy: { importedAt: 'desc' }
+  })
+
+  return {
+    playlists,
+    total: playlists.length
+  }
+}
+
+/**
+ * Elimina una playlist importada (soft delete de requests asociados)
+ */
+export async function deleteEventPlaylist(eventId: string, playlistId: string) {
+  const playlist = await prisma.clientPlaylist.findFirst({
+    where: {
+      id: playlistId,
+      eventId
+    }
+  })
+
+  if (!playlist) {
+    throw new MusicadjError('Playlist no encontrada', 404)
+  }
+
+  // Eliminar la playlist (cascade eliminará los requests asociados)
+  await prisma.clientPlaylist.delete({
+    where: { id: playlistId }
+  })
+
+  console.log(`[MUSICADJ] Playlist ${playlistId} eliminada`)
+
+  return { success: true }
 }
 
 // ============================================
