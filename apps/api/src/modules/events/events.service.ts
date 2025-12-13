@@ -30,6 +30,11 @@ export const createEventDataSchema = z.object({
   guestCount: z.number().int().positive().optional().nullable(),
   instagramUrl: z.string().url().optional().nullable(),
   instagramUser: z.string().max(50).optional().nullable(),
+  instagram: z.string().max(200).optional().nullable(),  // Nuevo: Instagram handle o URL
+  facebook: z.string().max(200).optional().nullable(),   // Nuevo: Facebook URL
+  twitter: z.string().max(200).optional().nullable(),    // Nuevo: Twitter/X handle o URL
+  website: z.string().url().optional().nullable(),       // Nuevo: Website URL
+  eventImage: z.string().url().optional().nullable(),    // Nuevo: Event image URL
   hashtag: z.string().max(50).optional().nullable(),
   spotifyPlaylist: z.string().url().optional().nullable(),
   notes: z.string().max(1000).optional().nullable(),

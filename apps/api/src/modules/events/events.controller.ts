@@ -85,11 +85,15 @@ export const eventController = {
               eventName: event.eventData.eventName,
               eventType: event.eventData.eventType,
               hashtag: event.eventData.hashtag,
+              // Social media fields (new)
               instagram: event.eventData.instagram,
               facebook: event.eventData.facebook,
               twitter: event.eventData.twitter,
               website: event.eventData.website,
               eventImage: event.eventData.eventImage,
+              // Social media fields (old - for backward compatibility)
+              instagramUser: event.eventData.instagramUser,
+              instagramUrl: event.eventData.instagramUrl,
               primaryColor: event.eventData.primaryColor,
               secondaryColor: event.eventData.secondaryColor,
               accentColor: event.eventData.accentColor,
