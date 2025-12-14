@@ -17,6 +17,7 @@ export interface Event {
     eventName?: string
     eventType?: string
     hashtag?: string | null
+    eventImage?: string | null
     primaryColor?: string
     secondaryColor?: string
     accentColor?: string
