@@ -39,7 +39,14 @@ ensureDirectories()
 // Configuración de storage
 const storage = multer.diskStorage({
   destination: function (req: Request, file, cb) {
-    const uploadType = req.body.uploadType || 'events'
+    // Detectar tipo de upload desde la URL
+    let uploadType = 'events'
+    if (req.path.includes('/karaokeya/')) {
+      uploadType = 'karaokeya'
+    } else if (req.body.uploadType) {
+      uploadType = req.body.uploadType
+    }
+
     const dest = path.join(UPLOADS_DIR, uploadType)
     cb(null, dest)
   },
