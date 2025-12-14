@@ -221,8 +221,19 @@ print_success "Permisos configurados"
 
 print_header "PASO 5: Detener Servicios Docker"
 
+# Detectar usuario y directorio del proyecto
+REAL_USER="${SUDO_USER:-$USER}"
+REAL_HOME=$(eval echo ~$REAL_USER)
+
 print_info "Deteniendo contenedores..."
-docker compose -f /home/pi/projects/EuforiaEvents/docker-compose.prod.yml down 2>/dev/null || true
+# Buscar docker-compose.prod.yml
+if [ -f "$REAL_HOME/projects/EuforiaEvents/docker-compose.prod.yml" ]; then
+    docker compose -f "$REAL_HOME/projects/EuforiaEvents/docker-compose.prod.yml" down 2>/dev/null || true
+elif [ -f "$REAL_HOME/projects/euforia-events/docker-compose.prod.yml" ]; then
+    docker compose -f "$REAL_HOME/projects/euforia-events/docker-compose.prod.yml" down 2>/dev/null || true
+else
+    print_warning "No se encontró docker-compose.prod.yml, saltando..."
+fi
 
 print_info "Deteniendo Docker daemon..."
 systemctl stop docker.socket 2>/dev/null || true
@@ -290,20 +301,48 @@ fi
 
 print_header "PASO 8: Configurar Enlaces a Datos"
 
-APP_DIR="/home/pi/projects/EuforiaEvents"
+# Detectar usuario real (cuando se ejecuta con sudo)
+REAL_USER="${SUDO_USER:-$USER}"
+REAL_HOME=$(eval echo ~$REAL_USER)
 
-# Remover directorios antiguos si existen
-if [ -d "$APP_DIR/data" ]; then
-    print_warning "Respaldando directorio data antiguo..."
-    mv "$APP_DIR/data" "$APP_DIR/data.old.$(date +%Y%m%d_%H%M%S)" 2>/dev/null || true
+# Buscar el directorio del proyecto
+if [ -d "$REAL_HOME/projects/EuforiaEvents" ]; then
+    APP_DIR="$REAL_HOME/projects/EuforiaEvents"
+elif [ -d "$REAL_HOME/projects/euforia-events" ]; then
+    APP_DIR="$REAL_HOME/projects/euforia-events"
+else
+    print_warning "No se encontró el directorio del proyecto en ubicaciones comunes"
+    print_info "Buscando..."
+    # Intentar encontrarlo
+    FOUND=$(find "$REAL_HOME" -maxdepth 3 -type d -name "EuforiaEvents" -o -name "euforia-events" 2>/dev/null | head -1)
+    if [ -n "$FOUND" ]; then
+        APP_DIR="$FOUND"
+        print_info "Encontrado en: $APP_DIR"
+    else
+        print_error "No se pudo encontrar el directorio del proyecto"
+        print_info "Por favor crea el enlace manualmente:"
+        print_info "  sudo ln -sf $DATA_ROOT /ruta/a/tu/proyecto/data"
+        APP_DIR=""
+    fi
 fi
 
-# Crear enlace simbólico
-ln -sf "$DATA_ROOT" "$APP_DIR/data"
-print_success "Enlace simbólico creado: $APP_DIR/data -> $DATA_ROOT"
+if [ -n "$APP_DIR" ]; then
+    print_info "Directorio del proyecto: $APP_DIR"
 
-# Verificar permisos para el usuario pi
-chown -R pi:pi "$DATA_ROOT" 2>/dev/null || true
+    # Remover directorios antiguos si existen
+    if [ -d "$APP_DIR/data" ]; then
+        print_warning "Respaldando directorio data antiguo..."
+        mv "$APP_DIR/data" "$APP_DIR/data.old.$(date +%Y%m%d_%H%M%S)" 2>/dev/null || true
+    fi
+
+    # Crear enlace simbólico
+    ln -sf "$DATA_ROOT" "$APP_DIR/data"
+    print_success "Enlace simbólico creado: $APP_DIR/data -> $DATA_ROOT"
+
+    # Verificar permisos para el usuario real
+    chown -R $REAL_USER:$REAL_USER "$DATA_ROOT" 2>/dev/null || true
+    print_success "Permisos configurados para usuario: $REAL_USER"
+fi
 
 # =============================================================================
 # RESUMEN
@@ -317,7 +356,12 @@ echo -e "${CYAN}Información:${NC}"
 echo "  • SSD montado en: $SSD_MOUNT"
 echo "  • Docker root: $DOCKER_NEW_ROOT"
 echo "  • Datos aplicación: $DATA_ROOT"
-echo "  • Enlace simbólico: $APP_DIR/data -> $DATA_ROOT"
+if [ -n "$APP_DIR" ]; then
+    echo "  • Enlace simbólico: $APP_DIR/data -> $DATA_ROOT"
+else
+    echo "  • Enlace simbólico: No creado (crear manualmente)"
+fi
+echo "  • Usuario: $REAL_USER"
 echo ""
 
 print_warning "PRÓXIMOS PASOS:"
@@ -325,10 +369,16 @@ echo ""
 echo "1. Si tienes un backup de la base de datos, restáuralo ahora:"
 echo "   ${YELLOW}sudo cp /ruta/al/backup/production.db $DATA_ROOT/db/${NC}"
 echo ""
-echo "2. Cambiar al usuario pi y reconstruir los contenedores:"
-echo "   ${YELLOW}su - pi${NC}"
-echo "   ${YELLOW}cd ~/projects/EuforiaEvents${NC}"
-echo "   ${YELLOW}./deploy.sh${NC}"
+if [ -n "$APP_DIR" ]; then
+    echo "2. Reconstruir los contenedores:"
+    echo "   ${YELLOW}cd $APP_DIR${NC}"
+    echo "   ${YELLOW}./deploy.sh${NC}"
+else
+    echo "2. Crear enlace simbólico manualmente y reconstruir:"
+    echo "   ${YELLOW}sudo ln -sf $DATA_ROOT /ruta/a/tu/proyecto/data${NC}"
+    echo "   ${YELLOW}cd /ruta/a/tu/proyecto${NC}"
+    echo "   ${YELLOW}./deploy.sh${NC}"
+fi
 echo ""
 echo "3. Si NO tienes backup, el deploy creará una nueva base de datos vacía"
 echo "   y necesitarás inicializarla:"
