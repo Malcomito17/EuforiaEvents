@@ -19,13 +19,21 @@ const ensureDirectories = () => {
   ]
 
   dirs.forEach(dir => {
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true })
-      console.log(`[UPLOAD] Directorio creado: ${dir}`)
+    try {
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true })
+        console.log(`[UPLOAD] Directorio creado: ${dir}`)
+      }
+    } catch (error) {
+      // Si no se puede crear (permisos), solo advertir pero no fallar
+      // Los directorios deberían existir via volumen de Docker
+      console.warn(`[UPLOAD] No se pudo crear directorio ${dir}:`, error instanceof Error ? error.message : 'Error desconocido')
+      console.warn(`[UPLOAD] Asegúrate de que el directorio existe con permisos correctos`)
     }
   })
 }
 
+// Intentar crear directorios, pero no fallar si no se puede
 ensureDirectories()
 
 // Configuración de storage
