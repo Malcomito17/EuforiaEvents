@@ -1,0 +1,121 @@
+═══════════════════════════════════════════════════════════════════════
+  COMANDOS RÁPIDOS - RECUPERACIÓN SSD EUFORIA EVENTS
+═══════════════════════════════════════════════════════════════════════
+
+Copia y pega estos comandos UNO POR UNO en tu terminal
+Revisa el resultado de cada comando antes de continuar
+
+═══════════════════════════════════════════════════════════════════════
+PASO 1: DAR PERMISOS A LOS SCRIPTS
+═══════════════════════════════════════════════════════════════════════
+
+cd ~/projects/EuforiaEvents
+chmod +x scripts/*.sh deploy.sh admin.sh
+
+═══════════════════════════════════════════════════════════════════════
+PASO 2: VERIFICAR EL DISCO ANTES DE LIMPIAR
+═══════════════════════════════════════════════════════════════════════
+
+lsblk
+
+# Deberías ver:
+# sda (111.8G) ← Este es el SSD a limpiar
+# mmcblk0 (29.7G) ← Esta es la SD, NO TOCAR
+
+═══════════════════════════════════════════════════════════════════════
+PASO 3: LIMPIAR EL SSD (BORRARÁ TODO EN /dev/sda)
+═══════════════════════════════════════════════════════════════════════
+
+sudo ./scripts/clean-and-partition-ssd.sh /dev/sda
+
+# El script pedirá confirmación DOS VECES
+# Escribe "SI" (en mayúsculas) cuando te lo pida
+# Esto tomará 1-2 minutos
+
+═══════════════════════════════════════════════════════════════════════
+PASO 4: VERIFICAR QUE QUEDÓ UNA SOLA PARTICIÓN
+═══════════════════════════════════════════════════════════════════════
+
+lsblk
+
+# Ahora deberías ver:
+# sda
+# `-sda1 (111.8G) ← Una sola partición
+
+═══════════════════════════════════════════════════════════════════════
+PASO 5: CONFIGURAR EL SSD Y DOCKER
+═══════════════════════════════════════════════════════════════════════
+
+sudo ./scripts/setup-new-ssd.sh /dev/sda1 /mnt/ssd
+
+# Este paso toma 2-3 minutos
+# Te preguntará si quieres formatear (responde 'y')
+# Al final mostrará un resumen de los pasos completados
+
+═══════════════════════════════════════════════════════════════════════
+PASO 6: VERIFICAR QUE EL SSD ESTÁ MONTADO Y DOCKER CONFIGURADO
+═══════════════════════════════════════════════════════════════════════
+
+df -h /mnt/ssd
+docker info | grep "Docker Root Dir"
+
+# Deberías ver:
+# Docker Root Dir: /mnt/ssd/docker
+
+═══════════════════════════════════════════════════════════════════════
+PASO 7: DESPLEGAR LOS CONTAINERS
+═══════════════════════════════════════════════════════════════════════
+
+./deploy.sh
+
+# Este paso toma 5-10 minutos en Raspberry Pi
+# Descargará dependencias, construirá imágenes y levantará servicios
+# Al final mostrará "Deployment completado exitosamente"
+
+═══════════════════════════════════════════════════════════════════════
+PASO 8: VERIFICAR QUE TODO FUNCIONA
+═══════════════════════════════════════════════════════════════════════
+
+docker ps -a
+
+# Deberías ver 4 contenedores corriendo:
+# - euforia-api-prod
+# - euforia-web-client-prod
+# - euforia-web-operator-prod
+# - euforia-nginx-prod
+
+# O usar el menú de administración:
+./admin.sh
+# Presiona: 10 (Verificar Producción)
+
+═══════════════════════════════════════════════════════════════════════
+COMANDOS DE DIAGNÓSTICO (si algo sale mal)
+═══════════════════════════════════════════════════════════════════════
+
+# Ver logs del API
+docker logs euforia-api-prod --tail 50
+
+# Ver logs de todos los servicios
+docker compose -f docker-compose.prod.yml logs -f
+
+# Reiniciar todos los servicios
+docker compose -f docker-compose.prod.yml restart
+
+# Ver estado del sistema
+./admin.sh
+# Opción 5: Ver Estado de Servicios
+
+═══════════════════════════════════════════════════════════════════════
+RESUMEN EJECUTIVO (copia todo de una vez si prefieres)
+═══════════════════════════════════════════════════════════════════════
+
+cd ~/projects/EuforiaEvents && \
+chmod +x scripts/*.sh deploy.sh admin.sh && \
+echo "✅ Permisos configurados" && \
+echo "" && \
+echo "Ahora ejecuta (uno por uno):" && \
+echo "  sudo ./scripts/clean-and-partition-ssd.sh /dev/sda" && \
+echo "  sudo ./scripts/setup-new-ssd.sh /dev/sda1 /mnt/ssd" && \
+echo "  ./deploy.sh"
+
+═══════════════════════════════════════════════════════════════════════
