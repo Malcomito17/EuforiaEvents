@@ -88,10 +88,10 @@ WORKDIR /app
 
 # Crear directorios para datos persistentes
 RUN mkdir -p /app/apps/api/prisma/data && \
-    mkdir -p /app/apps/api/uploads && \
+    mkdir -p /app/apps/api/public/uploads && \
     mkdir -p /app/apps/api/logs && \
     chown -R nodejs:nodejs /app/apps/api/prisma && \
-    chown -R nodejs:nodejs /app/apps/api/uploads && \
+    chown -R nodejs:nodejs /app/apps/api/public && \
     chown -R nodejs:nodejs /app/apps/api/logs
 
 # Cambiar a usuario no-root
