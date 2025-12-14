@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form'
 import { eventsApi, venuesApi, clientsApi, Venue, Client, CreateEventInput } from '@/lib/api'
 import { ArrowLeft, Save, Loader2 } from 'lucide-react'
 import clsx from 'clsx'
+import { ImageUpload } from '@/components/ImageUpload'
 
 interface EventFormData {
   eventName: string
@@ -52,6 +53,7 @@ export function EventFormPage() {
   const [error, setError] = useState('')
   const [venues, setVenues] = useState<Venue[]>([])
   const [clients, setClients] = useState<Client[]>([])
+  const [eventImageUrl, setEventImageUrl] = useState<string | null>(null)
 
   const { register, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<EventFormData>({
     defaultValues: {
@@ -116,12 +118,30 @@ export function EventFormPage() {
         secondaryColor: data.eventData?.secondaryColor || '#EC4899',
         accentColor: data.eventData?.accentColor || '#F59E0B',
       })
+      setEventImageUrl(data.eventData?.eventImage || null)
     } catch (err) {
       setError('Error al cargar el evento')
       console.error(err)
     } finally {
       setIsLoading(false)
     }
+  }
+
+  const handleImageUpload = async (file: File): Promise<string> => {
+    if (!id && !isEditing) {
+      throw new Error('Debes guardar el evento antes de subir una imagen')
+    }
+    const imageUrl = await eventsApi.uploadEventImage(id!, file)
+    setEventImageUrl(imageUrl)
+    setValue('eventImage', imageUrl)
+    return imageUrl
+  }
+
+  const handleImageDelete = async () => {
+    if (!id) return
+    await eventsApi.deleteEventImage(id)
+    setEventImageUrl(null)
+    setValue('eventImage', '')
   }
 
   const onSubmit = async (formData: EventFormData) => {
@@ -394,17 +414,6 @@ export function EventFormPage() {
 
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Imagen del Evento (URL)
-              </label>
-              <input
-                {...register('eventImage')}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none"
-                placeholder="https://..."
-              />
-            </div>
-
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Playlist Spotify
               </label>
               <input
@@ -415,6 +424,21 @@ export function EventFormPage() {
             </div>
           </div>
         </div>
+
+        {/* Imagen del Evento */}
+        {isEditing && (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Imagen del Evento</h2>
+            <ImageUpload
+              currentImageUrl={eventImageUrl}
+              onUpload={handleImageUpload}
+              onDelete={handleImageDelete}
+              label="Imagen Promocional"
+              description="Tamaño recomendado: 1080x1350px (Instagram Post). Máximo 5MB."
+              aspectRatio="4:5"
+            />
+          </div>
+        )}
 
         {/* Colores del Tema */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">

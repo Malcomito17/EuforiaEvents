@@ -5,6 +5,8 @@
 import { useState, useEffect } from 'react'
 import { Monitor, ExternalLink, Save, Loader2 } from 'lucide-react'
 import { clsx } from 'clsx'
+import { ImageUpload } from './ImageUpload'
+import { karaokeyaApi } from '@/lib/api'
 
 interface DisplayConfig {
   displayMode: 'QUEUE' | 'BREAK' | 'START' | 'PROMO'
@@ -21,7 +23,7 @@ interface DisplayControlPanelProps {
   onConfigUpdate: (config: Partial<DisplayConfig>) => Promise<void>
 }
 
-export function DisplayControlPanel({ eventSlug, config, onConfigUpdate }: DisplayControlPanelProps) {
+export function DisplayControlPanel({ eventId, eventSlug, config, onConfigUpdate }: DisplayControlPanelProps) {
   const [localConfig, setLocalConfig] = useState<DisplayConfig>(config)
   const [isSaving, setIsSaving] = useState(false)
   const [saveMessage, setSaveMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
@@ -29,6 +31,17 @@ export function DisplayControlPanel({ eventSlug, config, onConfigUpdate }: Displ
   useEffect(() => {
     setLocalConfig(config)
   }, [config])
+
+  const handlePromoImageUpload = async (file: File): Promise<string> => {
+    const imageUrl = await karaokeyaApi.uploadPromoImage(eventId, file)
+    setLocalConfig({ ...localConfig, displayPromoImageUrl: imageUrl })
+    return imageUrl
+  }
+
+  const handlePromoImageDelete = async () => {
+    await karaokeyaApi.deletePromoImage(eventId)
+    setLocalConfig({ ...localConfig, displayPromoImageUrl: null })
+  }
 
   const handleSave = async () => {
     setIsSaving(true)
@@ -171,21 +184,16 @@ export function DisplayControlPanel({ eventSlug, config, onConfigUpdate }: Displ
           </div>
         )}
 
-        {/* Promo Image URL */}
+        {/* Promo Image */}
         {localConfig.displayMode === 'PROMO' && (
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              URL de Imagen Promocional
-            </label>
-            <input
-              type="url"
-              value={localConfig.displayPromoImageUrl || ''}
-              onChange={(e) => setLocalConfig({ ...localConfig, displayPromoImageUrl: e.target.value || null })}
-              placeholder="https://ejemplo.com/promo.jpg"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-            />
-            <p className="text-xs text-gray-500 mt-1">URL de la imagen a mostrar en pantalla completa</p>
-          </div>
+          <ImageUpload
+            currentImageUrl={localConfig.displayPromoImageUrl}
+            onUpload={handlePromoImageUpload}
+            onDelete={handlePromoImageDelete}
+            label="Imagen Promocional"
+            description="Tamaño recomendado: 1920x1080px (Full HD). Máximo 5MB."
+            aspectRatio="16:9"
+          />
         )}
 
         {/* Save Message */}

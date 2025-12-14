@@ -155,9 +155,21 @@ export default function EventLanding() {
     <div className="min-h-screen flex flex-col items-center justify-center p-4">
       {/* Header */}
       <div className="text-center mb-8">
-        <div className="w-20 h-20 bg-primary-600 rounded-full flex items-center justify-center mx-auto mb-4">
-          <Music2 className="w-10 h-10" />
-        </div>
+        {/* Event Image if exists */}
+        {event.eventData?.eventImage ? (
+          <div className="w-full max-w-md mx-auto mb-6">
+            <img
+              src={event.eventData.eventImage}
+              alt={event.name}
+              className="w-full aspect-[4/5] object-cover rounded-3xl shadow-2xl"
+            />
+          </div>
+        ) : (
+          <div className="w-20 h-20 bg-primary-600 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Music2 className="w-10 h-10" />
+          </div>
+        )}
+
         <h1 className="text-3xl font-bold mb-2">{event.name}</h1>
         {musicadjConfig?.welcomeMessage && (
           <p className="text-white/70 text-lg">{musicadjConfig.welcomeMessage}</p>
