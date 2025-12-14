@@ -78,7 +78,7 @@ export default function KaraokeQueue() {
     }
 
     try {
-      await api.deleteKaraokeRequest(event!.id, requestId)
+      await api.deleteKaraokeRequest(event!.id, requestId, guest!.id)
       // El socket se encargará de actualizar la lista
     } catch (err) {
       console.error('Error al cancelar pedido:', err)

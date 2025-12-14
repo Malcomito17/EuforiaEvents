@@ -121,9 +121,12 @@ export async function createKaraokeRequest(
 
 export async function deleteKaraokeRequest(
   eventId: string,
-  requestId: string
+  requestId: string,
+  guestId: string
 ): Promise<void> {
-  await api.delete(`/events/${eventId}/karaokeya/requests/${requestId}`)
+  await api.delete(`/events/${eventId}/karaokeya/requests/${requestId}`, {
+    data: { guestId }
+  })
 }
 
 export async function getGuestKaraokeQueue(

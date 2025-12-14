@@ -24,6 +24,7 @@ eventRouter.get('/popular', controller.getPopularSongs)
 eventRouter.get('/suggestions', controller.getSmartSuggestions)
 eventRouter.get('/messages', controller.getMessages)
 eventRouter.post('/requests', controller.createRequest)
+eventRouter.delete('/requests/:requestId', controller.deleteRequest) // Guests pueden cancelar sus propios pedidos
 eventRouter.get('/guests/:guestId/requests', controller.getGuestRequests)
 eventRouter.get('/queue', controller.getPublicQueue)
 
@@ -33,7 +34,6 @@ eventRouter.patch('/config', ...protectedMiddleware, controller.updateConfig)
 eventRouter.get('/requests', ...protectedMiddleware, controller.listRequests)
 eventRouter.get('/requests/:requestId', ...protectedMiddleware, controller.getRequest)
 eventRouter.patch('/requests/:requestId', ...protectedMiddleware, controller.updateRequest)
-eventRouter.delete('/requests/:requestId', ...protectedMiddleware, controller.deleteRequest)
 eventRouter.post('/requests/reorder', ...protectedMiddleware, controller.reorderQueue)
 eventRouter.get('/stats', ...protectedMiddleware, controller.getStats)
 

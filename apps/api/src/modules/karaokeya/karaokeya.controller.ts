@@ -236,12 +236,16 @@ export async function updateRequest(req: Request, res: Response, next: NextFunct
 /**
  * DELETE /api/events/:eventId/karaokeya/requests/:requestId
  * Elimina una solicitud
+ * Si viene con guestId en el body, valida que sea del guest (público)
+ * Si viene autenticado (req.user), permite eliminar cualquier solicitud (operador)
  */
 export async function deleteRequest(req: Request, res: Response, next: NextFunction) {
   try {
     const { eventId, requestId } = req.params
+    const { guestId } = req.body
+    const isOperator = !!(req as any).user
 
-    const result = await service.deleteRequest(eventId, requestId)
+    const result = await service.deleteRequest(eventId, requestId, guestId, isOperator)
 
     const io = getIOFromRequest(req)
     emitKaraokeRequestDeleted(io, eventId, requestId)

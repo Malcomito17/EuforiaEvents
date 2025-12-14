@@ -772,15 +772,33 @@ export async function updateRequestStatus(
 
 /**
  * Elimina una solicitud
+ * @param guestId - ID del guest (si viene de cliente público)
+ * @param isOperator - true si es operador autenticado
  */
-export async function deleteRequest(eventId: string, requestId: string) {
-  await getRequestById(eventId, requestId)
+export async function deleteRequest(
+  eventId: string,
+  requestId: string,
+  guestId?: string,
+  isOperator: boolean = false
+) {
+  const request = await getRequestById(eventId, requestId)
+
+  // Si no es operador, validar que el guest sea dueño del pedido
+  if (!isOperator) {
+    if (!guestId) {
+      throw new KaraokeyaError('Se requiere guestId para cancelar el pedido', 400)
+    }
+
+    if (request.guestId !== guestId) {
+      throw new KaraokeyaError('No podés cancelar un pedido que no es tuyo', 403)
+    }
+  }
 
   await prisma.karaokeRequest.delete({
     where: { id: requestId }
   })
 
-  console.log(`[KARAOKEYA] Request ${requestId} eliminado`)
+  console.log(`[KARAOKEYA] Request ${requestId} eliminado${guestId ? ` por guest ${guestId}` : ' por operador'}`)
 
   return { success: true }
 }
