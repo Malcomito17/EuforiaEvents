@@ -4,6 +4,8 @@
 
 import express from 'express'
 import cors from 'cors'
+import path from 'path'
+import { fileURLToPath } from 'url'
 import { authRoutes } from './modules/auth'
 import { eventRoutes } from './modules/events'
 import { venueRoutes } from './modules/venues'
@@ -13,13 +15,21 @@ import { karaokeyaRoutes, karaokeyaGlobalRoutes } from './modules/karaokeya'
 import { guestRoutes, eventGuestRoutes } from './modules/guests'
 import { usersRoutes } from './modules/users'
 import { djRoutes } from './modules/dj'
+import { uploadRoutes } from './modules/upload'
 import { errorHandler } from './shared/middleware/error.middleware'
 
 const app = express()
 
+// Resolver __dirname en módulos ES
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
 // Middlewares globales
 app.use(cors())
 app.use(express.json())
+
+// Servir archivos estáticos (uploads)
+app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')))
 
 // Health check
 app.get('/health', (req, res) => {
@@ -43,6 +53,9 @@ app.use('/api/dj', djRoutes)
 app.use('/api/events', eventRoutes)
 app.use('/api/venues', venueRoutes)
 app.use('/api/clients', clientRoutes)
+
+// Upload routes (imágenes)
+app.use('/api', uploadRoutes)
 
 // MUSICADJ - rutas anidadas bajo eventos
 app.use('/api/events/:eventId/musicadj', musicadjRoutes)

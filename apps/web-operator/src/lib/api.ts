@@ -173,6 +173,20 @@ export const eventsApi = {
   
   getQR: (id: string) =>
     api.get<QRResponse>(`/events/${id}/qr`),
+
+  uploadEventImage: async (id: string, file: File): Promise<string> => {
+    const formData = new FormData()
+    formData.append('image', file)
+    formData.append('uploadType', 'events')
+
+    const { data } = await api.post<{ imageUrl: string }>(`/events/${id}/upload-image`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
+    return data.imageUrl
+  },
+
+  deleteEventImage: (id: string) =>
+    api.delete(`/events/${id}/delete-image`),
 }
 
 // ============================================
@@ -506,6 +520,23 @@ export const karaokeyaApi = {
   // Reorder (drag & drop)
   reorderQueue: (eventId: string, requestIds: string[]) =>
     api.post(`/events/${eventId}/karaokeya/requests/reorder`, { requestIds }),
+
+  // Upload promo image
+  uploadPromoImage: async (eventId: string, file: File): Promise<string> => {
+    const formData = new FormData()
+    formData.append('image', file)
+    formData.append('uploadType', 'karaokeya')
+
+    const { data } = await api.post<{ imageUrl: string }>(
+      `/events/${eventId}/karaokeya/upload-promo`,
+      formData,
+      { headers: { 'Content-Type': 'multipart/form-data' } }
+    )
+    return data.imageUrl
+  },
+
+  deletePromoImage: (eventId: string) =>
+    api.delete(`/events/${eventId}/karaokeya/delete-promo`),
 }
 
 // ============================================
