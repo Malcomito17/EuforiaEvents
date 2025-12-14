@@ -222,7 +222,7 @@ print_success "Permisos configurados"
 print_header "PASO 5: Detener Servicios Docker"
 
 print_info "Deteniendo contenedores..."
-docker compose -f /home/pi/projects/euforia-events/docker-compose.prod.yml down 2>/dev/null || true
+docker compose -f /home/pi/projects/EuforiaEvents/docker-compose.prod.yml down 2>/dev/null || true
 
 print_info "Deteniendo Docker daemon..."
 systemctl stop docker.socket 2>/dev/null || true
@@ -290,7 +290,7 @@ fi
 
 print_header "PASO 8: Configurar Enlaces a Datos"
 
-APP_DIR="/home/pi/projects/euforia-events"
+APP_DIR="/home/pi/projects/EuforiaEvents"
 
 # Remover directorios antiguos si existen
 if [ -d "$APP_DIR/data" ]; then
@@ -327,7 +327,7 @@ echo "   ${YELLOW}sudo cp /ruta/al/backup/production.db $DATA_ROOT/db/${NC}"
 echo ""
 echo "2. Cambiar al usuario pi y reconstruir los contenedores:"
 echo "   ${YELLOW}su - pi${NC}"
-echo "   ${YELLOW}cd ~/projects/euforia-events${NC}"
+echo "   ${YELLOW}cd ~/projects/EuforiaEvents${NC}"
 echo "   ${YELLOW}./deploy.sh${NC}"
 echo ""
 echo "3. Si NO tienes backup, el deploy creará una nueva base de datos vacía"
