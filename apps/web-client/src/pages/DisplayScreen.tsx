@@ -159,9 +159,12 @@ export default function DisplayScreen() {
       {config.displayMode === 'BREAK' && (
         <div className="flex flex-col items-center justify-center min-h-screen px-8">
           <Music2 className="w-32 h-32 mb-8 text-purple-300 animate-pulse" />
-          <h1 className="text-6xl md:text-8xl font-black text-center mb-8">
+          <h1 className="text-6xl md:text-8xl font-black text-center mb-4">
             {config.displayBreakMessage}
           </h1>
+          <h2 className="text-3xl md:text-5xl font-bold text-purple-200 text-center mb-8">
+            {event.eventName}
+          </h2>
           <p className="text-2xl md:text-4xl text-purple-200 text-center mb-12">
             Volveremos en unos minutos
           </p>
@@ -178,9 +181,12 @@ export default function DisplayScreen() {
       {config.displayMode === 'START' && (
         <div className="flex flex-col items-center justify-center min-h-screen px-8">
           <Mic2 className="w-32 h-32 mb-8 text-pink-300 animate-bounce" />
-          <h1 className="text-6xl md:text-8xl font-black text-center mb-8">
+          <h1 className="text-6xl md:text-8xl font-black text-center mb-4">
             {config.displayStartMessage}
           </h1>
+          <h2 className="text-3xl md:text-5xl font-bold text-pink-200 text-center mb-8">
+            {event.eventName}
+          </h2>
           <p className="text-2xl md:text-4xl text-pink-200 text-center mb-12">
             ¡Preparate para cantar!
           </p>
