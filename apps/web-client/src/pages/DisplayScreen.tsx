@@ -195,13 +195,13 @@ export default function DisplayScreen() {
 
       {/* MODO PROMO */}
       {config.displayMode === 'PROMO' && (
-        <div className="flex items-center justify-center min-h-screen px-8">
+        <div className="flex items-center justify-center min-h-screen px-8 py-8">
           {config.displayPromoImageUrl ? (
-            <div className="relative w-full max-w-6xl">
+            <div className="relative w-full h-full max-w-7xl max-h-screen flex items-center justify-center">
               <img
                 src={config.displayPromoImageUrl}
                 alt="Promoción"
-                className="w-full h-auto rounded-3xl shadow-2xl"
+                className="max-w-full max-h-[90vh] w-auto h-auto object-contain rounded-3xl shadow-2xl"
               />
               <div className="absolute bottom-8 right-8 bg-white p-6 rounded-2xl shadow-2xl">
                 <QRCode value={qrUrl} size={150} />
