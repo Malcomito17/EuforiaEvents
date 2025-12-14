@@ -1,0 +1,96 @@
+═══════════════════════════════════════════════════════════════════════
+  QUICK START - RECUPERACIÓN SSD EUFORIA EVENTS
+═══════════════════════════════════════════════════════════════════════
+
+COMANDOS PARA COPIAR Y PEGAR EN LA RASPBERRY PI
+(Ejecutar uno por uno, revisando el resultado de cada uno)
+
+═══════════════════════════════════════════════════════════════════════
+1. CONECTAR Y ACTUALIZAR
+═══════════════════════════════════════════════════════════════════════
+
+ssh pi@<ip-raspberry>
+cd ~/projects/euforia-events
+git pull origin main
+
+═══════════════════════════════════════════════════════════════════════
+2. VERIFICAR DISCO
+═══════════════════════════════════════════════════════════════════════
+
+lsblk
+
+# Identifica el dispositivo (ej: /dev/sda1)
+# Si ves /dev/sda pero NO /dev/sda1, puede que necesites crear partición
+
+═══════════════════════════════════════════════════════════════════════
+3. CONFIGURAR NUEVO SSD
+═══════════════════════════════════════════════════════════════════════
+
+# AJUSTA /dev/sda1 según lo que viste en lsblk
+sudo ./scripts/setup-new-ssd.sh /dev/sda1 /mnt/ssd
+
+# El script te pedirá confirmación antes de formatear
+# Responde 'y' para continuar
+
+═══════════════════════════════════════════════════════════════════════
+4A. SI TIENES BACKUP
+═══════════════════════════════════════════════════════════════════════
+
+# Buscar backups
+find ~ -name "*.db.backup*" -o -name "euforia_backup_*.tar.gz" 2>/dev/null
+
+# Restaurar (AJUSTA la ruta al backup que encontraste)
+./scripts/restore-from-backup.sh ~/ruta/al/backup.tar.gz
+
+# Desplegar
+./deploy.sh
+
+═══════════════════════════════════════════════════════════════════════
+4B. SI NO TIENES BACKUP
+═══════════════════════════════════════════════════════════════════════
+
+# Desplegar (creará DB nueva)
+./deploy.sh
+
+# Inicializar base de datos
+./admin.sh
+# Presiona 12 y ENTER
+
+═══════════════════════════════════════════════════════════════════════
+5. VERIFICAR
+═══════════════════════════════════════════════════════════════════════
+
+./admin.sh
+# Presiona 10 y ENTER para "Verificar Producción"
+
+# O verificar manualmente:
+docker ps -a
+docker compose -f docker-compose.prod.yml logs -f api
+
+═══════════════════════════════════════════════════════════════════════
+COMANDOS DE DIAGNÓSTICO SI HAY PROBLEMAS
+═══════════════════════════════════════════════════════════════════════
+
+# Ver si el disco está montado
+df -h /mnt/ssd
+
+# Ver dónde está Docker
+docker info | grep "Docker Root Dir"
+
+# Ver si la DB existe
+ls -lh ~/projects/euforia-events/data/db/production.db
+
+# Ver logs del API
+docker logs euforia-api-prod --tail 50
+
+# Reiniciar todo
+docker compose -f docker-compose.prod.yml restart
+
+═══════════════════════════════════════════════════════════════════════
+PARA MÁS INFORMACIÓN
+═══════════════════════════════════════════════════════════════════════
+
+Lee el archivo completo:
+cat ~/projects/euforia-events/RECUPERACION-SSD.md
+
+═══════════════════════════════════════════════════════════════════════
