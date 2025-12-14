@@ -74,7 +74,8 @@ export const karaokeyaConfigSchema = z.object({
   displayLayout: z.enum(['VERTICAL', 'HORIZONTAL']).optional(),
   displayBreakMessage: z.string().max(200).optional(),
   displayStartMessage: z.string().max(200).optional(),
-  displayPromoImageUrl: z.string().url().optional().nullable(),
+  // Acepta tanto URLs completas como rutas relativas (ej: /uploads/karaokeya/imagen.jpg)
+  displayPromoImageUrl: z.string().max(500).optional().nullable(),
 })
 
 export type KaraokeyaConfigInput = z.infer<typeof karaokeyaConfigSchema>
