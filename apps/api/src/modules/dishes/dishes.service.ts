@@ -93,12 +93,12 @@ export class DishesService {
       where.isActive = true
     }
 
-    // Búsqueda por nombre
+    // Búsqueda por nombre (SQLite no soporta mode: insensitive)
     if (search) {
-      where.nombre = {
-        contains: search,
-        mode: 'insensitive',
-      }
+      where.OR = [
+        { nombre: { contains: search } },
+        { nombre: { contains: search.toLowerCase() } },
+      ]
     }
 
     const [dishes, total, activeCount, inactiveCount] = await Promise.all([
@@ -212,15 +212,17 @@ export class DishesService {
   }
 
   /**
-   * Busca platos por nombre
+   * Busca platos por nombre (SQLite no soporta mode: insensitive)
    */
   async search(query: string): Promise<DishResponse[]> {
+    const lowerQuery = query.toLowerCase()
+
     const dishes = await prisma.dish.findMany({
       where: {
-        nombre: {
-          contains: query,
-          mode: 'insensitive',
-        },
+        OR: [
+          { nombre: { contains: query } },
+          { nombre: { contains: lowerQuery } },
+        ],
         isActive: true,
       },
       include: {

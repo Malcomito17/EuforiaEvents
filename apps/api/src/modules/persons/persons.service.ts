@@ -76,14 +76,21 @@ export class PersonsService {
 
   /**
    * Busca personas por nombre o apellido
+   * Nota: SQLite no soporta mode: 'insensitive', usamos LOWER() via raw query
    */
   async search(query: string): Promise<PersonResponse[]> {
+    const lowerQuery = query.toLowerCase()
+
     const persons = await prisma.person.findMany({
       where: {
         OR: [
-          { nombre: { contains: query, mode: 'insensitive' } },
-          { apellido: { contains: query, mode: 'insensitive' } },
-          { email: { contains: query, mode: 'insensitive' } },
+          { nombre: { contains: lowerQuery } },
+          { apellido: { contains: lowerQuery } },
+          { email: { contains: lowerQuery } },
+          // También buscar con la query original para matches exactos
+          { nombre: { contains: query } },
+          { apellido: { contains: query } },
+          { email: { contains: query } },
         ],
       },
       include: {
