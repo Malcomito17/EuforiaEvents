@@ -8,7 +8,6 @@ WORKDIR /app
 # Copiar archivos de configuración del monorepo
 COPY package.json pnpm-workspace.yaml ./
 COPY apps/api/package.json ./apps/api/
-COPY packages/shared/package.json ./packages/shared/ 2>/dev/null || true
 
 # Instalar pnpm y dependencias
 RUN npm install -g pnpm@10.23.0
@@ -16,7 +15,6 @@ RUN pnpm install --frozen-lockfile || pnpm install
 
 # Copiar código fuente
 COPY apps/api ./apps/api
-COPY packages/shared ./packages/shared 2>/dev/null || true
 
 # Generar Prisma Client
 WORKDIR /app/apps/api

@@ -5,7 +5,6 @@ WORKDIR /app
 # Copiar archivos de configuración del monorepo
 COPY package.json pnpm-workspace.yaml ./
 COPY apps/web-client/package.json ./apps/web-client/
-COPY packages/shared/package.json ./packages/shared/ 2>/dev/null || true
 
 # Instalar pnpm y dependencias
 RUN npm install -g pnpm@10.23.0
@@ -13,7 +12,6 @@ RUN pnpm install --frozen-lockfile || pnpm install
 
 # Copiar código fuente
 COPY apps/web-client ./apps/web-client
-COPY packages/shared ./packages/shared 2>/dev/null || true
 
 WORKDIR /app/apps/web-client
 
