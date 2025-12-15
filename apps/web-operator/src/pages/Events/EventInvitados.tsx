@@ -61,7 +61,7 @@ export function EventInvitadosPage() {
   const handleDelete = async (guest: EventGuest) => {
     if (!eventId) return
 
-    const fullName = `${guest.person.nombre} ${guest.person.apellido || ''}`
+    const fullName = `${guest.person?.nombre || ''} ${guest.person?.apellido || ''}`
     if (!confirm(`¿Eliminar a ${fullName} de la lista de invitados?`)) {
       return
     }
@@ -87,9 +87,9 @@ export function EventInvitadosPage() {
     if (searchTerm) {
       const term = searchTerm.toLowerCase()
       filtered = filtered.filter(g =>
-        g.person.nombre.toLowerCase().includes(term) ||
-        g.person.apellido?.toLowerCase().includes(term) ||
-        g.person.email?.toLowerCase().includes(term)
+        g.person?.nombre?.toLowerCase().includes(term) ||
+        g.person?.apellido?.toLowerCase().includes(term) ||
+        g.person?.email?.toLowerCase().includes(term)
       )
     }
 
@@ -276,16 +276,24 @@ export function EventInvitadosPage() {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredGuests.map((guest) => {
-                  const fullName = `${guest.person.nombre} ${guest.person.apellido || ''}`
-                  const hasRestrictions = guest.person.dietaryRestrictions &&
-                    JSON.parse(guest.person.dietaryRestrictions).length > 0
+                  const fullName = `${guest.person?.nombre || ''} ${guest.person?.apellido || ''}`
+                  const dietaryRestrictions = guest.person?.dietaryRestrictions
+                    ? (() => {
+                        try {
+                          return JSON.parse(guest.person.dietaryRestrictions)
+                        } catch {
+                          return []
+                        }
+                      })()
+                    : []
+                  const hasRestrictions = Array.isArray(dietaryRestrictions) && dietaryRestrictions.length > 0
 
                   return (
                     <tr key={guest.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div>
                           <div className="font-medium text-gray-900">{fullName}</div>
-                          {guest.person.company && (
+                          {guest.person?.company && (
                             <div className="text-sm text-gray-500">{guest.person.company}</div>
                           )}
                           {hasRestrictions && (
@@ -297,10 +305,10 @@ export function EventInvitadosPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm">
-                          {guest.person.email && (
+                          {guest.person?.email && (
                             <div className="text-gray-900">{guest.person.email}</div>
                           )}
-                          {guest.person.phone && (
+                          {guest.person?.phone && (
                             <div className="text-gray-500">{guest.person.phone}</div>
                           )}
                         </div>

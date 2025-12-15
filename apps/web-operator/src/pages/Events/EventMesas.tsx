@@ -58,9 +58,9 @@ export function EventMesasPage() {
   const handleDelete = async (mesa: Mesa) => {
     if (!eventId) return
 
-    const hasGuests = mesa._count.invitados > 0
+    const hasGuests = (mesa._count?.invitados ?? 0) > 0
     const confirmMessage = hasGuests
-      ? `¿Eliminar mesa ${mesa.numero}? Los ${mesa._count.invitados} invitados asignados quedarán sin mesa.`
+      ? `¿Eliminar mesa ${mesa.numero}? Los ${mesa._count?.invitados ?? 0} invitados asignados quedarán sin mesa.`
       : `¿Eliminar mesa ${mesa.numero}?`
 
     if (!confirm(confirmMessage)) return
@@ -200,7 +200,7 @@ export function EventMesasPage() {
                       <div className="text-sm text-gray-500">{mesa.forma}</div>
                     </div>
                     <div className="text-sm text-gray-600">
-                      {mesa._count.invitados} / {mesa.capacidad} personas
+                      {mesa._count?.invitados ?? 0} / {mesa.capacidad} personas
                     </div>
                     {mesa.sector && (
                       <div className="text-xs text-gray-500 mt-1">{mesa.sector}</div>
@@ -273,7 +273,7 @@ export function EventMesasPage() {
                 <div>
                   <div className="text-sm text-gray-500">Ocupación</div>
                   <div className="font-medium">
-                    {selectedMesa._count.invitados} / {selectedMesa.capacidad}
+                    {selectedMesa._count?.invitados ?? 0} / {selectedMesa.capacidad}
                   </div>
                 </div>
                 <div>

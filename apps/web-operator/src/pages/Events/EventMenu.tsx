@@ -130,8 +130,8 @@ export function EventMenuPage() {
     if (searchTerm) {
       const term = searchTerm.toLowerCase()
       filtered = filtered.filter(d =>
-        d.nombre.toLowerCase().includes(term) ||
-        d.descripcion?.toLowerCase().includes(term)
+        d.nombre?.toLowerCase().includes(term) ||
+        d.descripcion?.toLowerCase()?.includes(term)
       )
     }
 
