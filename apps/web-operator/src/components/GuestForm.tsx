@@ -32,7 +32,9 @@ export function GuestForm({ eventId, guest, onClose, onSuccess }: GuestFormProps
   const loadMesas = async () => {
     try {
       const { data } = await mesasApi.list(eventId)
-      setMesas(data.mesas)
+      // El backend devuelve { success, data: mesas[], meta: stats }
+      const mesasData = (data as any).data || data.mesas || []
+      setMesas(mesasData)
     } catch (err) {
       console.error('Error loading mesas:', err)
     }
