@@ -41,7 +41,9 @@ export function PersonSelector({
   const loadPerson = async (personId: string) => {
     try {
       const { data } = await personsApi.get(personId)
-      setSelectedPerson(data)
+      // El backend devuelve { success, data: person }
+      const personData = (data as any).data || data
+      setSelectedPerson(personData)
     } catch (err) {
       console.error('Error loading person:', err)
     }
@@ -51,7 +53,9 @@ export function PersonSelector({
     setIsLoading(true)
     try {
       const { data } = await personsApi.search(searchTerm)
-      setResults(data.persons)
+      // El backend devuelve { success, data: persons[] }
+      const personsData = (data as any).data || data.persons || []
+      setResults(personsData)
     } catch (err) {
       console.error('Error searching persons:', err)
     } finally {
@@ -211,10 +215,12 @@ function CreatePersonModal({ onClose, onCreated, initialName = '' }: CreatePerso
     setIsSubmitting(true)
     try {
       const { data } = await personsApi.create(formData)
-      onCreated(data)
+      // El backend devuelve { success, data: person }
+      const personData = (data as any).data || data
+      onCreated(personData)
     } catch (err: any) {
       console.error('Error creating person:', err)
-      setError(err.response?.data?.error || 'Error al crear la persona')
+      setError(err.response?.data?.message || err.response?.data?.error || 'Error al crear la persona')
     } finally {
       setIsSubmitting(false)
     }
