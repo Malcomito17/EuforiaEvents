@@ -15,6 +15,7 @@ import { karaokeyaRoutes, karaokeyaGlobalRoutes } from './modules/karaokeya'
 import { participantRoutes, eventParticipantRoutes } from './modules/participants'
 import { personRoutes } from './modules/persons'
 import { eventGuestRoutes } from './modules/event-guests'
+import { dishRoutes } from './modules/dishes'
 import { usersRoutes } from './modules/users'
 import { djRoutes } from './modules/dj'
 import { uploadRoutes } from './modules/upload'
@@ -51,6 +52,7 @@ app.get('/api', (req, res) => {
 app.use('/api/auth', authRoutes)
 app.use('/api/participants', participantRoutes)
 app.use('/api/persons', personRoutes)
+app.use('/api/dishes', dishRoutes)
 app.use('/api/users', usersRoutes)
 app.use('/api/dj', djRoutes)
 app.use('/api/events', eventRoutes)
