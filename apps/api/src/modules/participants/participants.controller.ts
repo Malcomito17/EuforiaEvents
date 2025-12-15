@@ -1,20 +1,20 @@
 import type { Request, Response } from 'express'
-import { guestsService } from './guests.service'
-import { guestIdentifySchema } from './guests.types'
+import { participantsService } from './participants.service'
+import { participantIdentifySchema } from './participants.types'
 
-export class GuestsController {
+export class ParticipantsController {
   /**
-   * POST /api/guests/identify
-   * Identifica o crea un guest
+   * POST /api/participants/identify
+   * Identifica o crea un participant
    */
   async identify(req: Request, res: Response) {
     try {
-      const validated = guestIdentifySchema.parse(req.body)
-      const guest = await guestsService.identify(validated)
+      const validated = participantIdentifySchema.parse(req.body)
+      const participant = await participantsService.identify(validated)
 
       res.status(200).json({
         success: true,
-        guest,
+        participant,
       })
     } catch (error: any) {
       if (error.name === 'ZodError') {
@@ -28,43 +28,43 @@ export class GuestsController {
       console.error('Error en identify:', error)
       res.status(500).json({
         success: false,
-        error: 'Error al identificar guest',
+        error: 'Error al identificar participant',
       })
     }
   }
 
   /**
-   * GET /api/guests/:guestId
-   * Obtiene un guest por ID
+   * GET /api/participants/:participantId
+   * Obtiene un participant por ID
    */
   async getById(req: Request, res: Response) {
     try {
-      const { guestId } = req.params
-      const guest = await guestsService.getById(guestId)
+      const { participantId } = req.params
+      const participant = await participantsService.getById(participantId)
 
-      if (!guest) {
+      if (!participant) {
         return res.status(404).json({
           success: false,
-          error: 'Guest no encontrado',
+          error: 'Participant no encontrado',
         })
       }
 
       res.status(200).json({
         success: true,
-        guest,
+        participant,
       })
     } catch (error) {
       console.error('Error en getById:', error)
       res.status(500).json({
         success: false,
-        error: 'Error al obtener guest',
+        error: 'Error al obtener participant',
       })
     }
   }
 
   /**
-   * GET /api/guests/lookup?email=xxx
-   * Busca un guest por email (para autocompletar formularios)
+   * GET /api/participants/lookup?email=xxx
+   * Busca un participant por email (para autocompletar formularios)
    */
   async lookupByEmail(req: Request, res: Response) {
     try {
@@ -77,34 +77,34 @@ export class GuestsController {
         })
       }
 
-      const guest = await guestsService.lookupByEmail(email)
+      const participant = await participantsService.lookupByEmail(email)
 
       // Retornar success:true incluso si no se encuentra (no es un error)
       res.status(200).json({
         success: true,
-        guest: guest || null,
+        participant: participant || null,
       })
     } catch (error) {
       console.error('Error en lookupByEmail:', error)
       res.status(500).json({
         success: false,
-        error: 'Error al buscar guest',
+        error: 'Error al buscar participant',
       })
     }
   }
 
   /**
-   * GET /api/guests/:guestId/requests
-   * Obtiene todos los pedidos de un guest (song + karaoke)
+   * GET /api/participants/:participantId/requests
+   * Obtiene todos los pedidos de un participant (song + karaoke)
    * Query params: ?eventId=xxx (opcional)
    */
   async getRequests(req: Request, res: Response) {
     try {
-      const { guestId } = req.params
+      const { participantId } = req.params
       const { eventId } = req.query
 
-      const requests = await guestsService.getRequests(
-        guestId,
+      const requests = await participantsService.getRequests(
+        participantId,
         eventId as string | undefined
       )
 
@@ -122,56 +122,56 @@ export class GuestsController {
   }
 
   /**
-   * GET /api/guests
-   * Lista TODOS los guests (sin filtrar por evento)
+   * GET /api/participants
+   * Lista TODOS los participants (sin filtrar por evento)
    */
   async listAll(req: Request, res: Response) {
     try {
-      const guests = await guestsService.listAll()
+      const participants = await participantsService.listAll()
 
       res.status(200).json({
         success: true,
-        guests,
+        participants,
       })
     } catch (error) {
       console.error('Error en listAll:', error)
       res.status(500).json({
         success: false,
-        error: 'Error al listar guests',
+        error: 'Error al listar participants',
       })
     }
   }
 
   /**
-   * GET /api/events/:eventId/guests
-   * Lista todos los guests de un evento con contadores de requests
+   * GET /api/events/:eventId/participants
+   * Lista todos los participants de un evento con contadores de requests
    */
   async listByEvent(req: Request, res: Response) {
     try {
       const { eventId } = req.params
-      const guests = await guestsService.listByEvent(eventId)
+      const participants = await participantsService.listByEvent(eventId)
 
       res.status(200).json({
         success: true,
-        guests,
+        participants,
       })
     } catch (error) {
       console.error('Error en listByEvent:', error)
       res.status(500).json({
         success: false,
-        error: 'Error al listar guests',
+        error: 'Error al listar participants',
       })
     }
   }
 
   /**
-   * DELETE /api/guests/:guestId
-   * Elimina un guest y todos sus requests
+   * DELETE /api/participants/:participantId
+   * Elimina un participant y todos sus requests
    */
   async delete(req: Request, res: Response) {
     try {
-      const { guestId } = req.params
-      const result = await guestsService.delete(guestId)
+      const { participantId } = req.params
+      const result = await participantsService.delete(participantId)
 
       res.status(200).json({
         success: true,
@@ -180,7 +180,7 @@ export class GuestsController {
     } catch (error: any) {
       console.error('Error en delete:', error)
 
-      if (error.message === 'Guest no encontrado') {
+      if (error.message === 'Participant no encontrado') {
         return res.status(404).json({
           success: false,
           error: error.message,
@@ -189,10 +189,10 @@ export class GuestsController {
 
       res.status(500).json({
         success: false,
-        error: 'Error al eliminar guest',
+        error: 'Error al eliminar participant',
       })
     }
   }
 }
 
-export const guestsController = new GuestsController()
+export const participantsController = new ParticipantsController()

@@ -16,7 +16,7 @@ model User {
   username  String   @unique
   email     String?  @unique
   password  String
-  role      String   @default("OPERATOR")  // ADMIN | OPERATOR | VIEWER | DJ
+  role      String   @default("OPERATOR") // ADMIN | MANAGER | OPERATOR | VIEWER | DJ | RECEPTION
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -28,13 +28,13 @@ model User {
 }
 
 model UserPermission {
-  id         String  @id @default(cuid())
-  userId     String
-  module     String  // MUSICADJ | KARAOKEYA | VENUES | EVENTS | CLIENTS | USERS
-  canView    Boolean @default(true)
-  canEdit    Boolean @default(false)
-  canDelete  Boolean @default(false)
-  canExport  Boolean @default(false)
+  id        String  @id @default(cuid())
+  userId    String
+  module    String // MUSICADJ | KARAOKEYA | VENUES | EVENTS | CLIENTS | USERS
+  canView   Boolean @default(true)
+  canEdit   Boolean @default(false)
+  canDelete Boolean @default(false)
+  canExport Boolean @default(false)
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -51,7 +51,7 @@ model UserPermission {
 model Venue {
   id           String   @id @default(cuid())
   name         String
-  type         String   @default("OTHER")  // SALON | BAR | DISCO | RESTAURANT | CLUB | OUTDOOR | OTHER
+  type         String   @default("OTHER") // SALON | BAR | DISCO | RESTAURANT | CLUB | OUTDOOR | OTHER
   address      String?
   city         String?
   capacity     Int?
@@ -86,25 +86,194 @@ model Client {
 }
 
 // ================================
-// INVITADOS (ACCESO SIMPLIFICADO)
+// PARTICIPANTES (ACCESO PÚBLICO A SERVICIOS)
 // ================================
 
-// Guest = usuario final que accede via QR (sin password)
+// Participant = usuario final que accede via QR (sin password)
 // Identificación por email, cross-evento
-model Guest {
-  id            String   @id @default(cuid())
-  email         String   @unique
-  displayName   String   // "Juancho", "La Voz de Oro", etc.
-  whatsapp      String?  // Opcional, para notificaciones de turno
-  isSystemGuest Boolean  @default(false)  // true para guests internos (ej: IMPORTACION)
-  createdAt     DateTime @default(now())
-  lastSeenAt    DateTime @updatedAt
+// Usado para MUSICADJ y KARAOKEYA
+model Participant {
+  id                  String   @id @default(cuid())
+  email               String   @unique
+  displayName         String // "Juancho", "La Voz de Oro", etc.
+  whatsapp            String? // Opcional, para notificaciones de turno
+  isSystemParticipant Boolean  @default(false) // true para participantes internos (ej: IMPORTACION)
+  createdAt           DateTime @default(now())
+  lastSeenAt          DateTime @updatedAt
 
+  // Relación opcional con Person (invitado formal)
+  person          Person?           @relation("PersonParticipant")
   songRequests    SongRequest[]
   karaokeRequests KaraokeRequest[]
   likedSongs      KaraokeSongLike[]
 
-  @@map("guests")
+  @@map("participants")
+}
+
+// ================================
+// INVITADOS (LISTA FORMAL DEL EVENTO)
+// ================================
+
+// Person = Catálogo global de personas (reutilizable entre eventos)
+model Person {
+  id                  String   @id @default(cuid())
+  nombre              String
+  apellido            String
+  email               String?  @unique // Opcional, único si existe
+  phone               String?
+  company             String?
+  dietaryRestrictions String?  @default("[]") // JSON: ["VEGANO", "CELIACO"]
+  identityHash        String // SHA256(email + nombre + apellido) para detectar duplicados
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  createdBy           String? // userId
+
+  // Relación opcional con Participant (si usa servicios públicos)
+  participantId String?      @unique
+  participant   Participant? @relation("PersonParticipant", fields: [participantId], references: [id])
+
+  // Relación con eventos
+  eventGuests EventGuest[]
+
+  @@index([email])
+  @@index([apellido, nombre])
+  @@index([identityHash])
+  @@map("persons")
+}
+
+// EventGuest = Entrada en la guestlist de un evento
+model EventGuest {
+  id            String    @id @default(cuid())
+  eventId       String
+  personId      String
+  mesaId        String?
+  estadoIngreso String    @default("PENDIENTE") // PENDIENTE | INGRESADO | NO_ASISTIO
+  checkedInAt   DateTime?
+  checkedInBy   String? // userId del recepcionista
+  checkedOutAt  DateTime? // Solo si Event.requiereCheckout = true
+  checkedOutBy  String? // userId del recepcionista
+  observaciones String?
+  accesibilidad String? // NINGUNA | MOVILIDAD_REDUCIDA | VISUAL | AUDITIVA | OTRA
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  addedBy       String? // userId
+
+  event       Event       @relation("EventGuests", fields: [eventId], references: [id], onDelete: Cascade)
+  person      Person      @relation(fields: [personId], references: [id], onDelete: Cascade)
+  mesa        Mesa?       @relation("MesaGuests", fields: [mesaId], references: [id], onDelete: SetNull)
+  guestDishes GuestDish[]
+
+  @@unique([eventId, personId])
+  @@index([eventId])
+  @@index([eventId, estadoIngreso])
+  @@index([personId])
+  @@index([mesaId])
+  @@map("event_guests")
+}
+
+// ================================
+// MENÚ Y PLATOS
+// ================================
+
+// Dish = Catálogo global de platos
+model Dish {
+  id          String   @id @default(cuid())
+  nombre      String
+  descripcion String?
+  dietaryInfo String   @default("[]") // JSON: ["VEGANO", "SIN_GLUTEN", "SIN_LACTOSA"]
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String?
+
+  eventDishes EventDish[]
+
+  @@index([nombre])
+  @@index([isActive])
+  @@map("dishes")
+}
+
+// DishCategory = Categorías de platos (configurables por evento)
+model DishCategory {
+  id              String   @id @default(cuid())
+  eventId         String? // NULL = categoría global (default), eventId = custom del evento
+  nombre          String // "ENTRADA", "PRINCIPAL", "POSTRE", etc.
+  orden           Int      @default(0)
+  isSystemDefault Boolean  @default(false) // true para ENTRADA, PRINCIPAL, POSTRE, BUFFET
+  createdAt       DateTime @default(now())
+
+  event       Event?      @relation("EventCategories", fields: [eventId], references: [id], onDelete: Cascade)
+  eventDishes EventDish[]
+
+  @@unique([eventId, nombre])
+  @@index([eventId])
+  @@map("dish_categories")
+}
+
+// EventDish = Platos del menú de un evento específico
+model EventDish {
+  id         String   @id @default(cuid())
+  eventId    String
+  dishId     String
+  categoryId String
+  isDefault  Boolean  @default(false) // Plato default de la categoría
+  orden      Int      @default(0)
+  createdAt  DateTime @default(now())
+
+  event       Event        @relation("EventMenu", fields: [eventId], references: [id], onDelete: Cascade)
+  dish        Dish         @relation(fields: [dishId], references: [id], onDelete: Cascade)
+  category    DishCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  guestDishes GuestDish[]
+
+  @@unique([eventId, dishId])
+  @@index([eventId])
+  @@index([eventId, categoryId])
+  @@map("event_dishes")
+}
+
+// GuestDish = Platos asignados a un invitado
+model GuestDish {
+  id           String   @id @default(cuid())
+  eventGuestId String
+  eventDishId  String
+  assignedAt   DateTime @default(now())
+  assignedBy   String? // null = automático, userId = manual
+
+  eventGuest EventGuest @relation(fields: [eventGuestId], references: [id], onDelete: Cascade)
+  eventDish  EventDish  @relation(fields: [eventDishId], references: [id], onDelete: Cascade)
+
+  @@unique([eventGuestId, eventDishId])
+  @@index([eventGuestId])
+  @@index([eventDishId])
+  @@map("guest_dishes")
+}
+
+// ================================
+// MESAS Y SALÓN
+// ================================
+
+model Mesa {
+  id            String   @id @default(cuid())
+  eventId       String
+  numero        String // "5", "VIP-1", "A1"
+  capacidad     Int
+  forma         String   @default("REDONDA") // REDONDA | CUADRADA | RECTANGULAR | OVALADA | HERRADURA
+  sector        String? // "VIP", "General", "Terraza"
+  posX          Float? // Coordenada X en el plano del salón
+  posY          Float? // Coordenada Y en el plano del salón
+  rotation      Float?   @default(0) // Rotación en grados
+  observaciones String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  createdBy     String?
+
+  event     Event        @relation("EventMesas", fields: [eventId], references: [id], onDelete: Cascade)
+  invitados EventGuest[] @relation("MesaGuests")
+
+  @@unique([eventId, numero])
+  @@index([eventId])
+  @@index([eventId, sector])
+  @@map("mesas")
 }
 
 // ================================
@@ -113,14 +282,24 @@ model Guest {
 
 model Event {
   id           String   @id @default(cuid())
-  slug         String   @unique  // URL amigable: "martina-15-2501"
-  status       String   @default("DRAFT")  // DRAFT | ACTIVE | PAUSED | FINISHED
+  slug         String   @unique // URL amigable: "martina-15-2501"
+  status       String   @default("DRAFT") // DRAFT | ACTIVE | PAUSED | FINISHED
   venueId      String?
   clientId     String?
   clonedFromId String?
   createdById  String
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+
+  // Configuración operativa de invitados
+  tieneMesasAsignadas Boolean @default(true)
+  tieneMenuIndividual Boolean @default(true)
+  requiereCheckout    Boolean @default(false)
+
+  // Configuración de salón (para distribución espacial de mesas)
+  salonAncho    Float? // Ancho en metros
+  salonLargo    Float? // Largo en metros
+  salonImageUrl String? // URL del plano del salón
 
   venue      Venue?  @relation(fields: [venueId], references: [id])
   client     Client? @relation(fields: [clientId], references: [id])
@@ -135,6 +314,12 @@ model Event {
   karaokeyaConfig KaraokeyaConfig?
   karaokeRequests KaraokeRequest[]
 
+  // Relaciones con módulos de invitados
+  mesas            Mesa[]         @relation("EventMesas")
+  eventGuests      EventGuest[]   @relation("EventGuests")
+  eventMenu        EventDish[]    @relation("EventMenu")
+  customCategories DishCategory[] @relation("EventCategories")
+
   @@map("events")
 }
 
@@ -142,26 +327,26 @@ model EventData {
   id              String    @id @default(cuid())
   eventId         String    @unique
   eventName       String
-  eventType       String    @default("OTHER")  // WEDDING | FIFTEEN | CORPORATE | BIRTHDAY | PARTY | BAR | PRIVATE_PARTY | COMMERCIAL | SHOW | DJ_SET | OTHER
+  eventType       String    @default("OTHER") // WEDDING | FIFTEEN | CORPORATE | BIRTHDAY | PARTY | BAR | PRIVATE_PARTY | COMMERCIAL | SHOW | DJ_SET | OTHER
   startDate       DateTime
   endDate         DateTime?
   guestCount      Int?
   instagramUrl    String?
   instagramUser   String?
-  instagram       String?   // Instagram handle or URL
-  facebook        String?   // Facebook page URL
-  twitter         String?   // Twitter/X handle or URL
-  website         String?   // Event website URL
-  eventImage      String?   // Event image URL
+  instagram       String? // Instagram handle or URL
+  facebook        String? // Facebook page URL
+  twitter         String? // Twitter/X handle or URL
+  website         String? // Event website URL
+  eventImage      String? // Event image URL
   hashtag         String?
   spotifyPlaylist String?
   notes           String?
-  customFields    String?   // JSON para campos adicionales
+  customFields    String? // JSON para campos adicionales
 
   // Colores personalizables del tema (hex)
-  primaryColor    String    @default("#7C3AED")  // Púrpura
-  secondaryColor  String    @default("#EC4899")  // Rosa
-  accentColor     String    @default("#F59E0B")  // Ámbar
+  primaryColor   String @default("#7C3AED") // Púrpura
+  secondaryColor String @default("#EC4899") // Rosa
+  accentColor    String @default("#F59E0B") // Ámbar
 
   event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
 
@@ -188,41 +373,41 @@ model MusicadjConfig {
 }
 
 model SongRequest {
-  id                  String   @id @default(cuid())
-  eventId             String
-  guestId             String   // FK al Guest (identificación unificada)
-  spotifyId           String?
-  title               String
-  artist              String
-  albumArtUrl         String?
-  status              String   @default("PENDING")  // PENDING | HIGHLIGHTED | URGENT | PLAYED | DISCARDED
-  priority            Int      @default(0)
-  playlistId          String?  // ID de la playlist de origen (opcional)
-  fromClientPlaylist  Boolean  @default(false)  // Marca visual para pedidos de playlist
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  id                 String   @id @default(cuid())
+  eventId            String
+  participantId      String // FK al Participant (usuario con email)
+  spotifyId          String?
+  title              String
+  artist             String
+  albumArtUrl        String?
+  status             String   @default("PENDING") // PENDING | HIGHLIGHTED | URGENT | PLAYED | DISCARDED
+  priority           Int      @default(0)
+  playlistId         String? // ID de la playlist de origen (opcional)
+  fromClientPlaylist Boolean  @default(false) // Marca visual para pedidos de playlist
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 
-  event    Event           @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  guest    Guest           @relation(fields: [guestId], references: [id])
-  playlist ClientPlaylist? @relation(fields: [playlistId], references: [id])
+  event       Event           @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  participant Participant     @relation(fields: [participantId], references: [id])
+  playlist    ClientPlaylist? @relation(fields: [playlistId], references: [id])
 
   @@index([eventId, status])
   @@index([eventId, createdAt])
-  @@index([guestId])
+  @@index([participantId])
   @@index([playlistId])
   @@map("song_requests")
 }
 
 model ClientPlaylist {
-  id                 String   @id @default(cuid())
-  eventId            String
-  spotifyPlaylistId  String   @unique
-  name               String
-  description        String?
-  trackCount         Int
-  tracksData         String?  // JSON con los tracks de la playlist
-  importedAt         DateTime @default(now())
-  importedBy         String   // userId
+  id                String   @id @default(cuid())
+  eventId           String
+  spotifyPlaylistId String   @unique
+  name              String
+  description       String?
+  trackCount        Int
+  tracksData        String? // JSON con los tracks de la playlist
+  importedAt        DateTime @default(now())
+  importedBy        String // userId
 
   event        Event         @relation(fields: [eventId], references: [id], onDelete: Cascade)
   songRequests SongRequest[]
@@ -241,23 +426,23 @@ model ClientPlaylist {
 // v2.0: CRUD, ranking, opiniones y sistema de likes
 model KaraokeSong {
   id              String   @id @default(cuid())
-  title           String   // Título normalizado (sin artista ni extras)
-  artist          String   // Artista normalizado
-  youtubeId       String   @unique  // ID único de YouTube (ej: "fJ9rUzIMcZQ")
-  youtubeShareUrl String   // Link compartible: https://youtu.be/{youtubeId}
-  thumbnailUrl    String?  // Thumbnail del video para preview
-  duration        Int?     // Duración en segundos
-  source          String     @default("YOUTUBE")  // YOUTUBE | MANUAL | IMPORTED
-  language        String     @default("ES")  // ES | EN | PT
-  difficulty      String     @default("MEDIO") // FACIL | MEDIO | DIFICIL | PAVAROTTI
-  ranking         Int        @default(3)     // Calificación de calidad 1-5 (⭐ a ⭐⭐⭐⭐⭐)
-  opinion         String?                    // Opinión editorial del operador
-  moods           String     @default("[]")  // JSON array: ["PARA_ROMPERLA", "ROMANTICO", etc.]
-  tags            String     @default("[]")  // JSON array: ["Popular", "Clásico", "Dúo"]
-  timesRequested  Int        @default(1)     // Contador de popularidad (inicia en 1 al crear)
-  timesCompleted  Int        @default(0)     // Veces cantada exitosamente
-  likesCount      Int        @default(0)     // Contador global de "me gusta"
-  isActive        Boolean    @default(true)  // Para ocultar sin eliminar
+  title           String // Título normalizado (sin artista ni extras)
+  artist          String // Artista normalizado
+  youtubeId       String   @unique // ID único de YouTube (ej: "fJ9rUzIMcZQ")
+  youtubeShareUrl String // Link compartible: https://youtu.be/{youtubeId}
+  thumbnailUrl    String? // Thumbnail del video para preview
+  duration        Int? // Duración en segundos
+  source          String   @default("YOUTUBE") // YOUTUBE | MANUAL | IMPORTED
+  language        String   @default("ES") // ES | EN | PT
+  difficulty      String   @default("MEDIO") // FACIL | MEDIO | DIFICIL | PAVAROTTI
+  ranking         Int      @default(3) // Calificación de calidad 1-5 (⭐ a ⭐⭐⭐⭐⭐)
+  opinion         String? // Opinión editorial del operador
+  moods           String   @default("[]") // JSON array: ["PARA_ROMPERLA", "ROMANTICO", etc.]
+  tags            String   @default("[]") // JSON array: ["Popular", "Clásico", "Dúo"]
+  timesRequested  Int      @default(1) // Contador de popularidad (inicia en 1 al crear)
+  timesCompleted  Int      @default(0) // Veces cantada exitosamente
+  likesCount      Int      @default(0) // Contador global de "me gusta"
+  isActive        Boolean  @default(true) // Para ocultar sin eliminar
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
@@ -267,9 +452,9 @@ model KaraokeSong {
   @@index([youtubeId])
   @@index([language])
   @@index([difficulty])
-  @@index([ranking])         // Para ordenar por calificación
-  @@index([likesCount])      // Para ordenar por popularidad de likes
-  @@index([timesRequested])  // Para ordenar por popularidad
+  @@index([ranking]) // Para ordenar por calificación
+  @@index([likesCount]) // Para ordenar por popularidad de likes
+  @@index([timesRequested]) // Para ordenar por popularidad
   @@map("karaoke_songs")
 }
 
@@ -277,23 +462,23 @@ model KaraokeyaConfig {
   eventId               String  @id
   enabled               Boolean @default(true)
   cooldownSeconds       Int     @default(600)
-  maxPerPerson          Int     @default(0)  // 0 = sin límite
+  maxPerPerson          Int     @default(0) // 0 = sin límite
   showQueueToClient     Boolean @default(true)
   showNextSinger        Boolean @default(true)
   // Configuración de sugerencias
   suggestionsEnabled    Boolean @default(true)
-  suggestionsCount      Int     @default(3)  // 0-5, cantidad de sugerencias a mostrar
-  allowedLanguages      String  @default("[]")  // JSON array: ["ES", "EN"] o vacío = todos
+  suggestionsCount      Int     @default(3) // 0-5, cantidad de sugerencias a mostrar
+  allowedLanguages      String  @default("[]") // JSON array: ["ES", "EN"] o vacío = todos
   // v1.4: YouTube + Mensajes configurables
-  youtubeSearchKeywords String  @default("[\"letra\", \"lyrics\"]")  // Keywords para búsqueda YouTube
+  youtubeSearchKeywords String  @default("[\"letra\", \"lyrics\"]") // Keywords para búsqueda YouTube
   customMessages        String? // JSON opcional para override de mensajes: {"search.placeholder": "..."}
 
   // v2.0: Display Screen (Pantalla pública de karaoke)
-  displayMode           String  @default("QUEUE")  // QUEUE | BREAK | START | PROMO
-  displayLayout         String  @default("HORIZONTAL")  // VERTICAL | HORIZONTAL
-  displayBreakMessage   String  @default("¡Ya regresamos! 🎤")  // Mensaje personalizable para modo BREAK
-  displayStartMessage   String  @default("¡Ya comenzamos! 🎉")  // Mensaje personalizable para modo START
-  displayPromoImageUrl  String? // URL de imagen promocional para modo PROMO
+  displayMode          String  @default("QUEUE") // QUEUE | BREAK | START | PROMO
+  displayLayout        String  @default("HORIZONTAL") // VERTICAL | HORIZONTAL
+  displayBreakMessage  String  @default("¡Ya regresamos! 🎤") // Mensaje personalizable para modo BREAK
+  displayStartMessage  String  @default("¡Ya comenzamos! 🎉") // Mensaje personalizable para modo START
+  displayPromoImageUrl String? // URL de imagen promocional para modo PROMO
 
   event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
 
@@ -303,39 +488,39 @@ model KaraokeyaConfig {
 model KaraokeRequest {
   id            String    @id @default(cuid())
   eventId       String
-  guestId       String    // FK al Guest (identificación unificada)
-  songId        String?   // FK opcional al catálogo (null si búsqueda manual)
+  participantId String // FK al Participant (usuario con email)
+  songId        String? // FK opcional al catálogo (null si búsqueda manual)
   title         String
   artist        String?
   turnNumber    Int
   queuePosition Int
-  status        String    @default("QUEUED")  // QUEUED | CALLED | ON_STAGE | COMPLETED | NO_SHOW | CANCELLED
+  status        String    @default("QUEUED") // QUEUED | CALLED | ON_STAGE | COMPLETED | NO_SHOW | CANCELLED
   createdAt     DateTime  @default(now())
   calledAt      DateTime?
 
-  event Event        @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  guest Guest        @relation(fields: [guestId], references: [id])
-  song  KaraokeSong? @relation(fields: [songId], references: [id])
+  event       Event        @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  participant Participant  @relation(fields: [participantId], references: [id])
+  song        KaraokeSong? @relation(fields: [songId], references: [id])
 
   @@index([eventId, status])
   @@index([eventId, queuePosition])
-  @@index([guestId])
+  @@index([participantId])
   @@index([songId])
   @@map("karaoke_requests")
 }
 
 // Sistema de "Me Gusta" para canciones de karaoke (global, cross-evento)
 model KaraokeSongLike {
-  id        String   @id @default(cuid())
-  songId    String
-  guestId   String
-  createdAt DateTime @default(now())
+  id            String   @id @default(cuid())
+  songId        String
+  participantId String
+  createdAt     DateTime @default(now())
 
-  song  KaraokeSong @relation(fields: [songId], references: [id], onDelete: Cascade)
-  guest Guest       @relation(fields: [guestId], references: [id], onDelete: Cascade)
+  song        KaraokeSong @relation(fields: [songId], references: [id], onDelete: Cascade)
+  participant Participant @relation(fields: [participantId], references: [id], onDelete: Cascade)
 
-  @@unique([songId, guestId])  // Prevenir duplicados: un guest solo puede dar like una vez por canción
+  @@unique([songId, participantId]) // Prevenir duplicados: un participant solo puede dar like una vez por canción
   @@index([songId])
-  @@index([guestId])
+  @@index([participantId])
   @@map("karaoke_song_likes")
 }

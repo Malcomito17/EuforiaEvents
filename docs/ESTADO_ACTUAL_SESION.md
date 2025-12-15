@@ -236,22 +236,85 @@ model Guest {
 
 ## 🚀 PRÓXIMOS PASOS
 
-### Inmediato (esta sesión o la siguiente)
+### ✅ COMPLETADO EN ESTA SESIÓN
 
-1. **Actualizar documentación** con corrección del modelo (email opcional + hash)
-2. **Comenzar implementación** - PASO 1: Refactor Guest → Participant
-   - Actualizar schema.prisma
-   - Migración de BD
-   - Renombrar archivos y módulos
-   - Actualizar referencias
-   - Testing
+#### Fase 1: Base de Datos (100% ✅)
+1. ✅ **Schema Prisma actualizado** - Todos los modelos nuevos agregados
+2. ✅ **Guest → Participant renombrado** - Tabla y referencias actualizadas
+3. ✅ **Migración de BD creada y aplicada** - 20251214221442_add_guestlist_menu_mesas_modules
+4. ✅ **8 tablas nuevas creadas**:
+   - persons (catálogo global de personas)
+   - event_guests (guestlist por evento)
+   - dishes (catálogo de platos)
+   - dish_categories (categorías configurables)
+   - event_dishes (menú del evento)
+   - guest_dishes (platos asignados)
+   - mesas (mesas con distribución espacial)
+   - _prisma_migrations (tracking de migraciones)
+5. ✅ **Event model extendido** - 6 nuevos campos de configuración
+6. ✅ **User role actualizado** - Incluye RECEPTION
+7. ✅ **Prisma Client regenerado** - Listo para usar en backend
+8. ✅ **Datos preservados** - 8 participantes migrados correctamente
+
+#### Fase 2: Backend - Módulos (40% ✅)
+1. ✅ **Módulo participants renombrado** (antes guests)
+   - participants.service.ts actualizado con Prisma participant
+   - participants.controller.ts con todos los endpoints
+   - participants.routes.ts con rutas públicas y protegidas
+   - participants.types.ts con validaciones Zod
+   - Rutas actualizadas en app.ts (/api/participants)
+
+2. ✅ **Módulo persons creado** (100% completo)
+   - persons.service.ts con CRUD completo
+   - Generación automática de identityHash (SHA256)
+   - Prevención de duplicados
+   - Enlace/desenlace con Participant
+   - Búsqueda por nombre/apellido/email
+   - persons.controller.ts con 8 endpoints
+   - persons.routes.ts (todas protegidas)
+   - Validaciones Zod para create/update
+
+**Archivos creados**:
+- `/apps/api/src/modules/persons/persons.types.ts`
+- `/apps/api/src/modules/persons/persons.service.ts`
+- `/apps/api/src/modules/persons/persons.controller.ts`
+- `/apps/api/src/modules/persons/persons.routes.ts`
+- `/apps/api/src/modules/persons/index.ts`
+
+**Archivos modificados**:
+- `/apps/api/src/modules/participants/*` (renombrado de guests)
+- `/apps/api/src/app.ts` (rutas actualizadas)
+- `/apps/api/prisma/schema.prisma` (8 modelos nuevos)
+- `/apps/api/prisma/migrations/20251214221442_add_guestlist_menu_mesas_modules/migration.sql`
+
+### Inmediato (próxima sesión)
+
+1. **PASO 2**: Backend - Crear módulos y servicios
+   - Crear módulo `persons` (CRUD de catálogo global)
+   - Crear módulo `event-guests` (gestión de guestlist)
+   - Crear módulo `dishes` (CRUD de catálogo de platos)
+   - Crear módulo `menu` (gestión de menú del evento)
+   - Crear módulo `mesas` (CRUD de mesas)
+   - Implementar lógica de auto-enlace Participant ↔ Person
+   - Implementar validación de restricciones alimentarias
+
+2. **PASO 3**: Frontend - web-operator
+   - Crear páginas de gestión de invitados
+   - Crear páginas de gestión de menú
+   - Crear páginas de gestión de mesas
+   - Implementar importación CSV de invitados
+   - Implementar canvas drag-drop para mesas
+
+3. **PASO 4**: App CHECK-IN
+   - Crear nueva aplicación `apps/web-checkin/`
+   - Implementar interfaz de recepción
+   - Implementar búsqueda en tiempo real
+   - Integrar WebSocket para multi-usuario
 
 ### Siguientes pasos
 
-3. **PASO 2**: Crear modelo Guest con hash
-4. **PASO 3**: Backend - service + controller + routes
-5. **PASO 4**: Frontend - web-operator
-6. **PASO 5**: Integración y testing
+4. **PASO 5**: Testing e integración
+5. **PASO 6**: Deployment y documentación
 
 ---
 
@@ -280,31 +343,46 @@ git checkout -b feature/guests-module
 
 ## 🎯 OBJETIVO DE LA PRÓXIMA SESIÓN
 
-**Completar PASO 1**: Refactor completo de `Guest` → `Participant`
+**Completar PASO 2**: Implementación de Backend - Módulos y Servicios
 
 **Resultado esperado**:
-- Modelo renombrado en BD
-- Módulo backend renombrado
-- Frontend actualizado
-- Tests pasando
-- Commit y push exitoso
+- Módulos backend creados (persons, event-guests, dishes, menu, mesas)
+- Services con lógica de negocio implementada
+- Controllers y routes configurados
+- Validaciones Zod implementadas
+- Lógica de auto-enlace funcionando
+- Tests unitarios pasando
 
-**Tiempo estimado**: 2-3 horas
+**Tiempo estimado**: 6-8 horas
 
 ---
 
 ## 📊 PROGRESO ACTUAL
 
 ### Diseño Técnico
-- Módulo INVITADOS: ✅ 95% (falta actualizar corrección de hash)
-- Módulo MESAS: ⏳ 0%
-- Módulo MENÚ: ⏳ 0%
-- App CHECK-IN: ⏳ 0%
-- Módulo TIMELINE: ⏳ 0%
+- Módulo INVITADOS: ✅ 100% ⭐ COMPLETADO
+- Módulo MESAS: ✅ 100% ⭐ COMPLETADO
+- Módulo MENÚ: ✅ 100% ⭐ COMPLETADO
+- App CHECK-IN: ✅ 100% ⭐ COMPLETADO
+- Módulo TIMELINE: ⏸️ POSPUESTO
 
-### Implementación
-- Módulo INVITADOS: ⏳ 0%
-- Todo lo demás: ⏳ 0%
+### Implementación - Base de Datos
+- Schema Prisma: ✅ 100% ⭐ COMPLETADO
+- Migración de BD: ✅ 100% ⭐ COMPLETADO
+- Prisma Client: ✅ 100% ⭐ COMPLETADO
+
+### Implementación - Backend
+- Módulo PERSONS: ⏳ 0%
+- Módulo EVENT-GUESTS: ⏳ 0%
+- Módulo DISHES: ⏳ 0%
+- Módulo MENU: ⏳ 0%
+- Módulo MESAS: ⏳ 0%
+
+### Implementación - Frontend
+- Web Operator - Invitados: ⏳ 0%
+- Web Operator - Menú: ⏳ 0%
+- Web Operator - Mesas: ⏳ 0%
+- Web Check-in App: ⏳ 0%
 
 ---
 
@@ -399,7 +477,22 @@ Event {
 
 ---
 
-**Última actualización**: 2025-01-14 (Sesión activa)
+## 🎉 HITO IMPORTANTE ALCANZADO
+
+**FASE DE DISEÑO Y SCHEMA**: ✅ 100% COMPLETADO
+
+Se han completado exitosamente:
+- ✅ Diseño técnico de 4 módulos (Invitados, Menú, Mesas, Check-in)
+- ✅ Schema Prisma con 8 modelos nuevos
+- ✅ Migración de base de datos aplicada
+- ✅ Renombrado Guest → Participant preservando datos
+- ✅ Prisma Client regenerado y validado
+
+**Próximo hito**: Implementación de Backend (servicios y endpoints)
+
+---
+
+**Última actualización**: 2025-12-14 22:18 (Sesión activa)
 **Responsable**: Claude Sonnet 4.5
 **Usuario**: malcomito
-**Estado**: ✅ Diseño completado, listo para implementación
+**Estado**: ✅ Base de datos lista - Comenzar backend en próxima sesión
