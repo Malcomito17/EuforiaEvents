@@ -41,8 +41,8 @@ export function PersonSelector({
   const loadPerson = async (personId: string) => {
     try {
       const { data } = await personsApi.get(personId)
-      // El backend devuelve { success, data: person }
-      const personData = (data as any).data || data
+      // El backend devuelve { success, person }
+      const personData = (data as any).person || (data as any).data || data
       setSelectedPerson(personData)
     } catch (err) {
       console.error('Error loading person:', err)
@@ -53,8 +53,8 @@ export function PersonSelector({
     setIsLoading(true)
     try {
       const { data } = await personsApi.search(searchTerm)
-      // El backend devuelve { success, data: persons[] }
-      const personsData = (data as any).data || data.persons || []
+      // El backend devuelve { success, persons, count }
+      const personsData = (data as any).persons || (data as any).data || []
       setResults(personsData)
     } catch (err) {
       console.error('Error searching persons:', err)
@@ -212,11 +212,16 @@ function CreatePersonModal({ onClose, onCreated, initialName = '' }: CreatePerso
       return
     }
 
+    if (!formData.apellido?.trim()) {
+      setError('El apellido es obligatorio')
+      return
+    }
+
     setIsSubmitting(true)
     try {
       const { data } = await personsApi.create(formData)
-      // El backend devuelve { success, data: person }
-      const personData = (data as any).data || data
+      // El backend devuelve { success, person } (no "data")
+      const personData = (data as any).person || (data as any).data || data
       onCreated(personData)
     } catch (err: any) {
       console.error('Error creating person:', err)
@@ -253,13 +258,14 @@ function CreatePersonModal({ onClose, onCreated, initialName = '' }: CreatePerso
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Apellido
+              Apellido *
             </label>
             <input
               type="text"
               value={formData.apellido}
               onChange={(e) => setFormData({ ...formData, apellido: e.target.value })}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              required
             />
           </div>
 

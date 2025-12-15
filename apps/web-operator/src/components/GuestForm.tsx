@@ -37,6 +37,8 @@ export function GuestForm({ eventId, guest, onClose, onSuccess }: GuestFormProps
       setMesas(mesasData)
     } catch (err) {
       console.error('Error loading mesas:', err)
+      // No bloquear si falla - mesas es opcional
+      setMesas([])
     }
   }
 
