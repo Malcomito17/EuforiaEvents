@@ -14,9 +14,6 @@ import {
   UserPlus,
   ChevronDown,
   ChevronRight,
-  Clock,
-  ClipboardList,
-  UtensilsCrossed,
   Settings,
   Table2,
   Utensils
