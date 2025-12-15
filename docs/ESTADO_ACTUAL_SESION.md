@@ -492,7 +492,25 @@ Se han completado exitosamente:
 
 ---
 
-**Última actualización**: 2025-12-14 22:18 (Sesión activa)
+**Última actualización**: 2025-12-14 22:40 (Sesión finalizada)
 **Responsable**: Claude Sonnet 4.5
 **Usuario**: malcomito
-**Estado**: ✅ Base de datos lista - Comenzar backend en próxima sesión
+**Estado**: ✅ Base de datos + 40% backend completado
+**Branch**: feature/guestlist-backend
+**Commit**: 918b63d - feat: Add guestlist, menu and tables modules - Phase 1
+
+---
+
+## 📝 PARA CONTINUAR EN LA PRÓXIMA SESIÓN
+
+**Leer archivo**: `docs/PROXIMA_SESION.md`
+
+Este archivo contiene:
+- ✅ Checklist detallado de tareas pendientes
+- 📋 Templates de código para cada módulo
+- 🔍 Comandos útiles para testing
+- 📊 Estimación de tiempo (7 horas restantes)
+
+**Branch actual**: `feature/guestlist-backend`
+
+**Próximo paso**: Crear módulo `event-guests` (guestlist management)
