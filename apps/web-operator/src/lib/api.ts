@@ -187,6 +187,16 @@ export const eventsApi = {
 
   deleteEventImage: (id: string) =>
     api.delete(`/events/${id}/delete-image`),
+
+  // Check-in QR Access
+  generateCheckinToken: (id: string) =>
+    api.post<{ success: boolean; message: string; token: string }>(`/events/${id}/checkin/generate-token`),
+
+  getCheckinLink: (id: string) =>
+    api.get<{ success: boolean; url: string; token: string }>(`/events/${id}/checkin/link`),
+
+  getCheckinQR: (id: string) =>
+    api.get<{ success: boolean; qr: string }>(`/events/${id}/checkin/qr`),
 }
 
 // ============================================
@@ -727,4 +737,399 @@ export const djApi = {
 
   getGuestHistory: (guestId: string) =>
     api.get(`/dj/guests/${guestId}/history`),
+}
+
+// ============================================
+// PERSONS (Catálogo global de personas)
+// ============================================
+
+export interface Person {
+  id: string
+  nombre: string
+  apellido: string | null
+  email: string | null
+  phone: string | null
+  company: string | null
+  dietaryRestrictions: string // JSON array
+  identityHash: string
+  participantId: string | null
+  isActive: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+export interface PersonCreateInput {
+  nombre: string
+  apellido?: string
+  email?: string
+  phone?: string
+  company?: string
+  dietaryRestrictions?: string[]
+}
+
+export interface PersonUpdateInput {
+  nombre?: string
+  apellido?: string
+  email?: string
+  phone?: string
+  company?: string
+  dietaryRestrictions?: string[]
+}
+
+export const personsApi = {
+  list: () =>
+    api.get<{ persons: Person[]; total: number }>('/persons'),
+
+  search: (query: string) =>
+    api.get<{ persons: Person[] }>(`/persons/search?q=${query}`),
+
+  get: (id: string) =>
+    api.get<Person>(`/persons/${id}`),
+
+  create: (data: PersonCreateInput) =>
+    api.post<Person>('/persons', data),
+
+  update: (id: string, data: PersonUpdateInput) =>
+    api.patch<Person>(`/persons/${id}`, data),
+
+  delete: (id: string) =>
+    api.delete(`/persons/${id}`),
+}
+
+// ============================================
+// EVENT GUESTS (Lista de invitados del evento)
+// ============================================
+
+export type EstadoIngreso = 'PENDIENTE' | 'INGRESADO' | 'NO_ASISTIO'
+export type Accesibilidad = 'NINGUNA' | 'MOVILIDAD_REDUCIDA' | 'VISUAL' | 'AUDITIVA' | 'OTRA'
+
+export interface EventGuest {
+  id: string
+  eventId: string
+  personId: string
+  mesaId: string | null
+  estadoIngreso: EstadoIngreso
+  accesibilidad: Accesibilidad
+  observaciones: string | null
+  checkedInAt: string | null
+  checkedInBy: string | null
+  createdAt: string
+  person: Person
+  mesa?: {
+    id: string
+    numero: string
+    capacidad: number
+  }
+  assignedDishes?: Array<{
+    id: string
+    dish: {
+      id: string
+      nombre: string
+      categoria: string
+    }
+  }>
+}
+
+export interface EventGuestCreateInput {
+  personId: string
+  mesaId?: string | null
+  observaciones?: string
+  accesibilidad?: Accesibilidad
+}
+
+export interface EventGuestUpdateInput {
+  mesaId?: string | null
+  observaciones?: string
+  accesibilidad?: Accesibilidad
+}
+
+export interface EventGuestStats {
+  total: number
+  ingresados: number
+  pendientes: number
+  noAsistieron: number
+  porcentajeAsistencia: number
+}
+
+export interface CSVGuestInput {
+  nombre: string
+  apellido?: string
+  email?: string
+  phone?: string
+  company?: string
+  mesaNumero?: string
+  dietaryRestrictions?: string[]
+  observaciones?: string
+  accesibilidad?: Accesibilidad
+}
+
+export const eventGuestsApi = {
+  list: (eventId: string) =>
+    api.get<{ guests: EventGuest[] }>(`/events/${eventId}/guests`),
+
+  get: (eventId: string, guestId: string) =>
+    api.get<EventGuest>(`/events/${eventId}/guests/${guestId}`),
+
+  create: (eventId: string, data: EventGuestCreateInput) =>
+    api.post<EventGuest>(`/events/${eventId}/guests`, data),
+
+  update: (eventId: string, guestId: string, data: EventGuestUpdateInput) =>
+    api.patch<EventGuest>(`/events/${eventId}/guests/${guestId}`, data),
+
+  delete: (eventId: string, guestId: string) =>
+    api.delete(`/events/${eventId}/guests/${guestId}`),
+
+  checkIn: (eventId: string, guestId: string) =>
+    api.post<EventGuest>(`/events/${eventId}/guests/${guestId}/checkin`),
+
+  checkOut: (eventId: string, guestId: string) =>
+    api.post<EventGuest>(`/events/${eventId}/guests/${guestId}/checkout`),
+
+  importCSV: (eventId: string, guests: CSVGuestInput[]) =>
+    api.post<{
+      success: boolean
+      message: string
+      imported: number
+      errors: Array<{ row: number; error: string }>
+    }>(`/events/${eventId}/guests/import`, { guests }),
+
+  getStats: (eventId: string) =>
+    api.get<EventGuestStats>(`/events/${eventId}/guests/stats`),
+}
+
+// ============================================
+// DISHES (Catálogo de platos)
+// ============================================
+
+export type TipoDieta =
+  | 'VEGANO'
+  | 'VEGETARIANO'
+  | 'SIN_GLUTEN'
+  | 'SIN_LACTOSA'
+  | 'KOSHER'
+  | 'HALAL'
+  | 'PESCETARIANO'
+  | 'BAJO_SODIO'
+  | 'DIABETICO'
+
+export interface Dish {
+  id: string
+  nombre: string
+  descripcion: string | null
+  categoria: string
+  dietaryInfo: string // JSON array
+  allergens: string // JSON array
+  isActive: boolean
+  createdAt: string
+  _count?: {
+    eventDishes: number
+  }
+}
+
+export interface DishCreateInput {
+  nombre: string
+  descripcion?: string
+  categoria: string
+  dietaryInfo?: TipoDieta[]
+  allergens?: string[]
+}
+
+export interface DishUpdateInput {
+  nombre?: string
+  descripcion?: string
+  categoria?: string
+  dietaryInfo?: TipoDieta[]
+  allergens?: string[]
+}
+
+export const dishesApi = {
+  list: (filters?: { categoria?: string; dietary?: string; search?: string }) =>
+    api.get<{ dishes: Dish[]; total: number }>('/dishes', { params: filters }),
+
+  get: (id: string) =>
+    api.get<Dish>(`/dishes/${id}`),
+
+  create: (data: DishCreateInput) =>
+    api.post<Dish>('/dishes', data),
+
+  update: (id: string, data: DishUpdateInput) =>
+    api.patch<Dish>(`/dishes/${id}`, data),
+
+  delete: (id: string) =>
+    api.delete(`/dishes/${id}`),
+}
+
+// ============================================
+// EVENT MENU (Menú del evento)
+// ============================================
+
+export type AlertType = 'MISSING_COMPATIBLE_DISH' | 'NO_DISH_ASSIGNED' | 'INCOMPATIBLE_DISH'
+export type AlertSeverity = 'HIGH' | 'MEDIUM' | 'LOW'
+
+export interface EventDish {
+  id: string
+  eventId: string
+  dishId: string
+  categoria: string
+  isDefault: boolean
+  dish: Dish
+}
+
+export interface MenuAlert {
+  type: AlertType
+  severity: AlertSeverity
+  eventGuestId: string
+  guestName: string
+  restriction?: string
+  message: string
+  suggestedDishes?: string[]
+}
+
+export interface MenuAlertResponse {
+  alerts: MenuAlert[]
+  totalAlerts: number
+  highSeverity: number
+  mediumSeverity: number
+  guestsWithIssues: number
+}
+
+export interface GuestDish {
+  id: string
+  eventGuestId: string
+  eventDishId: string
+  eventDish: {
+    id: string
+    dish: Dish
+  }
+}
+
+export const menuApi = {
+  // Gestión del menú del evento
+  getMenu: (eventId: string) =>
+    api.get<{
+      categories: Array<{
+        category: { id: string; nombre: string }
+        dishes: EventDish[]
+      }>
+      totalDishes: number
+    }>(`/events/${eventId}/menu`),
+
+  addDish: (eventId: string, data: { dishId: string; isDefault?: boolean }) =>
+    api.post<EventDish>(`/events/${eventId}/menu/dishes`, data),
+
+  removeDish: (eventId: string, dishId: string) =>
+    api.delete(`/events/${eventId}/menu/dishes/${dishId}`),
+
+  setDefault: (eventId: string, eventDishId: string) =>
+    api.patch<EventDish>(`/events/${eventId}/menu/dishes/${eventDishId}/default`),
+
+  // Alertas de restricciones dietarias
+  getAlerts: (eventId: string) =>
+    api.get<MenuAlertResponse>(`/events/${eventId}/menu/alerts`),
+
+  // Asignación de platos a invitados
+  assignDish: (eventId: string, data: { eventGuestId: string; eventDishId: string }) =>
+    api.post<GuestDish>(`/events/${eventId}/menu/assign`, data),
+
+  unassignDish: (eventId: string, guestDishId: string) =>
+    api.delete(`/events/${eventId}/menu/assign/${guestDishId}`),
+
+  autoAssignDefaults: (eventId: string) =>
+    api.post<{ assigned: number; skipped: number }>(`/events/${eventId}/menu/assign-auto`),
+
+  // Obtener platos asignados a un invitado
+  getGuestDishes: (eventId: string, eventGuestId: string) =>
+    api.get<{ dishes: GuestDish[] }>(`/events/${eventId}/menu/guest/${eventGuestId}`),
+}
+
+// ============================================
+// MESAS (Distribución de mesas)
+// ============================================
+
+export type FormaMesa = 'CUADRADA' | 'RECTANGULAR' | 'REDONDA' | 'OVALADA' | 'BARRA'
+export type AsignacionStrategy = 'FILL_FIRST' | 'DISTRIBUTE'
+
+export interface Mesa {
+  id: string
+  eventId: string
+  numero: string
+  capacidad: number
+  forma: FormaMesa
+  sector: string | null
+  posX: number | null
+  posY: number | null
+  rotation: number | null
+  observaciones: string | null
+  createdAt: string
+  _count: {
+    invitados: number
+  }
+}
+
+export interface MesaCreateInput {
+  numero: string
+  capacidad: number
+  forma: FormaMesa
+  sector?: string
+  posX?: number
+  posY?: number
+  rotation?: number
+  observaciones?: string
+}
+
+export interface MesaUpdateInput {
+  numero?: string
+  capacidad?: number
+  forma?: FormaMesa
+  sector?: string
+  posX?: number
+  posY?: number
+  rotation?: number
+  observaciones?: string
+}
+
+export interface MesaStats {
+  total: number
+  ocupadas: number
+  libres: number
+  capacidadTotal: number
+  capacidadDisponible: number
+  invitadosAsignados: number
+  invitadosSinMesa: number
+}
+
+export interface AutoAssignResult {
+  assigned: number
+  failed: number
+  errors: Array<{
+    guestId: string
+    guestName: string
+    reason: string
+  }>
+}
+
+export const mesasApi = {
+  list: (eventId: string) =>
+    api.get<{ mesas: Mesa[]; stats: MesaStats }>(`/events/${eventId}/mesas`),
+
+  get: (eventId: string, mesaId: string) =>
+    api.get<Mesa>(`/events/${eventId}/mesas/${mesaId}`),
+
+  create: (eventId: string, data: MesaCreateInput) =>
+    api.post<Mesa>(`/events/${eventId}/mesas`, data),
+
+  update: (eventId: string, mesaId: string, data: MesaUpdateInput) =>
+    api.patch<Mesa>(`/events/${eventId}/mesas/${mesaId}`, data),
+
+  updatePosition: (eventId: string, mesaId: string, data: { posX: number; posY: number; rotation?: number }) =>
+    api.patch<Mesa>(`/events/${eventId}/mesas/${mesaId}/position`, data),
+
+  delete: (eventId: string, mesaId: string) =>
+    api.delete(`/events/${eventId}/mesas/${mesaId}`),
+
+  autoAssign: (eventId: string, data: { strategy: AsignacionStrategy; preferSector?: boolean }) =>
+    api.post<AutoAssignResult>(`/events/${eventId}/mesas/auto-assign`, data),
+
+  getStats: (eventId: string) =>
+    api.get<MesaStats>(`/events/${eventId}/mesas/stats`),
 }
