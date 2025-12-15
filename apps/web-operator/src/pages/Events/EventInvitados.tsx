@@ -37,8 +37,12 @@ export function EventInvitadosPage() {
       ])
 
       setEvent(eventRes.data)
-      setGuests(guestsRes.data.guests)
-      setStats(statsRes.data)
+      // El backend devuelve { success, data: guests[], meta: stats }
+      const guestsData = (guestsRes.data as any).data || guestsRes.data.guests || []
+      setGuests(guestsData)
+      // Stats puede venir en data o directamente
+      const statsData = (statsRes.data as any).data || statsRes.data
+      setStats(statsData)
     } catch (err) {
       console.error('Error loading data:', err)
     } finally {

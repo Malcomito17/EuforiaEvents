@@ -56,9 +56,15 @@ export function EventMenuPage() {
       ])
 
       setEvent(eventRes.data)
-      setAllDishes(dishesRes.data.dishes)
-      setMenuCategories(menuRes.data.categories)
-      setAlerts(alertsRes.data)
+      // El backend devuelve { success, data: dishes[] }
+      const dishesData = (dishesRes.data as any).data || dishesRes.data.dishes || []
+      setAllDishes(dishesData)
+      // Menu puede venir como { data: { categories } } o { categories }
+      const menuData = (menuRes.data as any).data || menuRes.data
+      setMenuCategories(menuData.categories || [])
+      // Alerts puede venir como { data: alerts } o directamente
+      const alertsData = (alertsRes.data as any).data || alertsRes.data
+      setAlerts(alertsData)
     } catch (err) {
       console.error('Error loading data:', err)
     } finally {

@@ -35,8 +35,11 @@ export function EventMesasPage() {
       ])
 
       setEvent(eventRes.data)
-      setMesas(mesasRes.data.mesas)
-      setStats(mesasRes.data.stats)
+      // El backend devuelve { success, data: mesas[], meta: stats }
+      const mesasData = (mesasRes.data as any).data || mesasRes.data.mesas || []
+      const statsData = (mesasRes.data as any).meta || mesasRes.data.stats || null
+      setMesas(mesasData)
+      setStats(statsData)
     } catch (err) {
       console.error('Error loading data:', err)
     } finally {
