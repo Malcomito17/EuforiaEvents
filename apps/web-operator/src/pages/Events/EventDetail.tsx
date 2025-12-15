@@ -3,7 +3,7 @@ import { useNavigate, useParams, Link } from 'react-router-dom'
 import { eventsApi, Event } from '@/lib/api'
 import {
   ArrowLeft, Edit, QrCode, Copy, Play, Pause, CheckCircle,
-  Calendar, MapPin, Users, Music, Instagram, Hash, Loader2, Mic, Settings, UserCheck, Utensils
+  Calendar, MapPin, Users, Music, Instagram, Hash, Loader2, Mic, Settings, UserCheck, Utensils, Layout
 } from 'lucide-react'
 import clsx from 'clsx'
 import { useAuthStore } from '@/stores/authStore'
@@ -267,6 +267,23 @@ export function EventDetailPage() {
             <div className="flex-1">
               <h3 className="font-semibold text-gray-900 group-hover:text-primary-700">Menú</h3>
               <p className="text-sm text-gray-500">Gestionar menú y platos</p>
+            </div>
+            <div className="text-gray-400 group-hover:text-primary-500">
+              →
+            </div>
+          </Link>
+
+          {/* MESAS Module */}
+          <Link
+            to={`/events/${event.id}/mesas`}
+            className="flex items-center gap-4 p-4 border border-gray-200 rounded-xl hover:border-primary-300 hover:bg-primary-50 transition-all group"
+          >
+            <div className="p-3 bg-orange-100 rounded-xl group-hover:bg-orange-200 transition-colors">
+              <Layout className="h-6 w-6 text-orange-600" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-semibold text-gray-900 group-hover:text-primary-700">Mesas</h3>
+              <p className="text-sm text-gray-500">Distribución y asignación</p>
             </div>
             <div className="text-gray-400 group-hover:text-primary-500">
               →

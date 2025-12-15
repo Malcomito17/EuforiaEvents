@@ -6,7 +6,7 @@ import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { LoginPage } from '@/pages/Login'
 import { DashboardPage } from '@/pages/Dashboard'
 import { ChangePasswordPage } from '@/pages/ChangePassword'
-import { EventListPage, EventFormPage, EventDetailPage, EventQRPage, EventSettingsPage, EventInvitadosPage, EventMenuPage } from '@/pages/Events'
+import { EventListPage, EventFormPage, EventDetailPage, EventQRPage, EventSettingsPage, EventInvitadosPage, EventMenuPage, EventMesasPage } from '@/pages/Events'
 import { VenueListPage, VenueFormPage } from '@/pages/Venues'
 import { ClientListPage, ClientFormPage } from '@/pages/Clients'
 import { MusicaDJPage } from '@/pages/MusicaDJ'
@@ -134,6 +134,16 @@ function App() {
           <ProtectedRoute>
             <Layout>
               <EventMenuPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/events/:id/mesas"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <EventMesasPage />
             </Layout>
           </ProtectedRoute>
         }
