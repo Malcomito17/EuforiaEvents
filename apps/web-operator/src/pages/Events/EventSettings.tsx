@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { api } from '@/lib/api'
-import { ArrowLeft, Music, Mic, Loader2, Save } from 'lucide-react'
+import { ArrowLeft, Music, Mic, Loader2, Save, Settings2 } from 'lucide-react'
 import clsx from 'clsx'
 
 interface MusicadjConfig {
@@ -17,6 +17,15 @@ interface KaraokeyaConfig {
   maxPerPerson: number
   welcomeMessage: string | null
   suggestionsEnabled: boolean
+}
+
+interface GeneralConfig {
+  tieneMesasAsignadas: boolean
+  tieneMenuIndividual: boolean
+  requiereCheckout: boolean
+  salonAncho: number | null
+  salonLargo: number | null
+  salonImageUrl: string | null
 }
 
 export function EventSettingsPage() {
@@ -42,15 +51,25 @@ export function EventSettingsPage() {
     suggestionsEnabled: false,
   })
 
+  const [generalConfig, setGeneralConfig] = useState<GeneralConfig>({
+    tieneMesasAsignadas: true,
+    tieneMenuIndividual: true,
+    requiereCheckout: false,
+    salonAncho: null,
+    salonLargo: null,
+    salonImageUrl: null,
+  })
+
   useEffect(() => {
     loadConfigs()
   }, [id])
 
   const loadConfigs = async () => {
     try {
-      const [musicadj, karaokeya] = await Promise.allSettled([
+      const [musicadj, karaokeya, event] = await Promise.allSettled([
         api.get(`/events/${id}/musicadj/config`),
         api.get(`/events/${id}/karaokeya/config`),
+        api.get(`/events/${id}`),
       ])
 
       if (musicadj.status === 'fulfilled') {
@@ -59,6 +78,18 @@ export function EventSettingsPage() {
 
       if (karaokeya.status === 'fulfilled') {
         setKaraokeyaConfig(karaokeya.value.data)
+      }
+
+      if (event.status === 'fulfilled') {
+        const eventData = event.value.data
+        setGeneralConfig({
+          tieneMesasAsignadas: eventData.tieneMesasAsignadas ?? true,
+          tieneMenuIndividual: eventData.tieneMenuIndividual ?? true,
+          requiereCheckout: eventData.requiereCheckout ?? false,
+          salonAncho: eventData.salonAncho ?? null,
+          salonLargo: eventData.salonLargo ?? null,
+          salonImageUrl: eventData.salonImageUrl ?? null,
+        })
       }
     } catch (err) {
       console.error('Error loading configs:', err)
@@ -76,6 +107,7 @@ export function EventSettingsPage() {
       await Promise.all([
         api.patch(`/events/${id}/musicadj/config`, musicadjConfig),
         api.patch(`/events/${id}/karaokeya/config`, karaokeyaConfig),
+        api.patch(`/events/${id}`, generalConfig),
       ])
 
       setSuccess(true)
@@ -149,6 +181,162 @@ export function EventSettingsPage() {
       )}
 
       <div className="space-y-6">
+        {/* GENERAL Configuration */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <div className="flex items-start gap-4 mb-6">
+            <div className="p-3 bg-gray-100 rounded-xl">
+              <Settings2 className="h-6 w-6 text-gray-600" />
+            </div>
+            <div className="flex-1">
+              <h2 className="text-xl font-semibold text-gray-900">Configuración General</h2>
+              <p className="text-gray-600 text-sm mt-1">
+                Ajustes operativos del evento y dimensiones del salón
+              </p>
+            </div>
+          </div>
+
+          <div className="space-y-6">
+            {/* Configuración operativa */}
+            <div className="space-y-4">
+              <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
+                Módulos Habilitados
+              </h3>
+
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
+                  <div className="flex-1">
+                    <h4 className="text-sm font-medium text-gray-900">Asignación de Mesas</h4>
+                    <p className="text-xs text-gray-600 mt-1">
+                      Permite asignar mesas a los invitados del evento
+                    </p>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer ml-4">
+                    <input
+                      type="checkbox"
+                      checked={generalConfig.tieneMesasAsignadas}
+                      onChange={(e) =>
+                        setGeneralConfig({ ...generalConfig, tieneMesasAsignadas: e.target.checked })
+                      }
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-gray-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gray-600"></div>
+                  </label>
+                </div>
+
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
+                  <div className="flex-1">
+                    <h4 className="text-sm font-medium text-gray-900">Menú Individual</h4>
+                    <p className="text-xs text-gray-600 mt-1">
+                      Permite asignar platos específicos a cada invitado
+                    </p>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer ml-4">
+                    <input
+                      type="checkbox"
+                      checked={generalConfig.tieneMenuIndividual}
+                      onChange={(e) =>
+                        setGeneralConfig({ ...generalConfig, tieneMenuIndividual: e.target.checked })
+                      }
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-gray-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gray-600"></div>
+                  </label>
+                </div>
+
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
+                  <div className="flex-1">
+                    <h4 className="text-sm font-medium text-gray-900">Requiere Checkout</h4>
+                    <p className="text-xs text-gray-600 mt-1">
+                      Los invitados deben registrar su salida del evento
+                    </p>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer ml-4">
+                    <input
+                      type="checkbox"
+                      checked={generalConfig.requiereCheckout}
+                      onChange={(e) =>
+                        setGeneralConfig({ ...generalConfig, requiereCheckout: e.target.checked })
+                      }
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-gray-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gray-600"></div>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            {/* Dimensiones del salón */}
+            <div className="space-y-4 pt-4 border-t border-gray-200">
+              <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
+                Dimensiones del Salón
+              </h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Ancho (metros)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.5"
+                    value={generalConfig.salonAncho ?? ''}
+                    onChange={(e) =>
+                      setGeneralConfig({
+                        ...generalConfig,
+                        salonAncho: e.target.value ? parseFloat(e.target.value) : null,
+                      })
+                    }
+                    placeholder="Ej: 15"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Largo (metros)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.5"
+                    value={generalConfig.salonLargo ?? ''}
+                    onChange={(e) =>
+                      setGeneralConfig({
+                        ...generalConfig,
+                        salonLargo: e.target.value ? parseFloat(e.target.value) : null,
+                      })
+                    }
+                    placeholder="Ej: 20"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  URL de imagen del plano (opcional)
+                </label>
+                <input
+                  type="url"
+                  value={generalConfig.salonImageUrl ?? ''}
+                  onChange={(e) =>
+                    setGeneralConfig({
+                      ...generalConfig,
+                      salonImageUrl: e.target.value || null,
+                    })
+                  }
+                  placeholder="https://..."
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:outline-none"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  URL de la imagen del plano del salón para referencia
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* MUSICADJ Module */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
           <div className="flex items-start gap-4 mb-6">

@@ -48,7 +48,7 @@ export function Layout({ children }: LayoutProps) {
   const { user, logout } = useAuthStore()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(
-    new Set(['eventos', 'administracion']) // Grupos expandidos por defecto
+    new Set(['general', 'administracion']) // Grupos expandidos por defecto
   )
 
   const toggleGroup = (groupName: string) => {
@@ -83,30 +83,28 @@ export function Layout({ children }: LayoutProps) {
       },
       {
         name: 'Eventos',
+        href: '/events',
         icon: Calendar,
+      },
+      {
+        name: 'General',
+        icon: Table2,
         children: [
           {
-            name: 'Listado',
-            href: '/events',
-            icon: Calendar,
-          },
-          {
-            name: 'Timing',
-            href: '/events/timing',
-            icon: Clock,
+            name: 'Platos',
+            href: '/dishes',
+            icon: Utensils,
             comingSoon: true,
           },
           {
-            name: 'Guestlist',
-            href: '/events/guestlist',
-            icon: ClipboardList,
-            comingSoon: true,
+            name: 'Canciones Karaoke',
+            href: '/karaoke-songs',
+            icon: Music2,
           },
           {
-            name: 'Catering',
-            href: '/events/catering',
-            icon: UtensilsCrossed,
-            comingSoon: true,
+            name: 'Participantes',
+            href: '/participants',
+            icon: UserPlus,
           },
         ],
       },
@@ -130,35 +128,7 @@ export function Layout({ children }: LayoutProps) {
             icon: UserCog,
             adminOnly: true,
           },
-          {
-            name: 'Config',
-            icon: Settings,
-            children: [
-              {
-                name: 'Tablas',
-                href: '/config/tables',
-                icon: Table2,
-                comingSoon: true,
-              },
-            ],
-          },
         ],
-      },
-      {
-        name: 'Karaoke',
-        href: '/karaoke-songs',
-        icon: Music2,
-      },
-      {
-        name: 'Participantes',
-        href: '/participants',
-        icon: UserPlus,
-      },
-      {
-        name: 'Menu',
-        href: '/menu',
-        icon: Utensils,
-        comingSoon: true,
       },
     ],
   }
