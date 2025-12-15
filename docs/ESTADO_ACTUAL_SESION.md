@@ -372,8 +372,8 @@ git checkout -b feature/guests-module
 - Prisma Client: ✅ 100% ⭐ COMPLETADO
 
 ### Implementación - Backend
-- Módulo PERSONS: ⏳ 0%
-- Módulo EVENT-GUESTS: ⏳ 0%
+- Módulo PERSONS: ✅ 100% ⭐ COMPLETADO
+- Módulo EVENT-GUESTS: ✅ 100% ⭐ COMPLETADO
 - Módulo DISHES: ⏳ 0%
 - Módulo MENU: ⏳ 0%
 - Módulo MESAS: ⏳ 0%
@@ -492,12 +492,12 @@ Se han completado exitosamente:
 
 ---
 
-**Última actualización**: 2025-12-14 22:40 (Sesión finalizada)
+**Última actualización**: 2025-12-14 (Sesión en progreso)
 **Responsable**: Claude Sonnet 4.5
 **Usuario**: malcomito
-**Estado**: ✅ Base de datos + 40% backend completado
+**Estado**: ✅ Base de datos + 60% backend completado
 **Branch**: feature/guestlist-backend
-**Commit**: 918b63d - feat: Add guestlist, menu and tables modules - Phase 1
+**Último Commit**: 9e81086 - feat: Add event-guests module - Phase 2
 
 ---
 
@@ -513,4 +513,10 @@ Este archivo contiene:
 
 **Branch actual**: `feature/guestlist-backend`
 
-**Próximo paso**: Crear módulo `event-guests` (guestlist management)
+**Próximo paso**: Crear módulo `dishes` (catálogo de platos)
+
+**Progreso de la sesión actual**:
+- ✅ Módulo event-guests completo (8 endpoints REST, importación CSV, auto-enlace)
+- ⏳ Módulo dishes pendiente
+- ⏳ Módulo menu pendiente
+- ⏳ Módulo mesas pendiente
