@@ -144,6 +144,22 @@ Se agregaron 5 nuevas secciones de API:
 - 5 secciones de API clients
 - ~1,900 líneas totales
 
+### Commit 3: Documentación de sesión
+```
+d4fff4b - docs: Add session summary for Invitados UI implementation
+```
+- Resumen completo de la sesión
+- Métricas y estadísticas
+- Pendientes y próximos pasos
+
+### Commit 4: Integración en EventDetail
+```
+65ca5eb - feat: Add Invitados module card to EventDetailPage
+```
+- Agregado card de navegación al módulo Invitados
+- Consistente con módulos MUSICADJ y KARAOKEYA
+- Navegación completa integrada
+
 ---
 
 ## 🎯 Funcionalidades Implementadas
@@ -195,8 +211,8 @@ Se agregaron 5 nuevas secciones de API:
 ## 📋 Pendiente para Completar el Módulo
 
 ### Integración en EventDetail
-- [ ] Agregar botón "Invitados" en página EventDetailPage
-- [ ] Agregar contador de invitados en dashboard
+- [x] Agregar botón "Invitados" en página EventDetailPage ✅ (commit 65ca5eb)
+- [ ] Agregar contador de invitados en dashboard (opcional)
 
 ### Otros Módulos (NO implementados aún)
 - [ ] **Menú**: EventMenuPage
