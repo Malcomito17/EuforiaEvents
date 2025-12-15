@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { api } from '@/lib/api'
-import { ArrowLeft, Music, Mic, Loader2, Save, Settings2 } from 'lucide-react'
+import { ArrowLeft, Music, Mic, Loader2, Save, Settings2, Users, Layout, Utensils, LogOut } from 'lucide-react'
 import clsx from 'clsx'
 
 interface MusicadjConfig {
@@ -139,8 +139,8 @@ export function EventSettingsPage() {
             <ArrowLeft className="h-5 w-5" />
           </button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Configuración de Módulos</h1>
-            <p className="text-gray-500">Habilitar o deshabilitar funcionalidades del evento</p>
+            <h1 className="text-2xl font-bold text-gray-900">Configuración del Evento</h1>
+            <p className="text-gray-500">Módulos y ajustes operativos</p>
           </div>
         </div>
 
@@ -181,160 +181,188 @@ export function EventSettingsPage() {
       )}
 
       <div className="space-y-6">
-        {/* GENERAL Configuration */}
+        {/* SALON Configuration */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
           <div className="flex items-start gap-4 mb-6">
             <div className="p-3 bg-gray-100 rounded-xl">
               <Settings2 className="h-6 w-6 text-gray-600" />
             </div>
             <div className="flex-1">
-              <h2 className="text-xl font-semibold text-gray-900">Configuración General</h2>
+              <h2 className="text-xl font-semibold text-gray-900">Configuración del Salón</h2>
               <p className="text-gray-600 text-sm mt-1">
-                Ajustes operativos del evento y dimensiones del salón
+                Dimensiones y plano del espacio del evento
               </p>
             </div>
           </div>
 
-          <div className="space-y-6">
-            {/* Configuración operativa */}
-            <div className="space-y-4">
-              <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
-                Módulos Habilitados
-              </h3>
-
-              <div className="space-y-3">
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
-                  <div className="flex-1">
-                    <h4 className="text-sm font-medium text-gray-900">Asignación de Mesas</h4>
-                    <p className="text-xs text-gray-600 mt-1">
-                      Permite asignar mesas a los invitados del evento
-                    </p>
-                  </div>
-                  <label className="relative inline-flex items-center cursor-pointer ml-4">
-                    <input
-                      type="checkbox"
-                      checked={generalConfig.tieneMesasAsignadas}
-                      onChange={(e) =>
-                        setGeneralConfig({ ...generalConfig, tieneMesasAsignadas: e.target.checked })
-                      }
-                      className="sr-only peer"
-                    />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-gray-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gray-600"></div>
-                  </label>
-                </div>
-
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
-                  <div className="flex-1">
-                    <h4 className="text-sm font-medium text-gray-900">Menú Individual</h4>
-                    <p className="text-xs text-gray-600 mt-1">
-                      Permite asignar platos específicos a cada invitado
-                    </p>
-                  </div>
-                  <label className="relative inline-flex items-center cursor-pointer ml-4">
-                    <input
-                      type="checkbox"
-                      checked={generalConfig.tieneMenuIndividual}
-                      onChange={(e) =>
-                        setGeneralConfig({ ...generalConfig, tieneMenuIndividual: e.target.checked })
-                      }
-                      className="sr-only peer"
-                    />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-gray-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gray-600"></div>
-                  </label>
-                </div>
-
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
-                  <div className="flex-1">
-                    <h4 className="text-sm font-medium text-gray-900">Requiere Checkout</h4>
-                    <p className="text-xs text-gray-600 mt-1">
-                      Los invitados deben registrar su salida del evento
-                    </p>
-                  </div>
-                  <label className="relative inline-flex items-center cursor-pointer ml-4">
-                    <input
-                      type="checkbox"
-                      checked={generalConfig.requiereCheckout}
-                      onChange={(e) =>
-                        setGeneralConfig({ ...generalConfig, requiereCheckout: e.target.checked })
-                      }
-                      className="sr-only peer"
-                    />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-gray-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gray-600"></div>
-                  </label>
-                </div>
-              </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Ancho (metros)
+              </label>
+              <input
+                type="number"
+                min="0"
+                step="0.5"
+                value={generalConfig.salonAncho ?? ''}
+                onChange={(e) =>
+                  setGeneralConfig({
+                    ...generalConfig,
+                    salonAncho: e.target.value ? parseFloat(e.target.value) : null,
+                  })
+                }
+                placeholder="Ej: 15"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:outline-none"
+              />
             </div>
 
-            {/* Dimensiones del salón */}
-            <div className="space-y-4 pt-4 border-t border-gray-200">
-              <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
-                Dimensiones del Salón
-              </h3>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Largo (metros)
+              </label>
+              <input
+                type="number"
+                min="0"
+                step="0.5"
+                value={generalConfig.salonLargo ?? ''}
+                onChange={(e) =>
+                  setGeneralConfig({
+                    ...generalConfig,
+                    salonLargo: e.target.value ? parseFloat(e.target.value) : null,
+                  })
+                }
+                placeholder="Ej: 20"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:outline-none"
+              />
+            </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Ancho (metros)
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.5"
-                    value={generalConfig.salonAncho ?? ''}
-                    onChange={(e) =>
-                      setGeneralConfig({
-                        ...generalConfig,
-                        salonAncho: e.target.value ? parseFloat(e.target.value) : null,
-                      })
-                    }
-                    placeholder="Ej: 15"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:outline-none"
-                  />
-                </div>
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                URL de imagen del plano (opcional)
+              </label>
+              <input
+                type="url"
+                value={generalConfig.salonImageUrl ?? ''}
+                onChange={(e) =>
+                  setGeneralConfig({
+                    ...generalConfig,
+                    salonImageUrl: e.target.value || null,
+                  })
+                }
+                placeholder="https://..."
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:outline-none"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                URL de la imagen del plano del salón para referencia visual
+              </p>
+            </div>
+          </div>
+        </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Largo (metros)
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.5"
-                    value={generalConfig.salonLargo ?? ''}
-                    onChange={(e) =>
-                      setGeneralConfig({
-                        ...generalConfig,
-                        salonLargo: e.target.value ? parseFloat(e.target.value) : null,
-                      })
-                    }
-                    placeholder="Ej: 20"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:outline-none"
-                  />
-                </div>
-              </div>
+        {/* CHECK-IN/OUT Module */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <div className="flex items-start gap-4 mb-6">
+            <div className="p-3 bg-blue-100 rounded-xl">
+              <Users className="h-6 w-6 text-blue-600" />
+            </div>
+            <div className="flex-1">
+              <h2 className="text-xl font-semibold text-gray-900">Check-in de Invitados</h2>
+              <p className="text-gray-600 text-sm mt-1">
+                Configuración de ingreso y egreso de invitados
+              </p>
+            </div>
+          </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  URL de imagen del plano (opcional)
-                </label>
-                <input
-                  type="url"
-                  value={generalConfig.salonImageUrl ?? ''}
-                  onChange={(e) =>
-                    setGeneralConfig({
-                      ...generalConfig,
-                      salonImageUrl: e.target.value || null,
-                    })
-                  }
-                  placeholder="https://..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:outline-none"
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  URL de la imagen del plano del salón para referencia
+          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
+            <div className="flex items-center gap-3">
+              <LogOut className="h-5 w-5 text-gray-600" />
+              <div className="flex-1">
+                <h4 className="text-sm font-medium text-gray-900">Requiere Checkout</h4>
+                <p className="text-xs text-gray-600 mt-1">
+                  Los invitados deben registrar su salida del evento
                 </p>
               </div>
             </div>
+            <label className="relative inline-flex items-center cursor-pointer ml-4">
+              <input
+                type="checkbox"
+                checked={generalConfig.requiereCheckout}
+                onChange={(e) =>
+                  setGeneralConfig({ ...generalConfig, requiereCheckout: e.target.checked })
+                }
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+            </label>
           </div>
+        </div>
+
+        {/* MESAS Module */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <div className="flex items-start gap-4 mb-6">
+            <div className="p-3 bg-orange-100 rounded-xl">
+              <Layout className="h-6 w-6 text-orange-600" />
+            </div>
+            <div className="flex-1">
+              <h2 className="text-xl font-semibold text-gray-900">Asignación de Mesas</h2>
+              <p className="text-gray-600 text-sm mt-1">
+                Configuración del módulo de distribución de mesas
+              </p>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={generalConfig.tieneMesasAsignadas}
+                onChange={(e) =>
+                  setGeneralConfig({ ...generalConfig, tieneMesasAsignadas: e.target.checked })
+                }
+                className="sr-only peer"
+              />
+              <div className="w-14 h-7 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-orange-600"></div>
+            </label>
+          </div>
+
+          {generalConfig.tieneMesasAsignadas && (
+            <div className="pt-4 border-t border-gray-100">
+              <p className="text-sm text-gray-600">
+                El módulo de mesas está habilitado. Los invitados pueden ser asignados a mesas específicas.
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* MENU Module */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <div className="flex items-start gap-4 mb-6">
+            <div className="p-3 bg-green-100 rounded-xl">
+              <Utensils className="h-6 w-6 text-green-600" />
+            </div>
+            <div className="flex-1">
+              <h2 className="text-xl font-semibold text-gray-900">Menú Individual</h2>
+              <p className="text-gray-600 text-sm mt-1">
+                Configuración de asignación de platos por invitado
+              </p>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={generalConfig.tieneMenuIndividual}
+                onChange={(e) =>
+                  setGeneralConfig({ ...generalConfig, tieneMenuIndividual: e.target.checked })
+                }
+                className="sr-only peer"
+              />
+              <div className="w-14 h-7 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-green-600"></div>
+            </label>
+          </div>
+
+          {generalConfig.tieneMenuIndividual && (
+            <div className="pt-4 border-t border-gray-100">
+              <p className="text-sm text-gray-600">
+                El módulo de menú está habilitado. Puedes asignar platos específicos a cada invitado y gestionar restricciones dietarias.
+              </p>
+            </div>
+          )}
         </div>
 
         {/* MUSICADJ Module */}
@@ -346,7 +374,7 @@ export function EventSettingsPage() {
             <div className="flex-1">
               <h2 className="text-xl font-semibold text-gray-900">MUSICADJ</h2>
               <p className="text-gray-600 text-sm mt-1">
-                Permite que los invitados soliciten canciones desde Spotify para el DJ
+                Solicitudes de canciones desde Spotify para el DJ
               </p>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
@@ -440,7 +468,7 @@ export function EventSettingsPage() {
             <div className="flex-1">
               <h2 className="text-xl font-semibold text-gray-900">KARAOKEYA</h2>
               <p className="text-gray-600 text-sm mt-1">
-                Sistema de cola de karaoke con búsqueda en YouTube y catálogo
+                Sistema de cola de karaoke con búsqueda en YouTube
               </p>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
