@@ -16,6 +16,7 @@ import { participantRoutes, eventParticipantRoutes } from './modules/participant
 import { personRoutes } from './modules/persons'
 import { eventGuestRoutes } from './modules/event-guests'
 import { dishRoutes } from './modules/dishes'
+import { menuRoutes } from './modules/menu'
 import { usersRoutes } from './modules/users'
 import { djRoutes } from './modules/dj'
 import { uploadRoutes } from './modules/upload'
@@ -73,6 +74,9 @@ app.use('/api/events/:eventId/participants', eventParticipantRoutes)
 
 // EVENT GUESTS - rutas anidadas bajo eventos
 app.use('/api/events/:eventId/guests', eventGuestRoutes)
+
+// MENU - rutas anidadas bajo eventos
+app.use('/api/events/:eventId/menu', menuRoutes)
 
 // KARAOKEYA - rutas globales (catálogo)
 app.use('/api/karaokeya', karaokeyaGlobalRoutes)
