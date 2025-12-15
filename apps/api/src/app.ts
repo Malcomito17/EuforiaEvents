@@ -13,6 +13,8 @@ import { clientRoutes } from './modules/clients'
 import { musicadjRoutes } from './modules/musicadj'
 import { karaokeyaRoutes, karaokeyaGlobalRoutes } from './modules/karaokeya'
 import { participantRoutes, eventParticipantRoutes } from './modules/participants'
+import { personRoutes } from './modules/persons'
+import { eventGuestRoutes } from './modules/event-guests'
 import { usersRoutes } from './modules/users'
 import { djRoutes } from './modules/dj'
 import { uploadRoutes } from './modules/upload'
@@ -48,6 +50,7 @@ app.get('/api', (req, res) => {
 // Rutas de módulos
 app.use('/api/auth', authRoutes)
 app.use('/api/participants', participantRoutes)
+app.use('/api/persons', personRoutes)
 app.use('/api/users', usersRoutes)
 app.use('/api/dj', djRoutes)
 app.use('/api/events', eventRoutes)
@@ -65,6 +68,9 @@ app.use('/api/events/:eventId/karaokeya', karaokeyaRoutes)
 
 // PARTICIPANTS - rutas anidadas bajo eventos
 app.use('/api/events/:eventId/participants', eventParticipantRoutes)
+
+// EVENT GUESTS - rutas anidadas bajo eventos
+app.use('/api/events/:eventId/guests', eventGuestRoutes)
 
 // KARAOKEYA - rutas globales (catálogo)
 app.use('/api/karaokeya', karaokeyaGlobalRoutes)
