@@ -1,4 +1,4 @@
-import { MenuAlert, AlertSeverity } from '@/lib/api'
+import { MenuAlert } from '@/lib/api'
 import { X, AlertCircle, AlertTriangle, Info } from 'lucide-react'
 import clsx from 'clsx'
 
@@ -19,49 +19,6 @@ export function MenuAlertsDashboard({
   guestsWithIssues,
   onClose
 }: MenuAlertsDashboardProps) {
-  const getSeverityConfig = (severity: AlertSeverity) => {
-    switch (severity) {
-      case 'HIGH':
-        return {
-          icon: AlertCircle,
-          bg: 'bg-red-50',
-          border: 'border-red-200',
-          text: 'text-red-700',
-          iconColor: 'text-red-600',
-          label: 'Alta'
-        }
-      case 'MEDIUM':
-        return {
-          icon: AlertTriangle,
-          bg: 'bg-yellow-50',
-          border: 'border-yellow-200',
-          text: 'text-yellow-700',
-          iconColor: 'text-yellow-600',
-          label: 'Media'
-        }
-      case 'LOW':
-        return {
-          icon: Info,
-          bg: 'bg-blue-50',
-          border: 'border-blue-200',
-          text: 'text-blue-700',
-          iconColor: 'text-blue-600',
-          label: 'Baja'
-        }
-    }
-  }
-
-  const getTypeLabel = (type: MenuAlert['type']) => {
-    switch (type) {
-      case 'MISSING_COMPATIBLE_DISH':
-        return 'Falta plato compatible'
-      case 'NO_DISH_ASSIGNED':
-        return 'Sin plato asignado'
-      case 'INCOMPATIBLE_DISH':
-        return 'Plato incompatible asignado'
-    }
-  }
-
   // Agrupar por severidad
   const highAlerts = alerts.filter(a => a.severity === 'HIGH')
   const mediumAlerts = alerts.filter(a => a.severity === 'MEDIUM')

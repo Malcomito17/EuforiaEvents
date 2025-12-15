@@ -13,7 +13,7 @@ interface GuestFormProps {
 export function GuestForm({ eventId, guest, onClose, onSuccess }: GuestFormProps) {
   const isEditing = !!guest
 
-  const [formData, setFormData] = useState<EventGuestCreateInput | EventGuestUpdateInput>({
+  const [formData, setFormData] = useState<EventGuestCreateInput>({
     personId: guest?.personId || '',
     mesaId: guest?.mesaId || null,
     observaciones: guest?.observaciones || '',
