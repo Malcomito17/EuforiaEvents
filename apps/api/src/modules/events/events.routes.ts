@@ -92,6 +92,32 @@ router.get(
 )
 
 // ============================================
+// CHECK-IN ACCESS ROUTES
+// ============================================
+
+// Generar o regenerar token de acceso para check-in (ADMIN/MANAGER)
+router.post(
+  '/:id/checkin/generate-token',
+  authenticate,
+  requireRole('ADMIN', 'MANAGER'),
+  eventController.generateCheckinToken
+)
+
+// Obtener link de acceso directo para check-in
+router.get(
+  '/:id/checkin/link',
+  authenticate,
+  eventController.getCheckinLink
+)
+
+// Obtener QR code para acceso directo al check-in
+router.get(
+  '/:id/checkin/qr',
+  authenticate,
+  eventController.getCheckinQR
+)
+
+// ============================================
 // DANGER ZONE
 // ============================================
 

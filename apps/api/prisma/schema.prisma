@@ -295,6 +295,7 @@ model Event {
   tieneMesasAsignadas Boolean @default(true)
   tieneMenuIndividual Boolean @default(true)
   requiereCheckout    Boolean @default(false)
+  checkinAccessToken  String? @unique // Token para acceso directo a check-in sin login
 
   // Configuración de salón (para distribución espacial de mesas)
   salonAncho    Float? // Ancho en metros

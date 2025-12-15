@@ -332,4 +332,68 @@ export const eventController = {
       next(error)
     }
   },
+
+  /**
+   * POST /api/events/:id/checkin/generate-token
+   * Genera o regenera el token de acceso directo para check-in
+   * Requiere: Autenticado (ADMIN/OPERATOR)
+   */
+  async generateCheckinToken(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+    try {
+      const token = await eventService.generateCheckinAccessToken(req.params.id)
+
+      console.log(`[EVENTS] Token de check-in generado para evento: ${req.params.id}`)
+
+      res.json({
+        success: true,
+        message: 'Token generado exitosamente',
+        token,
+      })
+    } catch (error) {
+      next(error)
+    }
+  },
+
+  /**
+   * GET /api/events/:id/checkin/link
+   * Obtiene el link de acceso directo para check-in
+   * Requiere: Autenticado
+   */
+  async getCheckinLink(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+    try {
+      const { url, token } = await eventService.getCheckinAccessLink(req.params.id)
+
+      console.log(`[EVENTS] Link de check-in solicitado para evento: ${req.params.id}`)
+
+      res.json({
+        success: true,
+        url,
+        token,
+      })
+    } catch (error) {
+      next(error)
+    }
+  },
+
+  /**
+   * GET /api/events/:id/checkin/qr
+   * Genera el código QR para acceso directo al check-in
+   * Requiere: Autenticado
+   *
+   * Retorna el QR como data URL (base64) para mostrar en el frontend
+   */
+  async getCheckinQR(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+    try {
+      const qrDataUrl = await eventService.getCheckinQRCode(req.params.id)
+
+      console.log(`[EVENTS] QR de check-in generado para evento: ${req.params.id}`)
+
+      res.json({
+        success: true,
+        qr: qrDataUrl,
+      })
+    } catch (error) {
+      next(error)
+    }
+  },
 }

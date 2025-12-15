@@ -4,6 +4,8 @@
  */
 
 import { z } from 'zod'
+import crypto from 'crypto'
+import QRCode from 'qrcode'
 import prisma from '../../config/database'
 import { EVENT_STATUS, EVENT_TYPE, type EventStatus } from './events.types'
 
@@ -526,6 +528,91 @@ class EventService {
         select: { id: true, slug: true },
       },
     }
+  }
+
+  /**
+   * Genera o regenera el token de acceso para check-in
+   */
+  async generateCheckinAccessToken(eventId: string): Promise<string> {
+    const event = await prisma.event.findUnique({
+      where: { id: eventId },
+    })
+
+    if (!event) {
+      throw new EventError('Evento no encontrado', 404)
+    }
+
+    // Generar token seguro aleatorio
+    const token = crypto.randomBytes(32).toString('hex')
+
+    await prisma.event.update({
+      where: { id: eventId },
+      data: { checkinAccessToken: token },
+    })
+
+    return token
+  }
+
+  /**
+   * Obtiene el link de acceso directo para check-in
+   */
+  async getCheckinAccessLink(eventId: string): Promise<{ url: string; token: string }> {
+    const event = await prisma.event.findUnique({
+      where: { id: eventId },
+      select: { id: true, slug: true, checkinAccessToken: true },
+    })
+
+    if (!event) {
+      throw new EventError('Evento no encontrado', 404)
+    }
+
+    // Si no tiene token, generar uno nuevo
+    let token = event.checkinAccessToken
+    if (!token) {
+      token = await this.generateCheckinAccessToken(eventId)
+    }
+
+    // URL base del check-in (ajustar según tu configuración)
+    const baseUrl = process.env.CHECKIN_APP_URL || 'http://localhost:5175'
+    const url = `${baseUrl}/event/${event.slug}?token=${token}`
+
+    return { url, token }
+  }
+
+  /**
+   * Genera un código QR para acceso directo al check-in
+   */
+  async getCheckinQRCode(eventId: string): Promise<string> {
+    const { url } = await this.getCheckinAccessLink(eventId)
+
+    try {
+      // Generar QR code como data URL (base64)
+      const qrDataUrl = await QRCode.toDataURL(url, {
+        errorCorrectionLevel: 'M',
+        margin: 2,
+        width: 300,
+      })
+
+      return qrDataUrl
+    } catch (error) {
+      throw new EventError('Error al generar código QR', 500)
+    }
+  }
+
+  /**
+   * Valida un token de acceso para check-in
+   */
+  async validateCheckinAccessToken(eventSlug: string, token: string): Promise<boolean> {
+    const event = await prisma.event.findUnique({
+      where: { slug: eventSlug },
+      select: { checkinAccessToken: true },
+    })
+
+    if (!event || !event.checkinAccessToken) {
+      return false
+    }
+
+    return event.checkinAccessToken === token
   }
 
   private validateStatusTransition(from: EventStatus, to: EventStatus) {
