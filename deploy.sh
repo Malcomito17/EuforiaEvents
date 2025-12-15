@@ -164,9 +164,32 @@ else
 fi
 
 # ============================================
-# PASO 5: Levantar Servicios
+# PASO 5: Crear Estructura de Directorios
 # ============================================
-log_step "PASO 5: Levantando servicios"
+log_step "PASO 5: Creando estructura de directorios para persistencia"
+
+echo "Verificando y creando directorios necesarios..."
+
+# Si existe un archivo 'data' (no directorio), eliminarlo
+if [ -f "data" ]; then
+  echo "⚠️  Encontrado archivo 'data' en lugar de directorio, eliminando..."
+  rm -f data
+fi
+
+# Crear estructura de directorios
+mkdir -p data/db
+mkdir -p data/uploads
+mkdir -p data/logs
+mkdir -p data/nginx-cache
+mkdir -p data/logs/nginx
+
+echo "✓ Estructura de directorios creada:"
+ls -la data/
+
+# ============================================
+# PASO 6: Levantar Servicios
+# ============================================
+log_step "PASO 6: Levantando servicios"
 
 ask_confirmation "¿Levantar contenedores?"
 
@@ -176,9 +199,9 @@ echo "⏳ Esperando 15 segundos para que los servicios inicien..."
 sleep 15
 
 # ============================================
-# PASO 6: Verificar Estado de Contenedores
+# PASO 7: Verificar Estado de Contenedores
 # ============================================
-log_step "PASO 6: Verificando estado de contenedores"
+log_step "PASO 7: Verificando estado de contenedores"
 
 echo "Estado de contenedores:"
 docker ps -a --filter "name=euforia-" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
@@ -211,9 +234,9 @@ fi
 echo "✓ Todos los contenedores están corriendo correctamente"
 
 # ============================================
-# PASO 7: Aplicar Cambios de Base de Datos
+# PASO 8: Aplicar Cambios de Base de Datos
 # ============================================
-log_step "PASO 7: Aplicando cambios de schema en base de datos"
+log_step "PASO 8: Aplicando cambios de schema en base de datos"
 
 ask_confirmation "¿Aplicar migraciones de Prisma?"
 
@@ -248,9 +271,9 @@ else
 fi
 
 # ============================================
-# PASO 8: Reiniciar API
+# PASO 9: Reiniciar API
 # ============================================
-log_step "PASO 8: Reiniciando API para aplicar cambios"
+log_step "PASO 9: Reiniciando API para aplicar cambios"
 
 docker restart euforia-api-prod
 
@@ -258,9 +281,9 @@ echo "⏳ Esperando 5 segundos..."
 sleep 5
 
 # ============================================
-# PASO 9: Health Checks
+# PASO 10: Health Checks
 # ============================================
-log_step "PASO 9: Verificando salud de los servicios"
+log_step "PASO 10: Verificando salud de los servicios"
 
 echo "📊 Estado final de contenedores:"
 docker ps --filter "name=euforia-" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
