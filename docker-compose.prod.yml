@@ -59,7 +59,7 @@ services:
     # Variables de entorno desde .env
     environment:
       - NODE_ENV=production
-      - DATABASE_URL=file:./prisma/data/production.db
+      - DATABASE_URL=file:/app/apps/api/prisma/data/production.db
       - PORT=3000
       - JWT_SECRET=${JWT_SECRET}
       - JWT_EXPIRES_IN=${JWT_EXPIRES_IN:-7d}
