@@ -223,8 +223,17 @@ function CreatePersonModal({ onClose, onCreated, initialName = '' }: CreatePerso
     console.log('[PersonSelector] Validation passed, calling API...')
     setIsSubmitting(true)
     try {
-      console.log('[PersonSelector] Sending POST to /api/persons')
-      const { data } = await personsApi.create(formData)
+      // Limpiar campos vacíos - enviar solo los que tienen valor
+      const cleanedData: PersonCreateInput = {
+        nombre: formData.nombre.trim(),
+        apellido: formData.apellido?.trim() || '',
+        email: formData.email?.trim() || undefined,
+        phone: formData.phone?.trim() || undefined,
+        company: formData.company?.trim() || undefined,
+        dietaryRestrictions: formData.dietaryRestrictions?.length ? formData.dietaryRestrictions : undefined,
+      }
+      console.log('[PersonSelector] Sending POST to /api/persons', cleanedData)
+      const { data } = await personsApi.create(cleanedData)
       console.log('[PersonSelector] API response:', data)
       // El backend devuelve { success, person } (no "data")
       const personData = (data as any).person || (data as any).data || data
