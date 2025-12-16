@@ -257,4 +257,90 @@ export class EventGuestsController {
       })
     }
   }
+
+  // ============================================
+  // MÉTODOS PÚBLICOS (validación por token)
+  // ============================================
+
+  /**
+   * GET /api/events/:eventId/guests/public
+   * Lista invitados públicamente (validado por token en query)
+   */
+  async getGuestlistPublic(req: Request, res: Response) {
+    try {
+      const { eventId } = req.params
+      const { token } = req.query
+
+      if (!token || typeof token !== 'string') {
+        return res.status(401).json({
+          success: false,
+          message: 'Token de acceso requerido',
+        })
+      }
+
+      // Validar token
+      const isValid = await service.validateCheckinToken(eventId, token)
+      if (!isValid) {
+        return res.status(403).json({
+          success: false,
+          message: 'Token de acceso inválido',
+        })
+      }
+
+      const guests = await service.getGuestlist(eventId)
+
+      res.json({
+        success: true,
+        data: guests,
+        total: guests.length,
+      })
+    } catch (error: any) {
+      console.error('Error getting public guestlist:', error)
+      res.status(500).json({
+        success: false,
+        message: error.message || 'Error al obtener lista de invitados',
+      })
+    }
+  }
+
+  /**
+   * POST /api/events/:eventId/guests/:guestId/checkin/public
+   * Check-in público (validado por token en query)
+   */
+  async checkInPublic(req: Request, res: Response) {
+    try {
+      const { eventId, guestId } = req.params
+      const { token } = req.query
+
+      if (!token || typeof token !== 'string') {
+        return res.status(401).json({
+          success: false,
+          message: 'Token de acceso requerido',
+        })
+      }
+
+      // Validar token
+      const isValid = await service.validateCheckinToken(eventId, token)
+      if (!isValid) {
+        return res.status(403).json({
+          success: false,
+          message: 'Token de acceso inválido',
+        })
+      }
+
+      const guest = await service.checkIn(guestId)
+
+      res.json({
+        success: true,
+        data: guest,
+        message: 'Check-in registrado exitosamente',
+      })
+    } catch (error: any) {
+      console.error('Error in public check-in:', error)
+      res.status(500).json({
+        success: false,
+        message: error.message || 'Error al registrar check-in',
+      })
+    }
+  }
 }

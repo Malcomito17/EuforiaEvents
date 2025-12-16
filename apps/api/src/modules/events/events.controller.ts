@@ -116,6 +116,46 @@ export const eventController = {
   },
 
   /**
+   * GET /api/events/by-slug/:slug
+   * Obtiene un evento por slug validando token de checkin
+   * Para uso en la app pública de check-in
+   */
+  async findBySlugWithToken(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { slug } = req.params
+      const { token } = req.query
+
+      if (!token || typeof token !== 'string') {
+        return res.status(401).json({ error: 'Token de acceso requerido' })
+      }
+
+      const event = await eventService.findBySlug(slug)
+
+      // Validar token de check-in
+      if (event.checkinAccessToken !== token) {
+        return res.status(403).json({ error: 'Token de acceso inválido' })
+      }
+
+      res.json({
+        success: true,
+        data: {
+          id: event.id,
+          name: event.eventData?.eventName || event.name || slug,
+          slug: event.slug,
+          status: event.status,
+          eventData: event.eventData ? {
+            eventName: event.eventData.eventName,
+            eventImage: event.eventData.eventImage,
+            primaryColor: event.eventData.primaryColor,
+          } : null,
+        }
+      })
+    } catch (error) {
+      next(error)
+    }
+  },
+
+  /**
    * PATCH /api/events/:id
    * Actualiza datos del evento (venue, client, status)
    * Requiere: ADMIN o MANAGER

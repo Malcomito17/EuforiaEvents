@@ -16,6 +16,9 @@ const router = Router()
 // Obtener evento por slug (acceso público)
 router.get('/slug/:slug', eventController.findBySlug)
 
+// Obtener evento por slug con token de checkin
+router.get('/by-slug/:slug', eventController.findBySlugWithToken)
+
 // ============================================
 // RUTAS PROTEGIDAS
 // ============================================

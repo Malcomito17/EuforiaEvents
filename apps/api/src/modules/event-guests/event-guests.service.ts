@@ -69,6 +69,22 @@ export class EventGuestsService {
   }
 
   /**
+   * Valida el token de check-in para un evento
+   */
+  async validateCheckinToken(eventId: string, token: string): Promise<boolean> {
+    const event = await prisma.event.findUnique({
+      where: { id: eventId },
+      select: { checkinAccessToken: true },
+    })
+
+    if (!event || !event.checkinAccessToken) {
+      return false
+    }
+
+    return event.checkinAccessToken === token
+  }
+
+  /**
    * Agrega un invitado a la guestlist del evento
    */
   async addGuest(

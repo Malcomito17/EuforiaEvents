@@ -6,6 +6,7 @@ import { Routes, Route } from 'react-router-dom'
 import { ThemeProvider } from './components/ThemeProvider'
 import EventLanding from './pages/EventLanding'
 import EventDetails from './pages/EventDetails'
+import EventCheckin from './pages/EventCheckin'
 import MusicaDJRequest from './pages/MusicaDJRequest'
 import MyRequests from './pages/MyRequests'
 import KaraokeyaRequest from './pages/KaraokeyaRequest'
@@ -21,6 +22,9 @@ function App() {
       {/* Evento por slug */}
       <Route path="/e/:slug" element={<EventLanding />} />
       <Route path="/e/:slug/detalles" element={<EventDetails />} />
+
+      {/* Check-in público (acceso con token) */}
+      <Route path="/checkin/:slug" element={<EventCheckin />} />
 
       {/* MUSICADJ - Pedidos musicales */}
       <Route path="/e/:slug/musicadj" element={<MusicaDJRequest />} />

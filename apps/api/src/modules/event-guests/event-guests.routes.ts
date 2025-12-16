@@ -5,7 +5,20 @@ import { authenticate } from '../auth/auth.middleware'
 const router = Router({ mergeParams: true }) // Importante para acceder a :eventId
 const controller = new EventGuestsController()
 
-// Todas las rutas requieren autenticación
+// ============================================
+// RUTAS PÚBLICAS (con validación de token)
+// ============================================
+
+// GET /api/events/:eventId/guests/public - Listar invitados (público con token)
+router.get('/public', (req, res) => controller.getGuestlistPublic(req, res))
+
+// POST /api/events/:eventId/guests/:guestId/checkin (público con token)
+// Esta ruta está antes del middleware de autenticación
+router.post('/:guestId/checkin/public', (req, res) => controller.checkInPublic(req, res))
+
+// ============================================
+// RUTAS PROTEGIDAS (requieren autenticación)
+// ============================================
 router.use(authenticate)
 
 // POST /api/events/:eventId/guests/import - Importar CSV (debe ir antes de /:guestId)

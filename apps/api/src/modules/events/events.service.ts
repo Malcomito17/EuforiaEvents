@@ -574,8 +574,8 @@ class EventService {
 
     // URL base del check-in (usa PUBLIC_DOMAIN en producción)
     const baseUrl = process.env.CHECKIN_APP_URL || process.env.PUBLIC_DOMAIN || 'http://localhost:5175'
-    // La ruta en web-client es /e/:slug
-    const url = `${baseUrl}/e/${event.slug}?token=${token}`
+    // La ruta en web-client es /checkin/:slug
+    const url = `${baseUrl}/checkin/${event.slug}?token=${token}`
 
     return { url, token }
   }
