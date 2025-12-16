@@ -205,26 +205,35 @@ function CreatePersonModal({ onClose, onCreated, initialName = '' }: CreatePerso
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    e.stopPropagation()
     setError('')
 
+    console.log('[PersonSelector] handleSubmit called', formData)
+
     if (!formData.nombre.trim()) {
+      console.log('[PersonSelector] Validation failed: nombre empty')
       setError('El nombre es obligatorio')
       return
     }
 
     if (!formData.apellido?.trim()) {
+      console.log('[PersonSelector] Validation failed: apellido empty')
       setError('El apellido es obligatorio')
       return
     }
 
+    console.log('[PersonSelector] Validation passed, calling API...')
     setIsSubmitting(true)
     try {
+      console.log('[PersonSelector] Sending POST to /api/persons')
       const { data } = await personsApi.create(formData)
+      console.log('[PersonSelector] API response:', data)
       // El backend devuelve { success, person } (no "data")
       const personData = (data as any).person || (data as any).data || data
+      console.log('[PersonSelector] Calling onCreated with:', personData)
       onCreated(personData)
     } catch (err: any) {
-      console.error('Error creating person:', err)
+      console.error('[PersonSelector] Error creating person:', err)
       setError(err.response?.data?.message || err.response?.data?.error || 'Error al crear la persona')
     } finally {
       setIsSubmitting(false)
