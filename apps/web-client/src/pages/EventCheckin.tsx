@@ -5,7 +5,7 @@
 
 import { useEffect, useState } from 'react'
 import { useParams, useSearchParams } from 'react-router-dom'
-import { CheckCircle2, Loader2, AlertCircle, User, MapPin, UtensilsCrossed, XCircle } from 'lucide-react'
+import { CheckCircle2, Loader2, AlertCircle, User, MapPin, UtensilsCrossed } from 'lucide-react'
 
 interface Guest {
   id: string
