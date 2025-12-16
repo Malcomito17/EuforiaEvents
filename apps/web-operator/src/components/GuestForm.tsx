@@ -284,11 +284,25 @@ export function GuestForm({ eventId, guest, onClose, onSuccess }: GuestFormProps
                             <div className="font-medium text-gray-900">
                               {gd.eventDish?.dish?.nombre || 'Plato desconocido'}
                             </div>
-                            {gd.eventDish?.dish?.categoria && (
-                              <div className="text-xs text-gray-500">
-                                {gd.eventDish.dish.categoria}
-                              </div>
-                            )}
+                            <div className="flex flex-wrap items-center gap-2 mt-1">
+                              {gd.eventDish?.category?.nombre && (
+                                <span className="text-xs text-gray-500">
+                                  {gd.eventDish.category.nombre}
+                                </span>
+                              )}
+                              {gd.eventDish?.dish?.dietaryInfo && gd.eventDish.dish.dietaryInfo.length > 0 && (
+                                <div className="flex gap-1">
+                                  {gd.eventDish.dish.dietaryInfo.map((info: string) => (
+                                    <span
+                                      key={info}
+                                      className="px-1.5 py-0.5 text-xs bg-green-100 text-green-700 rounded"
+                                    >
+                                      {info}
+                                    </span>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
                           </div>
                           <button
                             type="button"
@@ -319,7 +333,8 @@ export function GuestForm({ eventId, guest, onClose, onSuccess }: GuestFormProps
                         <option value="">Seleccionar plato para agregar...</option>
                         {availableDishes.map((md) => (
                           <option key={md.id} value={md.id}>
-                            {md.dish?.nombre || 'Sin nombre'} ({md.dish?.categoria || 'Sin categoría'})
+                            {md.dish?.nombre || 'Sin nombre'} ({(md as any).category?.nombre || 'Sin categoría'})
+                            {md.dish?.dietaryInfo && md.dish.dietaryInfo.length > 0 && ` - ${md.dish.dietaryInfo.join(', ')}`}
                           </option>
                         ))}
                       </select>
