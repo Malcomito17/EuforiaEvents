@@ -418,7 +418,19 @@ export function EventInvitadosPage() {
                     <tr key={guest.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div>
-                          <div className="font-medium text-gray-900">{fullName}</div>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-medium text-gray-900">{fullName}</span>
+                            {guest.isImportante && (
+                              <span className="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-red-100 text-red-700 rounded-full">
+                                ⭐ Importante
+                              </span>
+                            )}
+                            {guest.isDestacado && (
+                              <span className="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-amber-100 text-amber-700 rounded-full">
+                                ✨ Destacado
+                              </span>
+                            )}
+                          </div>
                           {guest.person?.company && (
                             <div className="text-sm text-gray-500">{guest.person.company}</div>
                           )}

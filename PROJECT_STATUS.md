@@ -1,8 +1,8 @@
 # 🎉 EUFORIA EVENTS - Estado del Proyecto
 
-**Última actualización**: 10 de diciembre, 2025
-**Versión**: v2.0
-**Commit**: `d88a4c2` - Complete user management system, karaoke CRUD, and password change
+**Última actualización**: 16 de diciembre, 2025
+**Versión**: v2.1
+**Commit**: `eb12348` - feat: Convert Event QR page to modal for better UX
 
 ---
 
@@ -11,11 +11,16 @@
 **Sistema completamente funcional** para producción con las siguientes capacidades:
 
 - ✅ Gestión completa de eventos, venues y clientes
-- ✅ Sistema de usuarios con permisos granulares
+- ✅ Sistema de usuarios con permisos granulares (ADMIN, OPERATOR, DJ, VIEWER)
 - ✅ Módulo MUSICADJ (solicitudes de música con Spotify)
 - ✅ Módulo KARAOKEYA (solicitudes de karaoke con YouTube)
+- ✅ Módulo INVITADOS (gestión de lista de invitados con check-in)
+- ✅ Módulo MENÚ (gestión de platos y selección de menú)
+- ✅ Módulo MESAS (distribución y asignación de mesas)
 - ✅ Comunicaciones en tiempo real vía Socket.io
 - ✅ Interfaz de operador y cliente web responsive
+- ✅ Sistema de Check-in público con QR y token de acceso
+- ✅ Panel DJ dedicado para gestión de colas
 
 ---
 
