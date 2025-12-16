@@ -47,10 +47,10 @@ router.patch('/events/:eventId/karaokeya/:requestId', djController.updateKaraoke
 router.post('/events/:eventId/karaokeya/reorder', djController.reorderKaraokeyaQueue)
 
 // ============================================
-// INVITADOS
+// PARTICIPANTES
 // ============================================
 
-// Obtener historial de un invitado
-router.get('/guests/:guestId/history', djController.getGuestHistory)
+// Obtener historial de un participante
+router.get('/participants/:participantId/history', djController.getParticipantHistory)
 
 export default router

@@ -139,13 +139,13 @@ export const djController = {
   },
 
   /**
-   * GET /api/dj/guests/:guestId/history
-   * Obtiene el historial de pedidos de un invitado
+   * GET /api/dj/participants/:participantId/history
+   * Obtiene el historial de pedidos de un participante
    * Requiere: rol DJ
    */
-  async getGuestHistory(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  async getParticipantHistory(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
-      const history = await djService.getGuestHistory(req.params.guestId)
+      const history = await djService.getParticipantHistory(req.params.participantId)
       res.json(history)
     } catch (error) {
       next(error)

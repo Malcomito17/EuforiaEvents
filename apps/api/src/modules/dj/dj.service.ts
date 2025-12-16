@@ -93,16 +93,16 @@ class DJService {
         },
       },
       include: {
-        guest: {
+        participant: {
           select: {
             id: true,
-            name: true,
-            tableNumber: true,
+            displayName: true,
+            email: true,
           },
         },
       },
       orderBy: [
-        { displayOrder: 'asc' },
+        { priority: 'desc' },
         { createdAt: 'asc' },
       ],
     })
@@ -156,12 +156,12 @@ class DJService {
       throw new DJError('Algunos pedidos no pertenecen a este evento', 400)
     }
 
-    // Actualizar displayOrder en transacción
+    // Actualizar priority en transacción (mayor priority = primero)
     await prisma.$transaction(
       requestIds.map((id, index) =>
         prisma.songRequest.update({
           where: { id },
-          data: { displayOrder: index },
+          data: { priority: requestIds.length - index },
         })
       )
     )
@@ -197,11 +197,11 @@ class DJService {
         },
       },
       include: {
-        guest: {
+        participant: {
           select: {
             id: true,
-            name: true,
-            tableNumber: true,
+            displayName: true,
+            email: true,
           },
         },
         song: {
@@ -283,43 +283,32 @@ class DJService {
   }
 
   /**
-   * Obtiene el historial de pedidos de un invitado
+   * Obtiene el historial de pedidos de un participante
    */
-  async getGuestHistory(guestId: string) {
-    const guest = await prisma.guest.findUnique({
-      where: { id: guestId },
+  async getParticipantHistory(participantId: string) {
+    const participant = await prisma.participant.findUnique({
+      where: { id: participantId },
       select: {
         id: true,
-        name: true,
-        tableNumber: true,
-        event: {
-          select: {
-            id: true,
-            slug: true,
-            eventData: {
-              select: {
-                eventName: true,
-              },
-            },
-          },
-        },
+        displayName: true,
+        email: true,
       },
     })
 
-    if (!guest) {
-      throw new DJError('Invitado no encontrado', 404)
+    if (!participant) {
+      throw new DJError('Participante no encontrado', 404)
     }
 
     // Obtener pedidos musicales
     const musicRequests = await prisma.songRequest.findMany({
-      where: { guestId },
+      where: { participantId },
       orderBy: { createdAt: 'desc' },
       take: 20,
     })
 
     // Obtener pedidos de karaoke
     const karaokeRequests = await prisma.karaokeRequest.findMany({
-      where: { guestId },
+      where: { participantId },
       include: {
         song: {
           select: {
@@ -333,7 +322,7 @@ class DJService {
     })
 
     return {
-      guest,
+      participant,
       musicRequests,
       karaokeRequests,
     }
