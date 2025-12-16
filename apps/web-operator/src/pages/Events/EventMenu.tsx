@@ -4,15 +4,18 @@ import {
   eventsApi,
   dishesApi,
   menuApi,
+  eventGuestsApi,
   Event,
   Dish,
   EventDish,
+  EventGuest,
   MenuAlertResponse
 } from '@/lib/api'
 import { ArrowLeft, Plus, AlertTriangle, Loader2, Utensils, Sparkles } from 'lucide-react'
 import { DishCard } from '@/components/DishCard'
 import { DishForm } from '@/components/DishForm'
 import { MenuAlertsDashboard } from '@/components/MenuAlertsDashboard'
+import { GuestForm } from '@/components/GuestForm'
 
 export function EventMenuPage() {
   const { id: eventId } = useParams()
@@ -38,6 +41,9 @@ export function EventMenuPage() {
   const [showDishForm, setShowDishForm] = useState(false)
   const [showAlertsDashboard, setShowAlertsDashboard] = useState(false)
   const [editingDish, setEditingDish] = useState<Dish | null>(null)
+  const [editingGuest, setEditingGuest] = useState<EventGuest | null>(null)
+  const [showGuestForm, setShowGuestForm] = useState(false)
+  const [loadingGuest, setLoadingGuest] = useState(false)
 
   useEffect(() => {
     loadData()
@@ -120,6 +126,24 @@ export function EventMenuPage() {
     } catch (err: any) {
       console.error('Error auto-assigning:', err)
       alert(err.response?.data?.error || 'Error al auto-asignar platos')
+    }
+  }
+
+  // Abrir editor de menú del invitado desde alertas
+  const handleEditGuestMenu = async (eventGuestId: string) => {
+    if (!eventId) return
+    setLoadingGuest(true)
+    try {
+      const { data } = await eventGuestsApi.get(eventId, eventGuestId)
+      const guestData = (data as any).data || data
+      setEditingGuest(guestData)
+      setShowGuestForm(true)
+      setShowAlertsDashboard(false) // Cerrar dashboard de alertas
+    } catch (err) {
+      console.error('Error loading guest:', err)
+      alert('Error al cargar el invitado')
+    } finally {
+      setLoadingGuest(false)
     }
   }
 
@@ -356,7 +380,33 @@ export function EventMenuPage() {
           mediumSeverity={alerts.mediumSeverity}
           guestsWithIssues={alerts.guestsWithIssues}
           onClose={() => setShowAlertsDashboard(false)}
+          onEditGuestMenu={handleEditGuestMenu}
         />
+      )}
+
+      {showGuestForm && editingGuest && eventId && (
+        <GuestForm
+          eventId={eventId}
+          guest={editingGuest}
+          onClose={() => {
+            setShowGuestForm(false)
+            setEditingGuest(null)
+          }}
+          onSuccess={() => {
+            loadData()
+            setShowGuestForm(false)
+            setEditingGuest(null)
+          }}
+        />
+      )}
+
+      {loadingGuest && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 flex items-center gap-3">
+            <Loader2 className="h-5 w-5 animate-spin text-primary-600" />
+            <span>Cargando invitado...</span>
+          </div>
+        </div>
       )}
     </div>
   )

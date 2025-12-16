@@ -1,5 +1,5 @@
 import { MenuAlert } from '@/lib/api'
-import { X, AlertCircle, AlertTriangle, Info } from 'lucide-react'
+import { X, AlertCircle, AlertTriangle, Info, UtensilsCrossed } from 'lucide-react'
 import clsx from 'clsx'
 
 interface MenuAlertsDashboardProps {
@@ -9,6 +9,7 @@ interface MenuAlertsDashboardProps {
   mediumSeverity: number
   guestsWithIssues: number
   onClose: () => void
+  onEditGuestMenu?: (eventGuestId: string) => void
 }
 
 export function MenuAlertsDashboard({
@@ -17,7 +18,8 @@ export function MenuAlertsDashboard({
   highSeverity,
   mediumSeverity,
   guestsWithIssues,
-  onClose
+  onClose,
+  onEditGuestMenu
 }: MenuAlertsDashboardProps) {
   // Agrupar por severidad
   const highAlerts = alerts.filter(a => a.severity === 'HIGH')
@@ -86,7 +88,7 @@ export function MenuAlertsDashboard({
                   </h3>
                   <div className="space-y-2">
                     {highAlerts.map((alert, idx) => (
-                      <AlertCard key={idx} alert={alert} />
+                      <AlertCard key={idx} alert={alert} onEditMenu={onEditGuestMenu} />
                     ))}
                   </div>
                 </div>
@@ -101,7 +103,7 @@ export function MenuAlertsDashboard({
                   </h3>
                   <div className="space-y-2">
                     {mediumAlerts.map((alert, idx) => (
-                      <AlertCard key={idx} alert={alert} />
+                      <AlertCard key={idx} alert={alert} onEditMenu={onEditGuestMenu} />
                     ))}
                   </div>
                 </div>
@@ -116,7 +118,7 @@ export function MenuAlertsDashboard({
                   </h3>
                   <div className="space-y-2">
                     {lowAlerts.map((alert, idx) => (
-                      <AlertCard key={idx} alert={alert} />
+                      <AlertCard key={idx} alert={alert} onEditMenu={onEditGuestMenu} />
                     ))}
                   </div>
                 </div>
@@ -140,7 +142,7 @@ export function MenuAlertsDashboard({
 }
 
 // Card individual de alerta
-function AlertCard({ alert }: { alert: MenuAlert }) {
+function AlertCard({ alert, onEditMenu }: { alert: MenuAlert; onEditMenu?: (eventGuestId: string) => void }) {
   const config = {
     HIGH: {
       bg: 'bg-red-50',
@@ -172,10 +174,22 @@ function AlertCard({ alert }: { alert: MenuAlert }) {
       <div className="flex items-start gap-3">
         <Icon className={clsx('h-5 w-5 flex-shrink-0 mt-0.5', iconColor)} />
         <div className="flex-1">
-          <div className={clsx('font-medium mb-1', text)}>
-            {alert.guestName}
+          <div className="flex items-center justify-between">
+            <div className={clsx('font-medium', text)}>
+              {alert.guestName}
+            </div>
+            {onEditMenu && alert.eventGuestId && (
+              <button
+                onClick={() => onEditMenu(alert.eventGuestId!)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition text-gray-700"
+                title="Editar menú del invitado"
+              >
+                <UtensilsCrossed className="h-3.5 w-3.5" />
+                Editar Menú
+              </button>
+            )}
           </div>
-          <p className={clsx('text-sm', text)}>
+          <p className={clsx('text-sm mt-1', text)}>
             {alert.message}
           </p>
           {alert.restriction && (
