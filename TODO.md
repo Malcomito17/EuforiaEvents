@@ -83,7 +83,13 @@
 - [ ] Optimización de queries de base de datos
 - [ ] Cache de datos frecuentes
 
-### Baja Prioridad
+### Baja Prioridad (Pre-Deploy Final)
+- [ ] **Sistema de internacionalización (i18n)** - Textos editables y multi-idioma
+  - [ ] Soporte para múltiples idiomas (Español, Inglés)
+  - [ ] Soporte para diferentes tonos (Formal, Informal)
+  - [ ] Sección de configuración general en admin para seleccionar idioma/tono
+  - [ ] Archivos de traducción editables desde el panel
+  - [ ] Aplicar a: labels, mensajes, notificaciones, emails
 - [ ] PWA para instalación en dispositivos
 - [ ] Modo offline con sincronización
 - [ ] Exportación de reportes PDF
@@ -117,5 +123,5 @@
 
 ---
 
-**Última actualización**: 2025-12-12
-**Versión del sistema**: 0.5.0
+**Última actualización**: 2025-12-16
+**Versión del sistema**: 2.2.0
