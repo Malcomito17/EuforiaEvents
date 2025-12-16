@@ -572,8 +572,8 @@ class EventService {
       token = await this.generateCheckinAccessToken(eventId)
     }
 
-    // URL base del check-in (ajustar según tu configuración)
-    const baseUrl = process.env.CHECKIN_APP_URL || 'http://localhost:5175'
+    // URL base del check-in (usa PUBLIC_DOMAIN en producción)
+    const baseUrl = process.env.CHECKIN_APP_URL || process.env.PUBLIC_DOMAIN || 'http://localhost:5175'
     const url = `${baseUrl}/event/${event.slug}?token=${token}`
 
     return { url, token }
