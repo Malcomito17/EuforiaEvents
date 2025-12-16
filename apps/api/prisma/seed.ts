@@ -392,6 +392,10 @@ async function main() {
     const mesa = mesas[i % mesas.length] // Distribuir en mesas
     const accesibilidad = i === 5 ? 'MOVILIDAD_REDUCIDA' : i === 10 ? 'VISUAL' : 'NINGUNA'
 
+    // Algunos invitados importantes y destacados
+    const isImportante = [0, 3, 7].includes(i) // Juan Pérez, Ana Martínez, Sofía Sánchez
+    const isDestacado = [1, 5, 12].includes(i) // María González, Laura Rodríguez, Andrés Álvarez
+
     const invitado = await prisma.eventGuest.upsert({
       where: {
         eventId_personId: {
@@ -399,7 +403,10 @@ async function main() {
           personId: persona.id,
         },
       },
-      update: {},
+      update: {
+        isImportante,
+        isDestacado,
+      },
       create: {
         eventId: event.id,
         personId: persona.id,
@@ -409,6 +416,8 @@ async function main() {
         checkedInBy: i < 5 ? admin.id : null,
         accesibilidad,
         observaciones: i === 3 ? 'VIP - Cliente importante' : i === 7 ? 'Llegará tarde' : null,
+        isImportante,
+        isDestacado,
         addedBy: admin.id,
       },
     })
