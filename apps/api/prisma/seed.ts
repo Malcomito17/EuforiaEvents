@@ -186,13 +186,58 @@ async function main() {
   console.log(`✅ ${platos.length} platos creados/verificados`)
 
   // ================================
+  // CATEGORÍAS DEL MENÚ
+  // ================================
+
+  const categoriasData = [
+    { nombre: 'ENTRADA', orden: 1 },
+    { nombre: 'PRINCIPAL', orden: 2 },
+    { nombre: 'GUARNICION', orden: 3 },
+    { nombre: 'POSTRE', orden: 4 },
+    { nombre: 'BEBIDA', orden: 5 },
+  ]
+
+  const categorias: Record<string, any> = {}
+  for (const catData of categoriasData) {
+    const categoria = await prisma.dishCategory.upsert({
+      where: {
+        eventId_nombre: {
+          eventId: event.id,
+          nombre: catData.nombre,
+        },
+      },
+      update: {},
+      create: {
+        eventId: event.id,
+        nombre: catData.nombre,
+        orden: catData.orden,
+        isSystemDefault: false,
+        allowMultipleDefaults: false,
+      },
+    })
+    categorias[catData.nombre] = categoria
+  }
+
+  console.log(`✅ ${Object.keys(categorias).length} categorías de menú creadas`)
+
+  // ================================
   // MENÚ DEL EVENTO
   // ================================
 
   // Agregar algunos platos al menú del evento
   const platosMenu = platos.slice(0, 12) // Primeros 12 platos
+  let platosAgregados = 0
   for (let i = 0; i < platosMenu.length; i++) {
     const plato = platosMenu[i]
+    // Obtener categoría del plato
+    const platoData = platosData[i]
+    const categoria = categorias[platoData.categoria]
+
+    if (!categoria) {
+      console.log(`⚠️ Categoría no encontrada para ${plato.nombre}: ${platoData.categoria}`)
+      continue
+    }
+
     await prisma.eventDish.upsert({
       where: {
         eventId_dishId: {
@@ -204,13 +249,15 @@ async function main() {
       create: {
         eventId: event.id,
         dishId: plato.id,
+        categoryId: categoria.id,
         orden: i + 1,
-        esDefault: i < 4, // Los primeros 4 son default
+        isDefault: i < 4, // Los primeros 4 son default
       },
     })
+    platosAgregados++
   }
 
-  console.log(`✅ ${platosMenu.length} platos agregados al menú del evento`)
+  console.log(`✅ ${platosAgregados} platos agregados al menú del evento`)
 
   // ================================
   // MESAS DE PRUEBA
