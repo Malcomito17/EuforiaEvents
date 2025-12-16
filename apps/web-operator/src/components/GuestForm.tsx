@@ -285,14 +285,17 @@ export function GuestForm({ eventId, guest, onClose, onSuccess }: GuestFormProps
                               {gd.eventDish?.dish?.nombre || 'Plato desconocido'}
                             </div>
                             <div className="flex flex-wrap items-center gap-2 mt-1">
-                              {gd.eventDish?.category?.nombre && (
+                              {(gd.eventDish as any)?.category?.nombre && (
                                 <span className="text-xs text-gray-500">
-                                  {gd.eventDish.category.nombre}
+                                  {(gd.eventDish as any).category.nombre}
                                 </span>
                               )}
-                              {gd.eventDish?.dish?.dietaryInfo && gd.eventDish.dish.dietaryInfo.length > 0 && (
+                              {gd.eventDish?.dish?.dietaryInfo && (
                                 <div className="flex gap-1">
-                                  {gd.eventDish.dish.dietaryInfo.map((info: string) => (
+                                  {(Array.isArray(gd.eventDish.dish.dietaryInfo)
+                                    ? gd.eventDish.dish.dietaryInfo
+                                    : JSON.parse(gd.eventDish.dish.dietaryInfo || '[]')
+                                  ).map((info: string) => (
                                     <span
                                       key={info}
                                       className="px-1.5 py-0.5 text-xs bg-green-100 text-green-700 rounded"
@@ -331,12 +334,17 @@ export function GuestForm({ eventId, guest, onClose, onSuccess }: GuestFormProps
                         className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                       >
                         <option value="">Seleccionar plato para agregar...</option>
-                        {availableDishes.map((md) => (
-                          <option key={md.id} value={md.id}>
-                            {md.dish?.nombre || 'Sin nombre'} ({(md as any).category?.nombre || 'Sin categoría'})
-                            {md.dish?.dietaryInfo && md.dish.dietaryInfo.length > 0 && ` - ${md.dish.dietaryInfo.join(', ')}`}
-                          </option>
-                        ))}
+                        {availableDishes.map((md) => {
+                          const dietaryInfo = md.dish?.dietaryInfo
+                            ? (Array.isArray(md.dish.dietaryInfo) ? md.dish.dietaryInfo : JSON.parse(md.dish.dietaryInfo || '[]'))
+                            : []
+                          return (
+                            <option key={md.id} value={md.id}>
+                              {md.dish?.nombre || 'Sin nombre'} ({(md as any).category?.nombre || 'Sin categoría'})
+                              {dietaryInfo.length > 0 && ` - ${dietaryInfo.join(', ')}`}
+                            </option>
+                          )
+                        })}
                       </select>
                       <button
                         type="button"
