@@ -329,26 +329,53 @@ async function main() {
   ]
 
   const personas = []
+  const crypto = await import('crypto')
+
   for (const personaData of personasData) {
     // Generar identityHash
-    const crypto = await import('crypto')
     const normalized = `${personaData.email?.toLowerCase().trim() || ''}${personaData.nombre.toLowerCase().trim()}${personaData.apellido.toLowerCase().trim()}`
     const identityHash = crypto.createHash('sha256').update(normalized).digest('hex')
 
-    const persona = await prisma.person.upsert({
-      where: { identityHash },
-      update: {},
-      create: {
-        nombre: personaData.nombre,
-        apellido: personaData.apellido,
-        email: personaData.email,
-        phone: personaData.phone,
-        company: personaData.company,
-        dietaryRestrictions: JSON.stringify(personaData.dietaryRestrictions),
-        identityHash,
-        createdBy: admin.id,
-      },
-    })
+    let persona
+    if (personaData.email) {
+      // Si tiene email, usar upsert con email
+      persona = await prisma.person.upsert({
+        where: { email: personaData.email },
+        update: {},
+        create: {
+          nombre: personaData.nombre,
+          apellido: personaData.apellido,
+          email: personaData.email,
+          phone: personaData.phone,
+          company: personaData.company,
+          dietaryRestrictions: JSON.stringify(personaData.dietaryRestrictions),
+          identityHash,
+          createdBy: admin.id,
+        },
+      })
+    } else {
+      // Si no tiene email, buscar por identityHash o crear
+      const existing = await prisma.person.findFirst({
+        where: { identityHash },
+      })
+
+      if (existing) {
+        persona = existing
+      } else {
+        persona = await prisma.person.create({
+          data: {
+            nombre: personaData.nombre,
+            apellido: personaData.apellido,
+            email: personaData.email,
+            phone: personaData.phone,
+            company: personaData.company,
+            dietaryRestrictions: JSON.stringify(personaData.dietaryRestrictions),
+            identityHash,
+            createdBy: admin.id,
+          },
+        })
+      }
+    }
     personas.push(persona)
   }
 
