@@ -509,6 +509,10 @@ export class MenuService {
       },
     })
 
+    if (guests.length === 0) {
+      throw new Error('No hay invitados en este evento')
+    }
+
     const errors: string[] = []
     const assignments: GuestDishResponse[] = []
     let assigned = 0
