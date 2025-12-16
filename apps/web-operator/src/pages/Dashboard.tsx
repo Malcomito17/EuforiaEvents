@@ -30,14 +30,16 @@ export function DashboardPage() {
         usersApi.list(),
       ])
 
+      // Backend returns { events, pagination: { total } }
+      const eventsData = eventsRes.data as any
       setStats({
-        totalEvents: eventsRes.data.total,
-        activeEvents: eventsRes.data.events.filter(e => e.status === 'ACTIVE').length,
-        totalVenues: venuesRes.data.pagination.total,
-        totalClients: clientsRes.data.pagination.total,
-        totalUsers: usersRes.data.pagination.total,
+        totalEvents: eventsData.pagination?.total || eventsData.total || 0,
+        activeEvents: eventsData.events.filter((e: Event) => e.status === 'ACTIVE').length,
+        totalVenues: (venuesRes.data as any).pagination?.total || 0,
+        totalClients: (clientsRes.data as any).pagination?.total || 0,
+        totalUsers: (usersRes.data as any).pagination?.total || 0,
       })
-      setRecentEvents(eventsRes.data.events)
+      setRecentEvents(eventsData.events)
     } catch (error) {
       console.error('Error loading dashboard:', error)
     } finally {
