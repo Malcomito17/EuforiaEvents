@@ -3,9 +3,9 @@
  * Acceso mediante QR con token de autenticación
  */
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useParams, useSearchParams } from 'react-router-dom'
-import { CheckCircle2, Loader2, AlertCircle, User, MapPin, UtensilsCrossed } from 'lucide-react'
+import { CheckCircle2, Loader2, AlertCircle, User, MapPin, UtensilsCrossed, Clock } from 'lucide-react'
 
 interface Guest {
   id: string
@@ -55,6 +55,8 @@ export default function EventCheckin() {
   const [searchTerm, setSearchTerm] = useState('')
   const [checkingIn, setCheckingIn] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
+  const [sortBy, setSortBy] = useState<'nombre' | 'mesa' | 'checkin'>('nombre')
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
 
   useEffect(() => {
     if (!slug || !token) {
@@ -126,11 +128,52 @@ export default function EventCheckin() {
     }
   }
 
-  const filteredGuests = guests.filter(g => {
-    if (!searchTerm) return true
-    const fullName = `${g.person.nombre} ${g.person.apellido}`.toLowerCase()
-    return fullName.includes(searchTerm.toLowerCase())
-  })
+  const handleSort = (field: 'nombre' | 'mesa' | 'checkin') => {
+    if (sortBy === field) {
+      setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc')
+    } else {
+      setSortBy(field)
+      setSortDirection('asc')
+    }
+  }
+
+  const filteredAndSortedGuests = useMemo(() => {
+    let filtered = guests.filter(g => {
+      if (!searchTerm) return true
+      const fullName = `${g.person.nombre} ${g.person.apellido}`.toLowerCase()
+      return fullName.includes(searchTerm.toLowerCase())
+    })
+
+    // Ordenar
+    filtered.sort((a, b) => {
+      let comparison = 0
+
+      switch (sortBy) {
+        case 'nombre':
+          const nameA = `${a.person.nombre} ${a.person.apellido}`.toLowerCase()
+          const nameB = `${b.person.nombre} ${b.person.apellido}`.toLowerCase()
+          comparison = nameA.localeCompare(nameB)
+          break
+        case 'mesa':
+          const mesaA = a.mesa?.numero || 'zzz'
+          const mesaB = b.mesa?.numero || 'zzz'
+          comparison = mesaA.localeCompare(mesaB, undefined, { numeric: true })
+          break
+        case 'checkin':
+          // Ingresados primero, luego por hora
+          if (a.estadoIngreso === 'INGRESADO' && b.estadoIngreso !== 'INGRESADO') return -1
+          if (a.estadoIngreso !== 'INGRESADO' && b.estadoIngreso === 'INGRESADO') return 1
+          const dateA = a.checkedInAt ? new Date(a.checkedInAt).getTime() : 0
+          const dateB = b.checkedInAt ? new Date(b.checkedInAt).getTime() : 0
+          comparison = dateB - dateA // Más reciente primero
+          break
+      }
+
+      return sortDirection === 'asc' ? comparison : -comparison
+    })
+
+    return filtered
+  }, [guests, searchTerm, sortBy, sortDirection])
 
   // Loading
   if (loading) {
@@ -193,6 +236,52 @@ export default function EventCheckin() {
           />
         </div>
 
+        {/* Sort Buttons */}
+        <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
+          <button
+            onClick={() => handleSort('nombre')}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap ${
+              sortBy === 'nombre'
+                ? 'bg-white/20 text-white'
+                : 'bg-white/5 text-white/70 hover:bg-white/10'
+            }`}
+          >
+            <User className="w-4 h-4" />
+            Nombre
+            {sortBy === 'nombre' && (
+              <span className="text-xs">{sortDirection === 'asc' ? '↑' : '↓'}</span>
+            )}
+          </button>
+          <button
+            onClick={() => handleSort('mesa')}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap ${
+              sortBy === 'mesa'
+                ? 'bg-white/20 text-white'
+                : 'bg-white/5 text-white/70 hover:bg-white/10'
+            }`}
+          >
+            <MapPin className="w-4 h-4" />
+            Mesa
+            {sortBy === 'mesa' && (
+              <span className="text-xs">{sortDirection === 'asc' ? '↑' : '↓'}</span>
+            )}
+          </button>
+          <button
+            onClick={() => handleSort('checkin')}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap ${
+              sortBy === 'checkin'
+                ? 'bg-white/20 text-white'
+                : 'bg-white/5 text-white/70 hover:bg-white/10'
+            }`}
+          >
+            <Clock className="w-4 h-4" />
+            Check-in
+            {sortBy === 'checkin' && (
+              <span className="text-xs">{sortDirection === 'asc' ? '↑' : '↓'}</span>
+            )}
+          </button>
+        </div>
+
         {/* Stats */}
         <div className="grid grid-cols-3 gap-3 mb-6">
           <div className="bg-white/5 rounded-lg p-3 text-center">
@@ -215,12 +304,12 @@ export default function EventCheckin() {
 
         {/* Guest List */}
         <div className="space-y-3">
-          {filteredGuests.length === 0 ? (
+          {filteredAndSortedGuests.length === 0 ? (
             <div className="text-center py-12 text-white/50">
               {searchTerm ? 'No se encontraron invitados' : 'No hay invitados'}
             </div>
           ) : (
-            filteredGuests.map((guest) => (
+            filteredAndSortedGuests.map((guest) => (
               <div
                 key={guest.id}
                 className={`bg-white/5 rounded-lg p-4 border ${
