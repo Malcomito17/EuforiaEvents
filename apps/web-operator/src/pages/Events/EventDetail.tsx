@@ -7,6 +7,7 @@ import {
 } from 'lucide-react'
 import clsx from 'clsx'
 import { useAuthStore } from '@/stores/authStore'
+import { EventQRModal } from '@/components/EventQRModal'
 
 export function EventDetailPage() {
   const { id } = useParams()
@@ -17,6 +18,7 @@ export function EventDetailPage() {
   const [event, setEvent] = useState<Event | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isUpdating, setIsUpdating] = useState(false)
+  const [showQRModal, setShowQRModal] = useState(false)
 
   useEffect(() => {
     loadEvent()
@@ -160,13 +162,13 @@ export function EventDetailPage() {
               Configuración
             </Link>
 
-            <Link
-              to={`/events/${event.id}/qr`}
+            <button
+              onClick={() => setShowQRModal(true)}
               className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors"
             >
               <QrCode className="h-4 w-4" />
               Ver QR
-            </Link>
+            </button>
 
             <button
               onClick={handleDuplicate}
@@ -445,6 +447,14 @@ export function EventDetailPage() {
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Notas</h2>
           <p className="text-gray-700 whitespace-pre-wrap">{event.eventData.notes}</p>
         </div>
+      )}
+
+      {/* QR Modal */}
+      {showQRModal && (
+        <EventQRModal
+          eventId={event.id}
+          onClose={() => setShowQRModal(false)}
+        />
       )}
     </div>
   )
