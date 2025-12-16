@@ -1,6 +1,6 @@
 /**
- * MUSICADJ - Zod Schemas & Types (v1.3)
- * Actualizado para usar Guest model
+ * MUSICADJ - Zod Schemas & Types (v1.4)
+ * Actualizado para usar Participant model
  */
 
 import { z } from 'zod'
@@ -21,11 +21,11 @@ export type SongRequestStatus = z.infer<typeof songRequestStatusSchema>
 
 /**
  * Schema para crear una solicitud de canción (desde cliente público)
- * v1.3: Usa guestId en lugar de requesterName/Email
+ * v1.4: Usa participantId en lugar de guestId
  */
 export const createSongRequestSchema = z.object({
-  // Guest que hace el pedido
-  guestId: z.string().cuid('Guest ID inválido'),
+  // Participant que hace el pedido
+  participantId: z.string().cuid('Participant ID inválido'),
 
   // Datos de la canción
   spotifyId: z.string().optional().nullable(),

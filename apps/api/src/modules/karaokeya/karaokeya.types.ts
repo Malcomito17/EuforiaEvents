@@ -1,6 +1,7 @@
 /**
- * KARAOKEYA - Zod Schemas & Types (v1.4)
+ * KARAOKEYA - Zod Schemas & Types (v1.5)
  * Esquemas de validación para módulo de karaoke
+ * Usa Participant model en lugar de Guest
  */
 
 import { z } from 'zod'
@@ -24,8 +25,8 @@ export type KaraokeRequestStatus = z.infer<typeof karaokeRequestStatusSchema>
  * Schema para crear una solicitud de karaoke (desde cliente público)
  */
 export const createKaraokeRequestSchema = z.object({
-  // Guest que hace el pedido
-  guestId: z.string().cuid('Guest ID inválido'),
+  // Participant que hace el pedido
+  participantId: z.string().cuid('Participant ID inválido'),
 
   // Datos de la canción
   songId: z.string().cuid().optional(), // Si viene del catálogo
@@ -169,7 +170,7 @@ export type ListSongsQuery = z.infer<typeof listSongsQuerySchema>
  */
 export const toggleLikeSchema = z.object({
   songId: z.string().cuid('Song ID inválido'),
-  guestId: z.string().cuid('Guest ID inválido'),
+  participantId: z.string().cuid('Participant ID inválido'),
 })
 
 export type ToggleLikeInput = z.infer<typeof toggleLikeSchema>

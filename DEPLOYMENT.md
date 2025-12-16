@@ -4,28 +4,32 @@
 
 ### SSH Access
 ```bash
-Host: 192.168.80.159
+Host: 192.168.80.160
 User: malcomito
 Password: 111001
 ```
 
-### Project Location
+> **Note:** IP changed from 192.168.80.159 to 192.168.80.160 on 2024-12-16
+
+### Project Location on Pi
 ```bash
 ~/projects/EuforiaEvents
 ```
+
+> **Important:** The path is `~/projects/EuforiaEvents` (capital E in Euforia and Events)
 
 ### Quick Deploy Commands
 
 **Full deployment (interactive):**
 ```bash
-ssh malcomito@192.168.80.159
+ssh malcomito@192.168.80.160
 cd ~/projects/EuforiaEvents
 ./deploy.sh
 ```
 
 **Full deployment (automatic):**
 ```bash
-ssh malcomito@192.168.80.159 "cd ~/projects/EuforiaEvents && ./deploy.sh --auto"
+ssh malcomito@192.168.80.160 "cd ~/projects/EuforiaEvents && ./deploy.sh --auto"
 ```
 
 **Deploy specific container:**
@@ -42,7 +46,7 @@ docker compose -f docker-compose.prod.yml build api && docker compose -f docker-
 
 **One-liner from local machine:**
 ```bash
-sshpass -p '111001' ssh malcomito@192.168.80.159 "cd ~/projects/EuforiaEvents && git pull origin main && docker compose -f docker-compose.prod.yml build web-client && docker compose -f docker-compose.prod.yml up -d web-client"
+sshpass -p '111001' ssh malcomito@192.168.80.160 "cd ~/projects/EuforiaEvents && git pull origin main && docker compose -f docker-compose.prod.yml build web-client && docker compose -f docker-compose.prod.yml up -d web-client"
 ```
 
 ## Production URLs
@@ -140,6 +144,22 @@ docker logs euforia-api-prod --tail 100
 ```bash
 docker exec euforia-api-prod npx prisma db push
 docker exec euforia-api-prod npx prisma generate
+```
+
+### Database readonly error
+If you get `attempt to write a readonly database` error:
+
+```bash
+# Check permissions on the database file
+ls -la ~/projects/EuforiaEvents/apps/api/prisma/
+
+# Fix permissions
+sudo chown -R $(whoami):$(whoami) ~/projects/EuforiaEvents/apps/api/prisma/
+chmod 666 ~/projects/EuforiaEvents/apps/api/prisma/*.db
+chmod 777 ~/projects/EuforiaEvents/apps/api/prisma/
+
+# Restart the API container
+docker restart euforia-api-prod
 ```
 
 ### Rebuild from scratch

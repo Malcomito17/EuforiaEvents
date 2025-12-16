@@ -106,18 +106,18 @@ export async function getPopularSongs(req: Request, res: Response, next: NextFun
 
 /**
  * GET /api/events/:eventId/karaokeya/suggestions
- * Obtiene sugerencias inteligentes basadas en contexto y guest
+ * Obtiene sugerencias inteligentes basadas en contexto y participant
  */
 export async function getSmartSuggestions(req: Request, res: Response, next: NextFunction) {
   try {
     const { eventId } = req.params
     const schema = z.object({
-      guestId: z.string().cuid().optional(),
+      participantId: z.string().cuid().optional(),
       limit: z.coerce.number().int().min(1).max(10).default(5),
     })
 
-    const { guestId, limit } = schema.parse(req.query)
-    const suggestions = await service.getSmartSuggestions(eventId, guestId, limit)
+    const { participantId, limit } = schema.parse(req.query)
+    const suggestions = await service.getSmartSuggestions(eventId, participantId, limit)
 
     res.json({ suggestions, total: suggestions.length })
   } catch (error) {
@@ -166,14 +166,14 @@ export async function listRequests(req: Request, res: Response, next: NextFuncti
 }
 
 /**
- * GET /api/events/:eventId/karaokeya/guests/:guestId/requests
- * Obtiene solicitudes de un guest específico
+ * GET /api/events/:eventId/karaokeya/participants/:participantId/requests
+ * Obtiene solicitudes de un participant específico
  */
-export async function getGuestRequests(req: Request, res: Response, next: NextFunction) {
+export async function getParticipantRequests(req: Request, res: Response, next: NextFunction) {
   try {
-    const { eventId, guestId } = req.params
+    const { eventId, participantId } = req.params
 
-    const requests = await service.getGuestRequests(eventId, guestId)
+    const requests = await service.getParticipantRequests(eventId, participantId)
 
     res.json({ requests, total: requests.length })
   } catch (error) {
@@ -236,16 +236,16 @@ export async function updateRequest(req: Request, res: Response, next: NextFunct
 /**
  * DELETE /api/events/:eventId/karaokeya/requests/:requestId
  * Elimina una solicitud
- * Si viene con guestId en el body, valida que sea del guest (público)
+ * Si viene con participantId en el body, valida que sea del participant (público)
  * Si viene autenticado (req.user), permite eliminar cualquier solicitud (operador)
  */
 export async function deleteRequest(req: Request, res: Response, next: NextFunction) {
   try {
     const { eventId, requestId } = req.params
-    const { guestId } = req.body
+    const { participantId } = req.body
     const isOperator = !!(req as any).user
 
-    const result = await service.deleteRequest(eventId, requestId, guestId, isOperator)
+    const result = await service.deleteRequest(eventId, requestId, participantId, isOperator)
 
     const io = getIOFromRequest(req)
     emitKaraokeRequestDeleted(io, eventId, requestId)
@@ -388,13 +388,13 @@ export async function reactivateSong(req: Request, res: Response, next: NextFunc
 export async function toggleLike(req: Request, res: Response, next: NextFunction) {
   try {
     const { songId } = req.params
-    const { guestId } = req.body
+    const { participantId } = req.body
 
-    if (!guestId) {
-      return res.status(400).json({ error: 'guestId es requerido' })
+    if (!participantId) {
+      return res.status(400).json({ error: 'participantId es requerido' })
     }
 
-    const result = await service.toggleSongLike(songId, guestId)
+    const result = await service.toggleSongLike(songId, participantId)
     res.json(result)
   } catch (error) {
     next(error)
@@ -404,25 +404,25 @@ export async function toggleLike(req: Request, res: Response, next: NextFunction
 export async function getLikeStatus(req: Request, res: Response, next: NextFunction) {
   try {
     const { songId } = req.params
-    const { guestId } = req.query
+    const { participantId } = req.query
 
-    if (!guestId || typeof guestId !== 'string') {
-      return res.status(400).json({ error: 'guestId query param es requerido' })
+    if (!participantId || typeof participantId !== 'string') {
+      return res.status(400).json({ error: 'participantId query param es requerido' })
     }
 
-    const result = await service.getSongLikeStatus(songId, guestId)
+    const result = await service.getSongLikeStatus(songId, participantId)
     res.json(result)
   } catch (error) {
     next(error)
   }
 }
 
-export async function getGuestLikedSongs(req: Request, res: Response, next: NextFunction) {
+export async function getParticipantLikedSongs(req: Request, res: Response, next: NextFunction) {
   try {
-    const { guestId } = req.params
+    const { participantId } = req.params
     const limit = req.query.limit ? parseInt(req.query.limit as string) : 50
 
-    const result = await service.getGuestLikedSongs(guestId, limit)
+    const result = await service.getParticipantLikedSongs(participantId, limit)
     res.json(result)
   } catch (error) {
     next(error)

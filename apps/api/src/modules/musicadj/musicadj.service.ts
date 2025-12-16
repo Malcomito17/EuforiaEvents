@@ -1,6 +1,6 @@
 /**
- * MUSICADJ Service (v1.3)
- * Lógica de negocio para solicitudes musicales con Guest model
+ * MUSICADJ Service (v1.4)
+ * Lógica de negocio para solicitudes musicales con Participant model
  */
 
 import { PrismaClient } from '@prisma/client'
@@ -69,9 +69,9 @@ export async function updateConfig(eventId: string, input: MusicadjConfigInput) 
 // ============================================
 
 /**
- * Verifica si el guest puede hacer un nuevo pedido (cooldown)
+ * Verifica si el participant puede hacer un nuevo pedido (cooldown)
  */
-async function checkCooldown(eventId: string, guestId: string, cooldownSeconds: number): Promise<boolean> {
+async function checkCooldown(eventId: string, participantId: string, cooldownSeconds: number): Promise<boolean> {
   if (cooldownSeconds === 0) return true
 
   const cutoffTime = new Date(Date.now() - cooldownSeconds * 1000)
@@ -79,7 +79,7 @@ async function checkCooldown(eventId: string, guestId: string, cooldownSeconds: 
   const recentRequest = await prisma.songRequest.findFirst({
     where: {
       eventId,
-      guestId,
+      participantId,
       createdAt: {
         gte: cutoffTime
       }
@@ -127,17 +127,17 @@ export async function createRequest(eventId: string, input: CreateSongRequestInp
     throw new MusicadjError('El módulo de pedidos no está habilitado', 400)
   }
 
-  // Verificar que el guest existe
-  const guest = await prisma.guest.findUnique({
-    where: { id: validated.guestId }
+  // Verificar que el participant existe
+  const participant = await prisma.participant.findUnique({
+    where: { id: validated.participantId }
   })
 
-  if (!guest) {
-    throw new MusicadjError('Guest no encontrado', 404)
+  if (!participant) {
+    throw new MusicadjError('Participant no encontrado', 404)
   }
 
   // Verificar cooldown
-  await checkCooldown(eventId, validated.guestId, config.cooldownSeconds)
+  await checkCooldown(eventId, validated.participantId, config.cooldownSeconds)
 
   // Verificar si Spotify es requerido
   if (!config.allowWithoutSpotify && !validated.spotifyId) {
@@ -148,7 +148,7 @@ export async function createRequest(eventId: string, input: CreateSongRequestInp
   const request = await prisma.songRequest.create({
     data: {
       eventId,
-      guestId: validated.guestId,
+      participantId: validated.participantId,
       spotifyId: validated.spotifyId,
       title: validated.title,
       artist: validated.artist,
@@ -157,7 +157,7 @@ export async function createRequest(eventId: string, input: CreateSongRequestInp
       priority: 0
     },
     include: {
-      guest: {
+      participant: {
         select: {
           id: true,
           displayName: true,
@@ -167,7 +167,7 @@ export async function createRequest(eventId: string, input: CreateSongRequestInp
     }
   })
 
-  console.log(`[MUSICADJ] Nueva solicitud: "${validated.title}" por ${guest.displayName} (${guest.email})`)
+  console.log(`[MUSICADJ] Nueva solicitud: "${validated.title}" por ${participant.displayName} (${participant.email})`)
 
   // Emitir evento Socket.io
   try {
@@ -189,7 +189,7 @@ export async function getRequestById(eventId: string, requestId: string) {
       eventId
     },
     include: {
-      guest: {
+      participant: {
         select: {
           id: true,
           displayName: true,
@@ -227,8 +227,8 @@ export async function listRequests(eventId: string, query: ListRequestsQuery) {
     where.OR = [
       { title: { contains: search, mode: 'insensitive' } },
       { artist: { contains: search, mode: 'insensitive' } },
-      { guest: { displayName: { contains: search, mode: 'insensitive' } } },
-      { guest: { email: { contains: search, mode: 'insensitive' } } }
+      { participant: { displayName: { contains: search, mode: 'insensitive' } } },
+      { participant: { email: { contains: search, mode: 'insensitive' } } }
     ]
   }
 
@@ -236,7 +236,7 @@ export async function listRequests(eventId: string, query: ListRequestsQuery) {
     prisma.songRequest.findMany({
       where,
       include: {
-        guest: {
+        participant: {
           select: {
             id: true,
             displayName: true,
@@ -284,7 +284,7 @@ export async function updateRequest(
     where: { id: requestId },
     data: input,
     include: {
-      guest: {
+      participant: {
         select: {
           id: true,
           displayName: true,
@@ -420,28 +420,28 @@ export async function getStats(eventId: string) {
 // ============================================
 
 /**
- * Obtiene o crea el guest especial del sistema para importaciones
+ * Obtiene o crea el participant especial del sistema para importaciones
  */
-async function getOrCreateSystemGuest(): Promise<string> {
+async function getOrCreateSystemParticipant(): Promise<string> {
   const SYSTEM_EMAIL = 'system-import@euforia.internal'
   const SYSTEM_NAME = 'IMPORTACION'
 
-  let systemGuest = await prisma.guest.findUnique({
+  let systemParticipant = await prisma.participant.findUnique({
     where: { email: SYSTEM_EMAIL }
   })
 
-  if (!systemGuest) {
-    systemGuest = await prisma.guest.create({
+  if (!systemParticipant) {
+    systemParticipant = await prisma.participant.create({
       data: {
         email: SYSTEM_EMAIL,
         displayName: SYSTEM_NAME,
-        isSystemGuest: true
+        isSystemParticipant: true
       }
     })
-    console.log('[MUSICADJ] Guest del sistema creado:', SYSTEM_NAME)
+    console.log('[MUSICADJ] Participant del sistema creado:', SYSTEM_NAME)
   }
 
-  return systemGuest.id
+  return systemParticipant.id
 }
 
 /**
@@ -453,11 +453,11 @@ export async function importPlaylistToEvent(
   userId: string,
   options: {
     createRequests?: boolean
-    guestId?: string
+    participantId?: string
   } = {}
 ) {
   const { createRequests = false } = options
-  let { guestId } = options
+  let { participantId } = options
 
   // Verificar que el evento existe
   const event = await prisma.event.findUnique({
@@ -532,25 +532,25 @@ export async function importPlaylistToEvent(
 
   // Opcionalmente crear song requests
   if (createRequests) {
-    // Si no se proporciona guestId, usar el guest del sistema
-    if (!guestId) {
-      guestId = await getOrCreateSystemGuest()
-      console.log('[MUSICADJ] Usando guest del sistema para requests de playlist importada')
+    // Si no se proporciona participantId, usar el participant del sistema
+    if (!participantId) {
+      participantId = await getOrCreateSystemParticipant()
+      console.log('[MUSICADJ] Usando participant del sistema para requests de playlist importada')
     } else {
-      // Verificar que el guest proporcionado existe
-      const guest = await prisma.guest.findUnique({
-        where: { id: guestId }
+      // Verificar que el participant proporcionado existe
+      const participant = await prisma.participant.findUnique({
+        where: { id: participantId }
       })
 
-      if (!guest) {
-        throw new MusicadjError('Guest no encontrado', 404)
+      if (!participant) {
+        throw new MusicadjError('Participant no encontrado', 404)
       }
     }
 
-    // Crear requests en batch
+    // Crear requests en batch (participantId está garantizado por el código anterior)
     const requestsData = playlistData.tracks.map((track) => ({
       eventId,
-      guestId,
+      participantId: participantId!,
       spotifyId: track.spotifyId,
       title: track.title,
       artist: track.artist,
@@ -573,7 +573,7 @@ export async function importPlaylistToEvent(
         playlistId: clientPlaylist.id
       },
       include: {
-        guest: {
+        participant: {
           select: {
             id: true,
             displayName: true,
@@ -649,7 +649,7 @@ export async function getPlaylistTracks(eventId: string, playlistId: string) {
       eventId
     },
     include: {
-      guest: {
+      participant: {
         select: {
           id: true,
           displayName: true,
@@ -682,7 +682,7 @@ export async function getPlaylistTracks(eventId: string, playlistId: string) {
         albumArtUrl: track.albumArtUrl,
         status: 'N/A', // No es un request real
         fromClientPlaylist: true,
-        guest: null // No tiene guest porque no se creó como request
+        participant: null // No tiene participant porque no se creó como request
       }))
 
       return {

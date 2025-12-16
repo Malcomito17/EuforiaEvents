@@ -24,8 +24,8 @@ eventRouter.get('/popular', controller.getPopularSongs)
 eventRouter.get('/suggestions', controller.getSmartSuggestions)
 eventRouter.get('/messages', controller.getMessages)
 eventRouter.post('/requests', controller.createRequest)
-eventRouter.delete('/requests/:requestId', controller.deleteRequest) // Guests pueden cancelar sus propios pedidos
-eventRouter.get('/guests/:guestId/requests', controller.getGuestRequests)
+eventRouter.delete('/requests/:requestId', controller.deleteRequest) // Participants pueden cancelar sus propios pedidos
+eventRouter.get('/participants/:participantId/requests', controller.getParticipantRequests)
 eventRouter.get('/queue', controller.getPublicQueue)
 
 // Rutas Protegidas (Operador)
@@ -41,10 +41,10 @@ eventRouter.get('/stats', ...protectedMiddleware, controller.getStats)
 // RUTAS GLOBALES (sin eventId - para CRUD de catálogo)
 // ============================================
 
-// Sistema de "Me Gusta" (público para invitados)
+// Sistema de "Me Gusta" (público para participantes)
 globalRouter.post('/songs/:songId/like', controller.toggleLike)
 globalRouter.get('/songs/:songId/like-status', controller.getLikeStatus)
-globalRouter.get('/guests/:guestId/liked-songs', controller.getGuestLikedSongs)
+globalRouter.get('/participants/:participantId/liked-songs', controller.getParticipantLikedSongs)
 
 // Display Screen (público - para pantalla grande)
 globalRouter.get('/display/:eventSlug', controller.getDisplay)

@@ -250,7 +250,7 @@ export async function getStats(req: Request, res: Response, next: NextFunction) 
 const importPlaylistSchema = z.object({
   spotifyPlaylistId: z.string().min(1),
   createRequests: z.boolean().default(false),
-  guestId: z.string().optional(),
+  participantId: z.string().optional(),
 })
 
 /**
@@ -274,7 +274,7 @@ export async function importPlaylist(req: Request, res: Response, next: NextFunc
       userId,
       {
         createRequests: input.createRequests,
-        guestId: input.guestId,
+        participantId: input.participantId,
       }
     )
 

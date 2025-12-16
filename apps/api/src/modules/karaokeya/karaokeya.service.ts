@@ -1,6 +1,7 @@
 /**
- * KARAOKEYA Service (v1.4)
+ * KARAOKEYA Service (v1.5)
  * Lógica de negocio para karaoke con búsqueda híbrida (BD + YouTube)
+ * Usa Participant model en lugar de Guest
  */
 
 import { PrismaClient } from '@prisma/client'
@@ -27,7 +28,7 @@ interface CatalogSong extends YouTubeVideo {
 }
 
 interface CreateKaraokeRequestInput {
-  guestId: string
+  participantId: string
   songId?: string // Si viene del catálogo
   youtubeId?: string // Si viene de búsqueda directa
   title: string
@@ -285,12 +286,12 @@ export async function getPopularSongs(eventId: string, limit: number = 10) {
 }
 
 /**
- * Sugerencias inteligentes basadas en contexto del evento y guest
+ * Sugerencias inteligentes basadas en contexto del evento y participant
  * Combina: popularidad en el evento, historial personal, tipo de evento
  */
 export async function getSmartSuggestions(
   eventId: string,
-  guestId?: string,
+  participantId?: string,
   limit: number = 5
 ) {
   const suggestions: any[] = []
@@ -303,17 +304,17 @@ export async function getSmartSuggestions(
 
   const eventType = event?.eventData?.eventType || 'OTHER'
 
-  // 2. Si hay guest, obtener su historial personal (últimas 3 canciones)
-  if (guestId) {
-    const guestHistory = await prisma.karaokeRequest.findMany({
-      where: { guestId, songId: { not: null } },
+  // 2. Si hay participant, obtener su historial personal (últimas 3 canciones)
+  if (participantId) {
+    const participantHistory = await prisma.karaokeRequest.findMany({
+      where: { participantId, songId: { not: null } },
       include: { song: true },
       orderBy: { createdAt: 'desc' },
       take: 3
     })
 
-    // Agregar canciones similares al historial del guest (mismo artista o género)
-    for (const request of guestHistory) {
+    // Agregar canciones similares al historial del participant (mismo artista o género)
+    for (const request of participantHistory) {
       if (request.song) {
         const similarSongs = await prisma.karaokeSong.findMany({
           where: {
@@ -491,24 +492,24 @@ export async function createRequest(eventId: string, input: CreateKaraokeRequest
     throw new KaraokeyaError('El módulo de karaoke no está habilitado', 400)
   }
 
-  // Verificar que el guest existe
-  const guest = await prisma.guest.findUnique({
-    where: { id: input.guestId }
+  // Verificar que el participant existe
+  const participant = await prisma.participant.findUnique({
+    where: { id: input.participantId }
   })
 
-  if (!guest) {
-    throw new KaraokeyaError('Guest no encontrado', 404)
+  if (!participant) {
+    throw new KaraokeyaError('Participant no encontrado', 404)
   }
 
   // Verificar cooldown
-  await checkCooldown(eventId, input.guestId, config.cooldownSeconds)
+  await checkCooldown(eventId, input.participantId, config.cooldownSeconds)
 
   // Verificar límite de canciones por persona
   if (config.maxPerPerson > 0) {
     const count = await prisma.karaokeRequest.count({
       where: {
         eventId,
-        guestId: input.guestId,
+        participantId: input.participantId,
         status: { in: ['QUEUED', 'CALLED', 'ON_STAGE'] }
       }
     })
@@ -544,7 +545,7 @@ export async function createRequest(eventId: string, input: CreateKaraokeRequest
   const request = await prisma.karaokeRequest.create({
     data: {
       eventId,
-      guestId: input.guestId,
+      participantId: input.participantId,
       songId,
       title: input.title,
       artist: input.artist,
@@ -553,7 +554,7 @@ export async function createRequest(eventId: string, input: CreateKaraokeRequest
       status: 'QUEUED'
     },
     include: {
-      guest: {
+      participant: {
         select: {
           id: true,
           displayName: true,
@@ -565,7 +566,7 @@ export async function createRequest(eventId: string, input: CreateKaraokeRequest
     }
   })
 
-  console.log(`[KARAOKEYA] Nueva solicitud: "${input.title}" por ${guest.displayName} (turno #${turnNumber})`)
+  console.log(`[KARAOKEYA] Nueva solicitud: "${input.title}" por ${participant.displayName} (turno #${turnNumber})`)
 
   return request
 }
@@ -586,9 +587,9 @@ async function getNextQueuePosition(eventId: string): Promise<number> {
 }
 
 /**
- * Verifica el cooldown para un guest
+ * Verifica el cooldown para un participant
  */
-async function checkCooldown(eventId: string, guestId: string, cooldownSeconds: number): Promise<boolean> {
+async function checkCooldown(eventId: string, participantId: string, cooldownSeconds: number): Promise<boolean> {
   if (cooldownSeconds === 0) return true
 
   const cutoffTime = new Date(Date.now() - cooldownSeconds * 1000)
@@ -596,7 +597,7 @@ async function checkCooldown(eventId: string, guestId: string, cooldownSeconds: 
   const recentRequest = await prisma.karaokeRequest.findFirst({
     where: {
       eventId,
-      guestId,
+      participantId,
       createdAt: {
         gte: cutoffTime
       }
@@ -630,7 +631,7 @@ export async function listRequests(eventId: string, status?: string) {
   const requests = await prisma.karaokeRequest.findMany({
     where,
     include: {
-      guest: {
+      participant: {
         select: {
           id: true,
           displayName: true,
@@ -647,13 +648,13 @@ export async function listRequests(eventId: string, status?: string) {
 }
 
 /**
- * Obtiene las solicitudes de un guest específico
+ * Obtiene las solicitudes de un participant específico
  */
-export async function getGuestRequests(eventId: string, guestId: string) {
+export async function getParticipantRequests(eventId: string, participantId: string) {
   return await prisma.karaokeRequest.findMany({
     where: {
       eventId,
-      guestId
+      participantId
     },
     include: {
       song: true
@@ -675,7 +676,7 @@ export async function getPublicQueue(eventId: string) {
     },
     include: {
       song: true,
-      guest: {
+      participant: {
         select: {
           id: true,
           displayName: true
@@ -699,7 +700,7 @@ export async function getRequestById(eventId: string, requestId: string) {
       eventId
     },
     include: {
-      guest: {
+      participant: {
         select: {
           id: true,
           displayName: true,
@@ -738,7 +739,7 @@ export async function updateRequestStatus(
     where: { id: requestId },
     data: updateData,
     include: {
-      guest: {
+      participant: {
         select: {
           id: true,
           displayName: true,
@@ -754,16 +755,16 @@ export async function updateRequestStatus(
 
   // Enviar notificación por WhatsApp/SMS si el status es CALLED
   // (solo si Twilio está configurado - es opcional)
-  if (status === 'CALLED' && request.guest.whatsapp && isTwilioConfigured()) {
-    const message = `🎤 ¡Hola ${request.guest.displayName}! Es tu turno de cantar "${request.title}"${request.artist ? ` - ${request.artist}` : ''}. ¡Acercate al escenario! 🎉`
+  if (status === 'CALLED' && request.participant.whatsapp && isTwilioConfigured()) {
+    const message = `🎤 ¡Hola ${request.participant.displayName}! Es tu turno de cantar "${request.title}"${request.artist ? ` - ${request.artist}` : ''}. ¡Acercate al escenario! 🎉`
 
     // Enviar notificación de forma asíncrona (no bloqueante)
     sendNotification({
-      phoneNumber: request.guest.whatsapp,
+      phoneNumber: request.participant.whatsapp,
       message,
       preferWhatsApp: true
     }).catch(error => {
-      console.error(`[KARAOKEYA] Error al enviar notificación a ${request.guest.displayName}:`, error)
+      console.error(`[KARAOKEYA] Error al enviar notificación a ${request.participant.displayName}:`, error)
     })
   }
 
@@ -772,24 +773,24 @@ export async function updateRequestStatus(
 
 /**
  * Elimina una solicitud
- * @param guestId - ID del guest (si viene de cliente público)
+ * @param participantId - ID del participant (si viene de cliente público)
  * @param isOperator - true si es operador autenticado
  */
 export async function deleteRequest(
   eventId: string,
   requestId: string,
-  guestId?: string,
+  participantId?: string,
   isOperator: boolean = false
 ) {
   const request = await getRequestById(eventId, requestId)
 
-  // Si no es operador, validar que el guest sea dueño del pedido
+  // Si no es operador, validar que el participant sea dueño del pedido
   if (!isOperator) {
-    if (!guestId) {
-      throw new KaraokeyaError('Se requiere guestId para cancelar el pedido', 400)
+    if (!participantId) {
+      throw new KaraokeyaError('Se requiere participantId para cancelar el pedido', 400)
     }
 
-    if (request.guestId !== guestId) {
+    if (request.participantId !== participantId) {
       throw new KaraokeyaError('No podés cancelar un pedido que no es tuyo', 403)
     }
   }
@@ -798,7 +799,7 @@ export async function deleteRequest(
     where: { id: requestId }
   })
 
-  console.log(`[KARAOKEYA] Request ${requestId} eliminado${guestId ? ` por guest ${guestId}` : ' por operador'}`)
+  console.log(`[KARAOKEYA] Request ${requestId} eliminado${participantId ? ` por participant ${participantId}` : ' por operador'}`)
 
   return { success: true }
 }
@@ -1039,7 +1040,7 @@ export async function reactivateCatalogSong(songId: string) {
  * Toggle like (idempotente): si existe lo elimina, si no existe lo crea
  * Actualiza el contador likesCount
  */
-export async function toggleSongLike(songId: string, guestId: string) {
+export async function toggleSongLike(songId: string, participantId: string) {
   // Verificar que exista la canción
   const song = await prisma.karaokeSong.findUnique({
     where: { id: songId },
@@ -1049,19 +1050,19 @@ export async function toggleSongLike(songId: string, guestId: string) {
     throw new KaraokeyaError('Canción no encontrada', 404)
   }
 
-  // Verificar que exista el guest
-  const guest = await prisma.guest.findUnique({
-    where: { id: guestId },
+  // Verificar que exista el participant
+  const participant = await prisma.participant.findUnique({
+    where: { id: participantId },
   })
 
-  if (!guest) {
-    throw new KaraokeyaError('Invitado no encontrado', 404)
+  if (!participant) {
+    throw new KaraokeyaError('Participante no encontrado', 404)
   }
 
   // Buscar like existente
   const existingLike = await prisma.karaokeSongLike.findUnique({
     where: {
-      songId_guestId: { songId, guestId },
+      songId_participantId: { songId, participantId },
     },
   })
 
@@ -1081,12 +1082,12 @@ export async function toggleSongLike(songId: string, guestId: string) {
     ])
     liked = false
     likesCount = Math.max(0, song.likesCount - 1)
-    console.log(`[KARAOKEYA] Unlike: ${guestId} → ${songId}`)
+    console.log(`[KARAOKEYA] Unlike: ${participantId} → ${songId}`)
   } else {
     // LIKE: Crear el like e incrementar contador
     await prisma.$transaction([
       prisma.karaokeSongLike.create({
-        data: { songId, guestId },
+        data: { songId, participantId },
       }),
       prisma.karaokeSong.update({
         where: { id: songId },
@@ -1095,7 +1096,7 @@ export async function toggleSongLike(songId: string, guestId: string) {
     ])
     liked = true
     likesCount = song.likesCount + 1
-    console.log(`[KARAOKEYA] Like: ${guestId} → ${songId}`)
+    console.log(`[KARAOKEYA] Like: ${participantId} → ${songId}`)
   }
 
   return {
@@ -1105,12 +1106,12 @@ export async function toggleSongLike(songId: string, guestId: string) {
 }
 
 /**
- * Obtiene el estado de like de un guest para una canción
+ * Obtiene el estado de like de un participant para una canción
  */
-export async function getSongLikeStatus(songId: string, guestId: string) {
+export async function getSongLikeStatus(songId: string, participantId: string) {
   const like = await prisma.karaokeSongLike.findUnique({
     where: {
-      songId_guestId: { songId, guestId },
+      songId_participantId: { songId, participantId },
     },
   })
 
@@ -1120,11 +1121,11 @@ export async function getSongLikeStatus(songId: string, guestId: string) {
 }
 
 /**
- * Obtiene todas las canciones que le gustaron a un guest
+ * Obtiene todas las canciones que le gustaron a un participant
  */
-export async function getGuestLikedSongs(guestId: string, limit: number = 50) {
+export async function getParticipantLikedSongs(participantId: string, limit: number = 50) {
   const likes = await prisma.karaokeSongLike.findMany({
-    where: { guestId },
+    where: { participantId },
     include: {
       song: true,
     },
@@ -1174,7 +1175,7 @@ export async function getDisplayData(eventSlug: string) {
       },
     },
     include: {
-      guest: {
+      participant: {
         select: {
           id: true,
           displayName: true,
