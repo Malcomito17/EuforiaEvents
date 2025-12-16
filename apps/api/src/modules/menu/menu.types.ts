@@ -3,7 +3,7 @@ import { z } from 'zod'
 // Schema para agregar plato al menú del evento
 export const addDishToMenuSchema = z.object({
   dishId: z.string().cuid(),
-  categoryId: z.string().cuid(),
+  categoryId: z.string().cuid().optional(), // Si no se envía, se usará la categoría "PRINCIPAL" por defecto
   isDefault: z.boolean().optional().default(false),
   orden: z.number().int().min(0).optional().default(0),
 })

@@ -101,9 +101,34 @@ export class MenuService {
       throw new Error('Plato no encontrado o inactivo')
     }
 
+    // Si no se envía categoryId, buscar o crear la categoría "PRINCIPAL" por defecto
+    let categoryId = data.categoryId
+    if (!categoryId) {
+      // Buscar la categoría PRINCIPAL global (isSystemDefault)
+      let defaultCategory = await prisma.dishCategory.findFirst({
+        where: {
+          nombre: 'PRINCIPAL',
+          isSystemDefault: true,
+        },
+      })
+
+      // Si no existe, crearla
+      if (!defaultCategory) {
+        defaultCategory = await prisma.dishCategory.create({
+          data: {
+            nombre: 'PRINCIPAL',
+            orden: 1,
+            isSystemDefault: true,
+          },
+        })
+      }
+
+      categoryId = defaultCategory.id
+    }
+
     // Verificar que la categoría existe
     const category = await prisma.dishCategory.findUnique({
-      where: { id: data.categoryId },
+      where: { id: categoryId },
     })
 
     if (!category) {
@@ -128,7 +153,7 @@ export class MenuService {
       data: {
         eventId,
         dishId: data.dishId,
-        categoryId: data.categoryId,
+        categoryId: categoryId,
         isDefault: data.isDefault || false,
         orden: data.orden || 0,
       },
