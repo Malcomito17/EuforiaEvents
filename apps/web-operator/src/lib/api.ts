@@ -813,6 +813,8 @@ export interface EventGuest {
   observaciones: string | null
   checkedInAt: string | null
   checkedInBy: string | null
+  isImportante: boolean
+  isDestacado: boolean
   createdAt: string
   person: Person
   mesa?: {
@@ -835,12 +837,16 @@ export interface EventGuestCreateInput {
   mesaId?: string | null
   observaciones?: string
   accesibilidad?: Accesibilidad
+  isImportante?: boolean
+  isDestacado?: boolean
 }
 
 export interface EventGuestUpdateInput {
   mesaId?: string | null
   observaciones?: string
   accesibilidad?: Accesibilidad
+  isImportante?: boolean
+  isDestacado?: boolean
 }
 
 export interface EventGuestStats {

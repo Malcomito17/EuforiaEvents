@@ -1,5 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-arm64-openssl-1.1.x"]
 }
 
 datasource db {
@@ -154,6 +155,8 @@ model EventGuest {
   checkedOutBy  String? // userId del recepcionista
   observaciones String?
   accesibilidad String? // NINGUNA | MOVILIDAD_REDUCIDA | VISUAL | AUDITIVA | OTRA
+  isImportante  Boolean   @default(false) // Badge "Importante" para invitados prioritarios
+  isDestacado   Boolean   @default(false) // Badge "Destacado" para invitados especiales
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   addedBy       String? // userId

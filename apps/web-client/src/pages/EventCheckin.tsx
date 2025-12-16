@@ -20,6 +20,8 @@ interface Guest {
   }
   estadoIngreso: 'PENDIENTE' | 'INGRESADO' | 'NO_ASISTIO'
   checkedInAt?: string
+  isImportante?: boolean
+  isDestacado?: boolean
   guestDishes?: Array<{
     eventDish: {
       dish: {
@@ -321,11 +323,22 @@ export default function EventCheckin() {
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
                     {/* Name */}
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <User className="w-4 h-4 text-white/50 flex-shrink-0" />
                       <span className="font-semibold truncate">
                         {guest.person.nombre} {guest.person.apellido}
                       </span>
+                      {/* Badges */}
+                      {guest.isImportante && (
+                        <span className="px-2 py-0.5 text-xs font-medium bg-red-500/20 text-red-400 rounded-full flex-shrink-0">
+                          ⭐ Importante
+                        </span>
+                      )}
+                      {guest.isDestacado && (
+                        <span className="px-2 py-0.5 text-xs font-medium bg-amber-500/20 text-amber-400 rounded-full flex-shrink-0">
+                          ✨ Destacado
+                        </span>
+                      )}
                       {guest.estadoIngreso === 'INGRESADO' && (
                         <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" />
                       )}

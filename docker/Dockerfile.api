@@ -1,7 +1,8 @@
-FROM node:20-alpine
+FROM node:20-alpine3.18
 
-# Instalar dependencias del sistema
-RUN apk add --no-cache curl
+# Instalar dependencias del sistema incluyendo OpenSSL para Prisma
+# Alpine 3.18 still has openssl 1.1 available
+RUN apk add --no-cache curl openssl
 
 WORKDIR /app
 
@@ -18,7 +19,7 @@ COPY apps/api ./apps/api
 
 # Generar Prisma Client
 WORKDIR /app/apps/api
-RUN npx prisma generate || true
+RUN npx prisma generate
 
 WORKDIR /app
 

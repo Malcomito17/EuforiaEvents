@@ -30,6 +30,8 @@ export class EventGuestsService {
       checkedOutBy: guest.checkedOutBy,
       observaciones: guest.observaciones,
       accesibilidad: guest.accesibilidad as Accesibilidad | null,
+      isImportante: guest.isImportante || false,
+      isDestacado: guest.isDestacado || false,
       createdAt: guest.createdAt.toISOString(),
       updatedAt: guest.updatedAt.toISOString(),
       addedBy: guest.addedBy,
@@ -146,6 +148,8 @@ export class EventGuestsService {
         mesaId: data.mesaId || null,
         observaciones: data.observaciones || null,
         accesibilidad: data.accesibilidad || 'NINGUNA',
+        isImportante: data.isImportante || false,
+        isDestacado: data.isDestacado || false,
         addedBy: userId,
       },
       include: {
@@ -213,6 +217,8 @@ export class EventGuestsService {
         estadoIngreso: data.estadoIngreso,
         observaciones: data.observaciones !== undefined ? data.observaciones : undefined,
         accesibilidad: data.accesibilidad,
+        isImportante: data.isImportante !== undefined ? data.isImportante : undefined,
+        isDestacado: data.isDestacado !== undefined ? data.isDestacado : undefined,
       },
       include: {
         person: true,

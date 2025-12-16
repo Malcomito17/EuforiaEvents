@@ -14,6 +14,8 @@ export const eventGuestCreateSchema = z.object({
   mesaId: z.string().cuid().optional().nullable(),
   observaciones: z.string().optional().nullable(),
   accesibilidad: AccesibilidadEnum.optional().default('NINGUNA'),
+  isImportante: z.boolean().optional().default(false),
+  isDestacado: z.boolean().optional().default(false),
 })
 
 // Schema para actualizar invitado
@@ -22,6 +24,8 @@ export const eventGuestUpdateSchema = z.object({
   estadoIngreso: EstadoIngresoEnum.optional(),
   observaciones: z.string().optional().nullable(),
   accesibilidad: AccesibilidadEnum.optional(),
+  isImportante: z.boolean().optional(),
+  isDestacado: z.boolean().optional(),
 })
 
 // Schema para check-in
@@ -71,6 +75,8 @@ export interface EventGuestResponse {
   checkedOutBy: string | null
   observaciones: string | null
   accesibilidad: Accesibilidad | null
+  isImportante: boolean
+  isDestacado: boolean
   createdAt: string
   updatedAt: string
   addedBy: string | null

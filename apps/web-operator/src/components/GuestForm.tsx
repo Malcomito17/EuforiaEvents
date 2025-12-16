@@ -17,7 +17,9 @@ export function GuestForm({ eventId, guest, onClose, onSuccess }: GuestFormProps
     personId: guest?.personId || '',
     mesaId: guest?.mesaId || null,
     observaciones: guest?.observaciones || '',
-    accesibilidad: guest?.accesibilidad || 'NINGUNA'
+    accesibilidad: guest?.accesibilidad || 'NINGUNA',
+    isImportante: guest?.isImportante || false,
+    isDestacado: guest?.isDestacado || false,
   })
 
   const [mesas, setMesas] = useState<Mesa[]>([])
@@ -267,6 +269,40 @@ export function GuestForm({ eventId, guest, onClose, onSuccess }: GuestFormProps
                 </option>
               ))}
             </select>
+          </div>
+
+          {/* Badges: Importante / Destacado */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-3">
+              Badges especiales
+            </label>
+            <div className="flex flex-wrap gap-4">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formData.isImportante || false}
+                  onChange={(e) => setFormData({ ...formData, isImportante: e.target.checked })}
+                  className="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500"
+                />
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-red-100 text-red-700 rounded-full text-sm font-medium">
+                  ⭐ Importante
+                </span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formData.isDestacado || false}
+                  onChange={(e) => setFormData({ ...formData, isDestacado: e.target.checked })}
+                  className="w-4 h-4 text-amber-600 border-gray-300 rounded focus:ring-amber-500"
+                />
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-100 text-amber-700 rounded-full text-sm font-medium">
+                  ✨ Destacado
+                </span>
+              </label>
+            </div>
+            <p className="mt-2 text-xs text-gray-500">
+              Estos badges ayudan a identificar rápidamente invitados prioritarios en el check-in.
+            </p>
           </div>
 
           {/* Menú Asignado - Solo visible al editar */}
