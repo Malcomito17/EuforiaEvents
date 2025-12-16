@@ -13,6 +13,22 @@ interface DishCardProps {
   eventDishId?: string
 }
 
+// Helper para parsear JSON de forma segura
+function safeJsonParse<T>(value: any, fallback: T): T {
+  if (!value) return fallback
+  if (Array.isArray(value)) return value as T
+  if (typeof value === 'object') return value as T
+  if (typeof value === 'string') {
+    try {
+      return JSON.parse(value) as T
+    } catch {
+      // Si no es JSON válido, puede ser un valor simple como "VEGETARIANO"
+      return [value] as T
+    }
+  }
+  return fallback
+}
+
 export function DishCard({
   dish,
   isInMenu = false,
@@ -23,8 +39,8 @@ export function DishCard({
   onEdit,
   eventDishId
 }: DishCardProps) {
-  const dietaryInfo: TipoDieta[] = dish.dietaryInfo ? JSON.parse(dish.dietaryInfo) : []
-  const allergens: string[] = dish.allergens ? JSON.parse(dish.allergens) : []
+  const dietaryInfo: TipoDieta[] = safeJsonParse<TipoDieta[]>(dish.dietaryInfo, [])
+  const allergens: string[] = safeJsonParse<string[]>(dish.allergens, [])
 
   return (
     <div className={clsx(
