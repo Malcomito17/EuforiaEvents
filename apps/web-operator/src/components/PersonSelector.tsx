@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { personsApi, Person, PersonCreateInput, TipoDieta } from '@/lib/api'
-import { Search, Plus, User, Loader2 } from 'lucide-react'
+import { personsApi, Person, PersonCreateInput, PersonUpdateInput, TipoDieta } from '@/lib/api'
+import { Search, Plus, User, Loader2, Edit2 } from 'lucide-react'
 
 // Opciones de restricciones alimenticias
 const DIETARY_OPTIONS: { value: TipoDieta; label: string }[] = [
@@ -34,6 +34,7 @@ export function PersonSelector({
   const [selectedPerson, setSelectedPerson] = useState<Person | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [showCreateForm, setShowCreateForm] = useState(false)
+  const [showEditForm, setShowEditForm] = useState(false)
 
   // Cargar persona seleccionada
   useEffect(() => {
@@ -126,12 +127,21 @@ export function PersonSelector({
               return null
             })()}
           </div>
-          <button
-            onClick={handleClear}
-            className="text-sm text-primary-600 hover:text-primary-700"
-          >
-            Cambiar
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setShowEditForm(true)}
+              className="p-1.5 text-gray-500 hover:text-primary-600 hover:bg-gray-100 rounded transition"
+              title="Editar persona"
+            >
+              <Edit2 className="h-4 w-4" />
+            </button>
+            <button
+              onClick={handleClear}
+              className="text-sm text-primary-600 hover:text-primary-700"
+            >
+              Cambiar
+            </button>
+          </div>
         </div>
       ) : (
         <div className="relative">
@@ -208,6 +218,18 @@ export function PersonSelector({
             setShowCreateForm(false)
           }}
           initialName={searchTerm}
+        />
+      )}
+
+      {/* Modal para editar persona */}
+      {showEditForm && selectedPerson && (
+        <EditPersonModal
+          person={selectedPerson}
+          onClose={() => setShowEditForm(false)}
+          onUpdated={(person) => {
+            setSelectedPerson(person)
+            setShowEditForm(false)
+          }}
         />
       )}
     </div>
@@ -417,6 +439,220 @@ function CreatePersonModal({ onClose, onCreated, initialName = '' }: CreatePerso
               disabled={isSubmitting}
             >
               {isSubmitting ? 'Creando...' : 'Crear'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Modal para editar persona existente
+interface EditPersonModalProps {
+  person: Person
+  onClose: () => void
+  onUpdated: (person: Person) => void
+}
+
+function EditPersonModal({ person, onClose, onUpdated }: EditPersonModalProps) {
+  // Parsear restricciones alimentarias
+  const initialRestrictions = (() => {
+    try {
+      if (!person.dietaryRestrictions) return []
+      return typeof person.dietaryRestrictions === 'string'
+        ? JSON.parse(person.dietaryRestrictions)
+        : person.dietaryRestrictions
+    } catch {
+      return []
+    }
+  })()
+
+  const [formData, setFormData] = useState<PersonUpdateInput>({
+    nombre: person.nombre,
+    apellido: person.apellido || '',
+    email: person.email || '',
+    phone: person.phone || '',
+    company: person.company || '',
+    dietaryRestrictions: initialRestrictions
+  })
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState('')
+
+  const handleSubmit = async () => {
+    setError('')
+
+    if (!formData.nombre?.trim()) {
+      setError('El nombre es obligatorio')
+      return
+    }
+
+    if (!formData.apellido?.trim()) {
+      setError('El apellido es obligatorio')
+      return
+    }
+
+    setIsSubmitting(true)
+    try {
+      const cleanedData: PersonUpdateInput = {
+        nombre: formData.nombre?.trim(),
+        apellido: formData.apellido?.trim(),
+        email: formData.email?.trim() || undefined,
+        phone: formData.phone?.trim() || undefined,
+        company: formData.company?.trim() || undefined,
+        dietaryRestrictions: formData.dietaryRestrictions?.length ? formData.dietaryRestrictions : undefined,
+      }
+
+      const { data } = await personsApi.update(person.id, cleanedData)
+      const personData = (data as any).person || (data as any).data || data
+      onUpdated(personData)
+    } catch (err: any) {
+      console.error('Error updating person:', err)
+      setError(err.response?.data?.message || err.response?.data?.error || 'Error al actualizar la persona')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  return (
+    <div
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div className="bg-white rounded-lg max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+        <h2 className="text-xl font-bold text-gray-900 mb-4">Editar Persona</h2>
+
+        <div className="space-y-4">
+          {error && (
+            <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+              {error}
+            </div>
+          )}
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Nombre *
+            </label>
+            <input
+              type="text"
+              value={formData.nombre || ''}
+              onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Apellido *
+            </label>
+            <input
+              type="text"
+              value={formData.apellido || ''}
+              onChange={(e) => setFormData({ ...formData, apellido: e.target.value })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Email
+            </label>
+            <input
+              type="email"
+              value={formData.email || ''}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Teléfono
+            </label>
+            <input
+              type="tel"
+              value={formData.phone || ''}
+              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Empresa
+            </label>
+            <input
+              type="text"
+              value={formData.company || ''}
+              onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+            />
+          </div>
+
+          {/* Restricciones alimenticias */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Restricciones alimenticias
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              {DIETARY_OPTIONS.map((option) => {
+                const isSelected = formData.dietaryRestrictions?.includes(option.value)
+                return (
+                  <label
+                    key={option.value}
+                    className={`flex items-center gap-2 p-2 border rounded-lg cursor-pointer transition ${
+                      isSelected
+                        ? 'bg-primary-50 border-primary-300 text-primary-700'
+                        : 'bg-white border-gray-200 hover:bg-gray-50'
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={(e) => {
+                        const current = formData.dietaryRestrictions || []
+                        if (e.target.checked) {
+                          setFormData({
+                            ...formData,
+                            dietaryRestrictions: [...current, option.value]
+                          })
+                        } else {
+                          setFormData({
+                            ...formData,
+                            dietaryRestrictions: current.filter(r => r !== option.value)
+                          })
+                        }
+                      }}
+                      className="h-4 w-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                    />
+                    <span className="text-sm">{option.label}</span>
+                  </label>
+                )
+              })}
+            </div>
+          </div>
+
+          <div className="flex gap-3 pt-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
+              disabled={isSubmitting}
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                handleSubmit()
+              }}
+              className="flex-1 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition disabled:opacity-50"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Guardando...' : 'Guardar cambios'}
             </button>
           </div>
         </div>

@@ -22,6 +22,9 @@ router.get('/:dishId', (req, res) => dishesController.getById(req, res))
 // PUT /api/dishes/:dishId - Actualizar plato
 router.put('/:dishId', (req, res) => dishesController.update(req, res))
 
+// PATCH /api/dishes/:dishId - Actualizar plato (alternativo)
+router.patch('/:dishId', (req, res) => dishesController.update(req, res))
+
 // DELETE /api/dishes/:dishId - Desactivar plato
 router.delete('/:dishId', (req, res) => dishesController.delete(req, res))
 
