@@ -1,6 +1,19 @@
 import { useState, useEffect } from 'react'
-import { personsApi, Person, PersonCreateInput } from '@/lib/api'
+import { personsApi, Person, PersonCreateInput, TipoDieta } from '@/lib/api'
 import { Search, Plus, User, Loader2 } from 'lucide-react'
+
+// Opciones de restricciones alimenticias
+const DIETARY_OPTIONS: { value: TipoDieta; label: string }[] = [
+  { value: 'VEGANO', label: 'Vegano' },
+  { value: 'VEGETARIANO', label: 'Vegetariano' },
+  { value: 'SIN_GLUTEN', label: 'Sin gluten (celíaco)' },
+  { value: 'SIN_LACTOSA', label: 'Sin lactosa' },
+  { value: 'KOSHER', label: 'Kosher' },
+  { value: 'HALAL', label: 'Halal' },
+  { value: 'PESCETARIANO', label: 'Pescetariano' },
+  { value: 'BAJO_SODIO', label: 'Bajo en sodio' },
+  { value: 'DIABETICO', label: 'Diabético' },
+]
 
 interface PersonSelectorProps {
   value: string | null
@@ -95,6 +108,23 @@ export function PersonSelector({
             {selectedPerson.email && (
               <div className="text-sm text-gray-500">{selectedPerson.email}</div>
             )}
+            {selectedPerson.dietaryRestrictions && (() => {
+              try {
+                const restrictions = typeof selectedPerson.dietaryRestrictions === 'string'
+                  ? JSON.parse(selectedPerson.dietaryRestrictions)
+                  : selectedPerson.dietaryRestrictions
+                if (Array.isArray(restrictions) && restrictions.length > 0) {
+                  return (
+                    <div className="text-xs text-orange-600 mt-1">
+                      🥗 {restrictions.map((r: string) =>
+                        DIETARY_OPTIONS.find(o => o.value === r)?.label || r
+                      ).join(', ')}
+                    </div>
+                  )
+                }
+              } catch { /* ignore */ }
+              return null
+            })()}
           </div>
           <button
             onClick={handleClear}
@@ -252,7 +282,7 @@ function CreatePersonModal({ onClose, onCreated, initialName = '' }: CreatePerso
       className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
       onClick={(e) => e.stopPropagation()}
     >
-      <div className="bg-white rounded-lg max-w-md w-full p-6" onClick={(e) => e.stopPropagation()}>
+      <div className="bg-white rounded-lg max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
         <h2 className="text-xl font-bold text-gray-900 mb-4">Crear Nueva Persona</h2>
 
         <div className="space-y-4">
@@ -322,6 +352,49 @@ function CreatePersonModal({ onClose, onCreated, initialName = '' }: CreatePerso
               onChange={(e) => setFormData({ ...formData, company: e.target.value })}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
             />
+          </div>
+
+          {/* Restricciones alimenticias */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Restricciones alimenticias
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              {DIETARY_OPTIONS.map((option) => {
+                const isSelected = formData.dietaryRestrictions?.includes(option.value)
+                return (
+                  <label
+                    key={option.value}
+                    className={`flex items-center gap-2 p-2 border rounded-lg cursor-pointer transition ${
+                      isSelected
+                        ? 'bg-primary-50 border-primary-300 text-primary-700'
+                        : 'bg-white border-gray-200 hover:bg-gray-50'
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={(e) => {
+                        const current = formData.dietaryRestrictions || []
+                        if (e.target.checked) {
+                          setFormData({
+                            ...formData,
+                            dietaryRestrictions: [...current, option.value]
+                          })
+                        } else {
+                          setFormData({
+                            ...formData,
+                            dietaryRestrictions: current.filter(r => r !== option.value)
+                          })
+                        }
+                      }}
+                      className="h-4 w-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                    />
+                    <span className="text-sm">{option.label}</span>
+                  </label>
+                )
+              })}
+            </div>
           </div>
 
           <div className="flex gap-3 pt-4">

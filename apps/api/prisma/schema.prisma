@@ -180,6 +180,7 @@ model Dish {
   id          String   @id @default(cuid())
   nombre      String
   descripcion String?
+  categoria   String   @default("PRINCIPAL") // Categoría sugerida: ENTRADA, PRINCIPAL, POSTRE, etc.
   dietaryInfo String   @default("[]") // JSON: ["VEGANO", "SIN_GLUTEN", "SIN_LACTOSA"]
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
@@ -190,17 +191,19 @@ model Dish {
 
   @@index([nombre])
   @@index([isActive])
+  @@index([categoria])
   @@map("dishes")
 }
 
 // DishCategory = Categorías de platos (configurables por evento)
 model DishCategory {
-  id              String   @id @default(cuid())
-  eventId         String? // NULL = categoría global (default), eventId = custom del evento
-  nombre          String // "ENTRADA", "PRINCIPAL", "POSTRE", etc.
-  orden           Int      @default(0)
-  isSystemDefault Boolean  @default(false) // true para ENTRADA, PRINCIPAL, POSTRE, BUFFET
-  createdAt       DateTime @default(now())
+  id                    String   @id @default(cuid())
+  eventId               String? // NULL = categoría global (default), eventId = custom del evento
+  nombre                String // "ENTRADA", "PRINCIPAL", "POSTRE", etc.
+  orden                 Int      @default(0)
+  isSystemDefault       Boolean  @default(false) // true para ENTRADA, PRINCIPAL, POSTRE, BUFFET
+  allowMultipleDefaults Boolean  @default(false) // true para categorías como "DEGUSTACIÓN" que permiten varios defaults
+  createdAt             DateTime @default(now())
 
   event       Event?      @relation("EventCategories", fields: [eventId], references: [id], onDelete: Cascade)
   eventDishes EventDish[]

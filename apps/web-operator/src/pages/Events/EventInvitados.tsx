@@ -1,11 +1,14 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { eventGuestsApi, eventsApi, EventGuest, Event, EventGuestStats } from '@/lib/api'
-import { ArrowLeft, Plus, Upload, Loader2, Check, X, User, MapPin, QrCode } from 'lucide-react'
+import { eventGuestsApi, eventsApi, mesasApi, EventGuest, Event, EventGuestStats, Mesa } from '@/lib/api'
+import { ArrowLeft, Plus, Upload, Loader2, Check, X, User, QrCode, ArrowUp, ArrowDown, ArrowUpDown, UtensilsCrossed } from 'lucide-react'
 import clsx from 'clsx'
 import { GuestForm } from '@/components/GuestForm'
 import { ImportGuestsCSV } from '@/components/ImportGuestsCSV'
 import { EventCheckinQR } from '@/components/EventCheckinQR'
+
+type SortField = 'nombre' | 'mesa' | 'estado' | 'checkin'
+type SortDirection = 'asc' | 'desc'
 
 export function EventInvitadosPage() {
   const { id: eventId } = useParams()
@@ -14,12 +17,20 @@ export function EventInvitadosPage() {
   const [guests, setGuests] = useState<EventGuest[]>([])
   const [stats, setStats] = useState<EventGuestStats | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [filter, setFilter] = useState<'all' | 'PENDIENTE' | 'INGRESADO' | 'NO_ASISTIO'>('all')
+  const [filter, setFilter] = useState<'all' | 'PENDIENTE' | 'INGRESADO' | 'NO_ASISTIO' | 'SIN_MESA'>('all')
   const [searchTerm, setSearchTerm] = useState('')
   const [showGuestForm, setShowGuestForm] = useState(false)
   const [showImportCSV, setShowImportCSV] = useState(false)
   const [showCheckinQR, setShowCheckinQR] = useState(false)
   const [editingGuest, setEditingGuest] = useState<EventGuest | null>(null)
+
+  // Estado para ordenamiento
+  const [sortField, setSortField] = useState<SortField>('nombre')
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc')
+
+  // Estado para mesas y asignación rápida
+  const [mesas, setMesas] = useState<Mesa[]>([])
+  const [assigningMesaFor, setAssigningMesaFor] = useState<string | null>(null)
 
   useEffect(() => {
     loadData()
@@ -30,10 +41,11 @@ export function EventInvitadosPage() {
 
     setIsLoading(true)
     try {
-      const [eventRes, guestsRes, statsRes] = await Promise.all([
+      const [eventRes, guestsRes, statsRes, mesasRes] = await Promise.all([
         eventsApi.get(eventId),
         eventGuestsApi.list(eventId),
-        eventGuestsApi.getStats(eventId)
+        eventGuestsApi.getStats(eventId),
+        mesasApi.list(eventId)
       ])
 
       setEvent(eventRes.data)
@@ -43,6 +55,9 @@ export function EventInvitadosPage() {
       // Stats puede venir en data o directamente
       const statsData = (statsRes.data as any).data || statsRes.data
       setStats(statsData)
+      // Mesas
+      const mesasData = (mesasRes.data as any).data || mesasRes.data.mesas || []
+      setMesas(mesasData)
     } catch (err) {
       console.error('Error loading data:', err)
     } finally {
@@ -79,11 +94,51 @@ export function EventInvitadosPage() {
     }
   }
 
-  const getFilteredGuests = () => {
-    let filtered = guests
+  // Asignación rápida de mesa
+  const handleQuickMesaAssign = async (guestId: string, mesaId: string | null) => {
+    if (!eventId) return
+    setAssigningMesaFor(guestId)
+    try {
+      await eventGuestsApi.update(eventId, guestId, { mesaId })
+      // Actualizar localmente para evitar recarga completa
+      setGuests(prev => prev.map(g =>
+        g.id === guestId
+          ? { ...g, mesaId, mesa: mesaId ? mesas.find(m => m.id === mesaId) : undefined }
+          : g
+      ))
+    } catch (err) {
+      console.error('Error assigning mesa:', err)
+      alert('Error al asignar mesa')
+    } finally {
+      setAssigningMesaFor(null)
+    }
+  }
 
-    // Filtrar por estado
-    if (filter !== 'all') {
+  // Función para cambiar ordenamiento
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc')
+    } else {
+      setSortField(field)
+      setSortDirection('asc')
+    }
+  }
+
+  // Icono de ordenamiento
+  const SortIcon = ({ field }: { field: SortField }) => {
+    if (sortField !== field) return <ArrowUpDown className="h-4 w-4 text-gray-400" />
+    return sortDirection === 'asc'
+      ? <ArrowUp className="h-4 w-4 text-primary-600" />
+      : <ArrowDown className="h-4 w-4 text-primary-600" />
+  }
+
+  const getFilteredAndSortedGuests = useMemo(() => {
+    let filtered = [...guests]
+
+    // Filtrar por estado o mesa
+    if (filter === 'SIN_MESA') {
+      filtered = filtered.filter(g => !g.mesaId)
+    } else if (filter !== 'all') {
       filtered = filtered.filter(g => g.estadoIngreso === filter)
     }
 
@@ -97,8 +152,37 @@ export function EventInvitadosPage() {
       )
     }
 
+    // Ordenar
+    filtered.sort((a, b) => {
+      let comparison = 0
+
+      switch (sortField) {
+        case 'nombre':
+          const nameA = `${a.person?.nombre || ''} ${a.person?.apellido || ''}`.toLowerCase()
+          const nameB = `${b.person?.nombre || ''} ${b.person?.apellido || ''}`.toLowerCase()
+          comparison = nameA.localeCompare(nameB)
+          break
+        case 'mesa':
+          const mesaA = a.mesa?.numero || 'zzz' // Sin mesa al final
+          const mesaB = b.mesa?.numero || 'zzz'
+          comparison = mesaA.localeCompare(mesaB, undefined, { numeric: true })
+          break
+        case 'estado':
+          const estadoOrder = { INGRESADO: 0, PENDIENTE: 1, NO_ASISTIO: 2 }
+          comparison = (estadoOrder[a.estadoIngreso] || 99) - (estadoOrder[b.estadoIngreso] || 99)
+          break
+        case 'checkin':
+          const dateA = a.checkedInAt ? new Date(a.checkedInAt).getTime() : 0
+          const dateB = b.checkedInAt ? new Date(b.checkedInAt).getTime() : 0
+          comparison = dateA - dateB
+          break
+      }
+
+      return sortDirection === 'asc' ? comparison : -comparison
+    })
+
     return filtered
-  }
+  }, [guests, filter, searchTerm, sortField, sortDirection])
 
   if (isLoading) {
     return (
@@ -108,7 +192,7 @@ export function EventInvitadosPage() {
     )
   }
 
-  const filteredGuests = getFilteredGuests()
+  const filteredGuests = getFilteredAndSortedGuests
 
   return (
     <div className="space-y-6">
@@ -238,6 +322,17 @@ export function EventInvitadosPage() {
             >
               No asistieron
             </button>
+            <button
+              onClick={() => setFilter('SIN_MESA')}
+              className={clsx(
+                'px-4 py-2 rounded-lg text-sm font-medium transition',
+                filter === 'SIN_MESA'
+                  ? 'bg-purple-100 text-purple-700'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              )}
+            >
+              Sin mesa
+            </button>
           </div>
         </div>
       </div>
@@ -258,20 +353,47 @@ export function EventInvitadosPage() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Invitado
+                  <th
+                    onClick={() => handleSort('nombre')}
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition select-none"
+                  >
+                    <div className="flex items-center gap-1">
+                      Invitado
+                      <SortIcon field="nombre" />
+                    </div>
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Contacto
                   </th>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Mesa
+                  <th
+                    onClick={() => handleSort('mesa')}
+                    className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition select-none"
+                  >
+                    <div className="flex items-center justify-center gap-1">
+                      Mesa
+                      <SortIcon field="mesa" />
+                    </div>
                   </th>
                   <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Estado
+                    Platos
                   </th>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Check-in
+                  <th
+                    onClick={() => handleSort('estado')}
+                    className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition select-none"
+                  >
+                    <div className="flex items-center justify-center gap-1">
+                      Estado
+                      <SortIcon field="estado" />
+                    </div>
+                  </th>
+                  <th
+                    onClick={() => handleSort('checkin')}
+                    className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition select-none"
+                  >
+                    <div className="flex items-center justify-center gap-1">
+                      Check-in
+                      <SortIcon field="checkin" />
+                    </div>
                   </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Acciones
@@ -318,13 +440,44 @@ export function EventInvitadosPage() {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-center">
-                        {guest.mesa ? (
-                          <div className="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-700 rounded text-sm font-medium">
-                            <MapPin className="h-3 w-3" />
-                            Mesa {guest.mesa.numero}
+                        {assigningMesaFor === guest.id ? (
+                          <Loader2 className="h-4 w-4 animate-spin mx-auto text-primary-600" />
+                        ) : (
+                          <select
+                            value={guest.mesaId || ''}
+                            onChange={(e) => handleQuickMesaAssign(guest.id, e.target.value || null)}
+                            className={clsx(
+                              'px-2 py-1 text-sm rounded border transition',
+                              guest.mesaId
+                                ? 'bg-blue-50 border-blue-200 text-blue-700 font-medium'
+                                : 'bg-gray-50 border-gray-200 text-gray-500'
+                            )}
+                          >
+                            <option value="">Sin asignar</option>
+                            {mesas.map((mesa) => (
+                              <option key={mesa.id} value={mesa.id}>
+                                Mesa {mesa.numero} ({mesa._count?.invitados || 0}/{mesa.capacidad})
+                              </option>
+                            ))}
+                          </select>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center">
+                        {guest.assignedDishes && guest.assignedDishes.length > 0 ? (
+                          <div className="flex flex-col gap-1">
+                            {guest.assignedDishes.map((ad) => (
+                              <span
+                                key={ad.id}
+                                className="inline-flex items-center gap-1 px-2 py-0.5 bg-green-50 text-green-700 rounded text-xs"
+                                title={ad.dish?.categoria || ''}
+                              >
+                                <UtensilsCrossed className="h-3 w-3" />
+                                {ad.dish?.nombre || 'Plato'}
+                              </span>
+                            ))}
                           </div>
                         ) : (
-                          <span className="text-gray-400 text-sm">Sin asignar</span>
+                          <span className="text-gray-400 text-xs">Sin platos</span>
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-center">

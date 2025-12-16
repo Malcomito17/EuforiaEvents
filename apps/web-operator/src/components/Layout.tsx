@@ -91,7 +91,6 @@ export function Layout({ children }: LayoutProps) {
             name: 'Platos',
             href: '/dishes',
             icon: Utensils,
-            comingSoon: true,
           },
           {
             name: 'Canciones Karaoke',

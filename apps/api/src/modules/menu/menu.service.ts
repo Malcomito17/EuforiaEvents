@@ -41,6 +41,7 @@ export class MenuService {
         nombre: eventDish.category.nombre,
         orden: eventDish.category.orden,
         isSystemDefault: eventDish.category.isSystemDefault,
+        allowMultipleDefaults: eventDish.category.allowMultipleDefaults || false,
       },
       _count: eventDish._count,
     }
@@ -56,6 +57,7 @@ export class MenuService {
       nombre: category.nombre,
       orden: category.orden,
       isSystemDefault: category.isSystemDefault,
+      allowMultipleDefaults: category.allowMultipleDefaults || false,
       createdAt: category.createdAt.toISOString(),
       _count: category._count,
     }
@@ -101,29 +103,45 @@ export class MenuService {
       throw new Error('Plato no encontrado o inactivo')
     }
 
-    // Si no se envía categoryId, buscar o crear la categoría "PRINCIPAL" por defecto
+    // Determinar la categoría: usar categoryId si se envía, o usar la categoría del plato
     let categoryId = data.categoryId
     if (!categoryId) {
-      // Buscar la categoría PRINCIPAL global (isSystemDefault)
-      let defaultCategory = await prisma.dishCategory.findFirst({
+      // Usar la categoría sugerida del plato (ej: ENTRADA, PRINCIPAL, POSTRE)
+      const dishCategoria = dish.categoria || 'PRINCIPAL'
+
+      // Mapa de orden por defecto para categorías
+      const categoriaOrden: Record<string, number> = {
+        'ENTRADA': 1,
+        'PRINCIPAL': 2,
+        'GUARNICION': 3,
+        'POSTRE': 4,
+        'BEBIDA': 5,
+        'DEGUSTACION': 6,
+        'OTRO': 99,
+      }
+
+      // Buscar la categoría global (isSystemDefault) con ese nombre
+      let category = await prisma.dishCategory.findFirst({
         where: {
-          nombre: 'PRINCIPAL',
+          nombre: dishCategoria,
           isSystemDefault: true,
         },
       })
 
-      // Si no existe, crearla
-      if (!defaultCategory) {
-        defaultCategory = await prisma.dishCategory.create({
+      // Si no existe, crearla como categoría global
+      if (!category) {
+        category = await prisma.dishCategory.create({
           data: {
-            nombre: 'PRINCIPAL',
-            orden: 1,
+            nombre: dishCategoria,
+            orden: categoriaOrden[dishCategoria] || 99,
             isSystemDefault: true,
+            // Las categorías DEGUSTACION permiten múltiples defaults
+            allowMultipleDefaults: dishCategoria === 'DEGUSTACION',
           },
         })
       }
 
-      categoryId = defaultCategory.id
+      categoryId = category.id
     }
 
     // Verificar que la categoría existe
@@ -214,7 +232,8 @@ export class MenuService {
 
   /**
    * Marca un plato como default en su categoría
-   * Solo puede haber un default por categoría
+   * Si la categoría tiene allowMultipleDefaults=true, permite múltiples defaults
+   * Si no, solo puede haber un default por categoría
    */
   async setDefault(eventId: string, eventDishId: string): Promise<EventDishResponse> {
     // Obtener el eventDish
@@ -233,22 +252,30 @@ export class MenuService {
       throw new Error('Plato no encontrado en el menú del evento')
     }
 
-    // Quitar default de otros platos de la misma categoría
-    await prisma.eventDish.updateMany({
-      where: {
-        eventId,
-        categoryId: eventDish.categoryId,
-        isDefault: true,
-      },
-      data: {
-        isDefault: false,
-      },
-    })
+    // Verificar si la categoría permite múltiples defaults
+    const allowMultiple = eventDish.category?.allowMultipleDefaults || false
 
-    // Marcar este como default
+    if (!allowMultiple) {
+      // Si no permite múltiples, quitar default de otros platos de la misma categoría
+      await prisma.eventDish.updateMany({
+        where: {
+          eventId,
+          categoryId: eventDish.categoryId,
+          isDefault: true,
+        },
+        data: {
+          isDefault: false,
+        },
+      })
+    }
+
+    // Toggle: si ya es default, quitarlo; si no, ponerlo
+    const newDefaultValue = !eventDish.isDefault
+
+    // Marcar este como default (o quitar si ya lo era)
     const updated = await prisma.eventDish.update({
       where: { id: eventDishId },
-      data: { isDefault: true },
+      data: { isDefault: newDefaultValue },
       include: {
         dish: true,
         category: true,

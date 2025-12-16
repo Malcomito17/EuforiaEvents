@@ -9,6 +9,7 @@ import { ChangePasswordPage } from '@/pages/ChangePassword'
 import { EventListPage, EventFormPage, EventDetailPage, EventQRPage, EventSettingsPage, EventInvitadosPage, EventMenuPage, EventMesasPage } from '@/pages/Events'
 import { VenueListPage, VenueFormPage } from '@/pages/Venues'
 import { ClientListPage, ClientFormPage } from '@/pages/Clients'
+import { DishListPage, DishFormPage } from '@/pages/Dishes'
 import { MusicaDJPage } from '@/pages/MusicaDJ'
 import { KaraokeyaPage } from '@/pages/Karaokeya'
 import { SongListPage, SongFormPage } from '@/pages/KaraokeSongs'
@@ -286,6 +287,38 @@ function App() {
           <ProtectedRoute>
             <Layout>
               <ClientFormPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Dishes - Catálogo de platos */}
+      <Route
+        path="/dishes"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <DishListPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/dishes/new"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <DishFormPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/dishes/:id/edit"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <DishFormPage />
             </Layout>
           </ProtectedRoute>
         }

@@ -89,6 +89,15 @@ export interface EventGuestResponse {
     capacidad: number
     forma: string
   }
+  assignedDishes?: {
+    id: string
+    eventDishId: string
+    dish?: {
+      id: string
+      nombre: string
+      categoria: string
+    }
+  }[]
 }
 
 export interface GuestlistStatsResponse {

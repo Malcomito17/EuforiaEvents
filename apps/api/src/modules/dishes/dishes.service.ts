@@ -18,6 +18,7 @@ export class DishesService {
       id: dish.id,
       nombre: dish.nombre,
       descripcion: dish.descripcion,
+      categoria: dish.categoria || 'PRINCIPAL',
       dietaryInfo: JSON.parse(dish.dietaryInfo || '[]') as DietaryInfo[],
       isActive: dish.isActive,
       createdAt: dish.createdAt.toISOString(),
@@ -47,6 +48,7 @@ export class DishesService {
       data: {
         nombre: data.nombre,
         descripcion: data.descripcion || null,
+        categoria: data.categoria || 'PRINCIPAL',
         dietaryInfo: JSON.stringify(data.dietaryInfo || []),
         createdBy: userId,
       },
@@ -160,6 +162,7 @@ export class DishesService {
       data: {
         nombre: data.nombre,
         descripcion: data.descripcion !== undefined ? data.descripcion : undefined,
+        categoria: data.categoria,
         dietaryInfo: data.dietaryInfo ? JSON.stringify(data.dietaryInfo) : undefined,
         isActive: data.isActive,
       },

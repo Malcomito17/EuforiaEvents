@@ -52,6 +52,7 @@ export interface EventDishResponse {
     nombre: string
     orden: number
     isSystemDefault: boolean
+    allowMultipleDefaults?: boolean
   }
   _count?: {
     guestDishes: number
@@ -64,6 +65,7 @@ export interface DishCategoryResponse {
   nombre: string
   orden: number
   isSystemDefault: boolean
+  allowMultipleDefaults: boolean
   createdAt: string
   _count?: {
     eventDishes: number

@@ -15,10 +15,24 @@ export const DietaryInfoEnum = z.enum([
 
 export type DietaryInfo = z.infer<typeof DietaryInfoEnum>
 
+// Categorías de plato
+export const DishCategoryEnum = z.enum([
+  'ENTRADA',
+  'PRINCIPAL',
+  'POSTRE',
+  'BEBIDA',
+  'GUARNICION',
+  'DEGUSTACION',
+  'OTRO',
+])
+
+export type DishCategory = z.infer<typeof DishCategoryEnum>
+
 // Schema para crear plato
 export const dishCreateSchema = z.object({
   nombre: z.string().min(1, 'El nombre es requerido').max(200),
   descripcion: z.string().optional().nullable(),
+  categoria: DishCategoryEnum.optional().default('PRINCIPAL'),
   dietaryInfo: z.array(DietaryInfoEnum).optional().default([]),
 })
 
@@ -26,6 +40,7 @@ export const dishCreateSchema = z.object({
 export const dishUpdateSchema = z.object({
   nombre: z.string().min(1, 'El nombre es requerido').max(200).optional(),
   descripcion: z.string().optional().nullable(),
+  categoria: DishCategoryEnum.optional(),
   dietaryInfo: z.array(DietaryInfoEnum).optional(),
   isActive: z.boolean().optional(),
 })
@@ -39,6 +54,7 @@ export interface DishResponse {
   id: string
   nombre: string
   descripcion: string | null
+  categoria: string
   dietaryInfo: DietaryInfo[]
   isActive: boolean
   createdAt: string

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
-import { eventGuestsApi, mesasApi, EventGuest, EventGuestCreateInput, EventGuestUpdateInput, Accesibilidad, Mesa } from '@/lib/api'
+import { eventGuestsApi, mesasApi, menuApi, EventGuest, EventGuestCreateInput, EventGuestUpdateInput, Accesibilidad, Mesa, GuestDish, EventDish } from '@/lib/api'
 import { PersonSelector } from './PersonSelector'
-import { X, Loader2 } from 'lucide-react'
+import { X, Loader2, UtensilsCrossed, Plus, Trash2, AlertCircle } from 'lucide-react'
 
 interface GuestFormProps {
   eventId: string
@@ -24,10 +24,22 @@ export function GuestForm({ eventId, guest, onClose, onSuccess }: GuestFormProps
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
 
+  // Estado para menú asignado
+  const [guestDishes, setGuestDishes] = useState<GuestDish[]>([])
+  const [menuDishes, setMenuDishes] = useState<EventDish[]>([])
+  const [loadingDishes, setLoadingDishes] = useState(false)
+  const [selectedDishToAdd, setSelectedDishToAdd] = useState('')
+  const [addingDish, setAddingDish] = useState(false)
+  const [removingDishId, setRemovingDishId] = useState<string | null>(null)
+
   // Cargar mesas del evento
   useEffect(() => {
     loadMesas()
-  }, [eventId])
+    if (isEditing && guest) {
+      loadGuestDishes()
+      loadMenuDishes()
+    }
+  }, [eventId, guest?.id])
 
   const loadMesas = async () => {
     try {
@@ -41,6 +53,78 @@ export function GuestForm({ eventId, guest, onClose, onSuccess }: GuestFormProps
       setMesas([])
     }
   }
+
+  const loadGuestDishes = async () => {
+    if (!guest) return
+    setLoadingDishes(true)
+    try {
+      const { data } = await menuApi.getGuestDishes(eventId, guest.id)
+      // Manejar diferentes formatos de respuesta
+      const dishesData = (data as any).data?.dishes || (data as any).dishes || []
+      setGuestDishes(dishesData)
+    } catch (err) {
+      console.error('Error loading guest dishes:', err)
+      setGuestDishes([])
+    } finally {
+      setLoadingDishes(false)
+    }
+  }
+
+  const loadMenuDishes = async () => {
+    try {
+      const { data } = await menuApi.getMenu(eventId)
+      const menuData = (data as any).data || data
+      // Extraer todos los platos del menú de todas las categorías
+      const allDishes: EventDish[] = []
+      if (menuData.categories) {
+        menuData.categories.forEach((cat: any) => {
+          if (cat.dishes) {
+            cat.dishes.forEach((d: any) => allDishes.push(d))
+          }
+        })
+      }
+      setMenuDishes(allDishes)
+    } catch (err) {
+      console.error('Error loading menu dishes:', err)
+      setMenuDishes([])
+    }
+  }
+
+  const handleAddDish = async () => {
+    if (!selectedDishToAdd || !guest) return
+    setAddingDish(true)
+    try {
+      await menuApi.assignDish(eventId, {
+        eventGuestId: guest.id,
+        eventDishId: selectedDishToAdd
+      })
+      setSelectedDishToAdd('')
+      await loadGuestDishes()
+    } catch (err: any) {
+      console.error('Error assigning dish:', err)
+      setError(err.response?.data?.message || 'Error al asignar plato')
+    } finally {
+      setAddingDish(false)
+    }
+  }
+
+  const handleRemoveDish = async (guestDishId: string) => {
+    setRemovingDishId(guestDishId)
+    try {
+      await menuApi.unassignDish(eventId, guestDishId)
+      await loadGuestDishes()
+    } catch (err: any) {
+      console.error('Error removing dish:', err)
+      setError(err.response?.data?.message || 'Error al quitar plato')
+    } finally {
+      setRemovingDishId(null)
+    }
+  }
+
+  // Obtener platos disponibles para agregar (que no están ya asignados)
+  const availableDishes = menuDishes.filter(
+    md => !guestDishes.some(gd => gd.eventDishId === md.id)
+  )
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -165,6 +249,107 @@ export function GuestForm({ eventId, guest, onClose, onSuccess }: GuestFormProps
               ))}
             </select>
           </div>
+
+          {/* Menú Asignado - Solo visible al editar */}
+          {isEditing && (
+            <div className="border-t border-gray-200 pt-6">
+              <div className="flex items-center gap-2 mb-4">
+                <UtensilsCrossed className="h-5 w-5 text-primary-600" />
+                <h3 className="text-lg font-medium text-gray-900">Menú Asignado</h3>
+              </div>
+
+              {loadingDishes ? (
+                <div className="flex items-center justify-center py-4">
+                  <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
+                  <span className="ml-2 text-sm text-gray-500">Cargando platos...</span>
+                </div>
+              ) : (
+                <>
+                  {/* Lista de platos asignados */}
+                  {guestDishes.length === 0 ? (
+                    <div className="flex items-center gap-2 p-4 bg-amber-50 border border-amber-200 rounded-lg mb-4">
+                      <AlertCircle className="h-5 w-5 text-amber-600" />
+                      <span className="text-sm text-amber-700">
+                        No hay platos asignados a este invitado
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="space-y-2 mb-4">
+                      {guestDishes.map((gd) => (
+                        <div
+                          key={gd.id}
+                          className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200"
+                        >
+                          <div>
+                            <div className="font-medium text-gray-900">
+                              {gd.eventDish?.dish?.nombre || 'Plato desconocido'}
+                            </div>
+                            {gd.eventDish?.dish?.categoria && (
+                              <div className="text-xs text-gray-500">
+                                {gd.eventDish.dish.categoria}
+                              </div>
+                            )}
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveDish(gd.id)}
+                            disabled={removingDishId === gd.id}
+                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition disabled:opacity-50"
+                            title="Quitar plato"
+                          >
+                            {removingDishId === gd.id ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Trash2 className="h-4 w-4" />
+                            )}
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Agregar plato */}
+                  {availableDishes.length > 0 ? (
+                    <div className="flex gap-2">
+                      <select
+                        value={selectedDishToAdd}
+                        onChange={(e) => setSelectedDishToAdd(e.target.value)}
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                      >
+                        <option value="">Seleccionar plato para agregar...</option>
+                        {availableDishes.map((md) => (
+                          <option key={md.id} value={md.id}>
+                            {md.dish?.nombre || 'Sin nombre'} ({md.dish?.categoria || 'Sin categoría'})
+                          </option>
+                        ))}
+                      </select>
+                      <button
+                        type="button"
+                        onClick={handleAddDish}
+                        disabled={!selectedDishToAdd || addingDish}
+                        className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition disabled:opacity-50 flex items-center gap-2"
+                      >
+                        {addingDish ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Plus className="h-4 w-4" />
+                        )}
+                        Agregar
+                      </button>
+                    </div>
+                  ) : menuDishes.length === 0 ? (
+                    <p className="text-sm text-gray-500">
+                      No hay platos en el menú del evento. Agrega platos desde la sección Menú.
+                    </p>
+                  ) : (
+                    <p className="text-sm text-gray-500">
+                      Todos los platos del menú ya están asignados a este invitado.
+                    </p>
+                  )}
+                </>
+              )}
+            </div>
+          )}
 
           {/* Observaciones */}
           <div>

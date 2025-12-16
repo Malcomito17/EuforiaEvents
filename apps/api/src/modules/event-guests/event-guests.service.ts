@@ -52,6 +52,19 @@ export class EventGuestsService {
             forma: guest.mesa.forma,
           }
         : undefined,
+      assignedDishes: guest.guestDishes
+        ? guest.guestDishes.map((gd: any) => ({
+            id: gd.id,
+            eventDishId: gd.eventDishId,
+            dish: gd.eventDish?.dish
+              ? {
+                  id: gd.eventDish.dish.id,
+                  nombre: gd.eventDish.dish.nombre,
+                  categoria: gd.eventDish.dish.categoria || 'PRINCIPAL',
+                }
+              : undefined,
+          }))
+        : [],
     }
   }
 
@@ -203,6 +216,15 @@ export class EventGuestsService {
       include: {
         person: true,
         mesa: true,
+        guestDishes: {
+          include: {
+            eventDish: {
+              include: {
+                dish: true,
+              },
+            },
+          },
+        },
       },
       orderBy: [{ person: { apellido: 'asc' } }, { person: { nombre: 'asc' } }],
     })
