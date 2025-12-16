@@ -71,6 +71,29 @@ export class EventGuestsController {
   }
 
   /**
+   * GET /api/events/:eventId/guests/:guestId
+   * Obtiene un invitado específico
+   */
+  async getGuest(req: Request, res: Response) {
+    try {
+      const { eventId, guestId } = req.params
+
+      const guest = await service.getGuest(eventId, guestId)
+
+      res.json({
+        success: true,
+        data: guest,
+      })
+    } catch (error: any) {
+      console.error('Error getting guest:', error)
+      res.status(error.message === 'Invitado no encontrado' ? 404 : 500).json({
+        success: false,
+        message: error.message || 'Error al obtener invitado',
+      })
+    }
+  }
+
+  /**
    * PUT /api/events/:eventId/guests/:guestId
    * Actualiza un invitado
    */

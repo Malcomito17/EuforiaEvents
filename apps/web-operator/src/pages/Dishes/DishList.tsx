@@ -49,9 +49,9 @@ export function DishListPage() {
         search: searchTerm || undefined,
         categoria: categoryFilter || undefined,
       })
-      // El backend devuelve { success, data: { dishes, total, ... } }
-      const dishesData = (data as any).data?.dishes || (data as any).dishes || []
-      setDishes(dishesData)
+      // El backend devuelve { success, data: [...] } donde data es el array de platos
+      const dishesData = (data as any).data || (data as any).dishes || data || []
+      setDishes(Array.isArray(dishesData) ? dishesData : [])
     } catch (err) {
       console.error('Error loading dishes:', err)
       setDishes([])

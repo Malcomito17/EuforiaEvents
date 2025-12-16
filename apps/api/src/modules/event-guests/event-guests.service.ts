@@ -208,6 +208,38 @@ export class EventGuestsService {
   }
 
   /**
+   * Obtiene un invitado específico por ID
+   */
+  async getGuest(eventId: string, guestId: string): Promise<EventGuestResponse> {
+    const guest = await prisma.eventGuest.findFirst({
+      where: {
+        id: guestId,
+        eventId,
+      },
+      include: {
+        person: true,
+        mesa: true,
+        guestDishes: {
+          include: {
+            eventDish: {
+              include: {
+                dish: true,
+                category: true,
+              },
+            },
+          },
+        },
+      },
+    })
+
+    if (!guest) {
+      throw new Error('Invitado no encontrado')
+    }
+
+    return this.sanitizeGuest(guest)
+  }
+
+  /**
    * Obtiene la guestlist completa del evento
    */
   async getGuestlist(eventId: string): Promise<EventGuestResponse[]> {

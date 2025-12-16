@@ -204,6 +204,25 @@ export function GuestForm({ eventId, guest, onClose, onSuccess }: GuestFormProps
               {guest.person.email && (
                 <div className="text-sm text-gray-600">{guest.person.email}</div>
               )}
+              {/* Restricciones dietarias de la persona */}
+              {guest.person.dietaryRestrictions && (() => {
+                const restrictions = Array.isArray(guest.person.dietaryRestrictions)
+                  ? guest.person.dietaryRestrictions
+                  : JSON.parse(guest.person.dietaryRestrictions || '[]')
+                return restrictions.length > 0 ? (
+                  <div className="mt-2 flex flex-wrap gap-1">
+                    <span className="text-xs text-gray-500 mr-1">Restricciones:</span>
+                    {restrictions.map((r: string) => (
+                      <span
+                        key={r}
+                        className="px-2 py-0.5 text-xs bg-amber-100 text-amber-700 rounded"
+                      >
+                        {r}
+                      </span>
+                    ))}
+                  </div>
+                ) : null
+              })()}
             </div>
           )}
 
