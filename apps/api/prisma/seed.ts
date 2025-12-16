@@ -264,14 +264,14 @@ async function main() {
   // ================================
 
   const mesasData = [
-    { numero: '1', capacidad: 8, forma: 'REDONDA', sector: 'Principal', x: 100, y: 100 },
-    { numero: '2', capacidad: 8, forma: 'REDONDA', sector: 'Principal', x: 250, y: 100 },
-    { numero: '3', capacidad: 8, forma: 'REDONDA', sector: 'Principal', x: 400, y: 100 },
-    { numero: '4', capacidad: 10, forma: 'RECTANGULAR', sector: 'VIP', x: 100, y: 250 },
-    { numero: '5', capacidad: 10, forma: 'RECTANGULAR', sector: 'VIP', x: 300, y: 250 },
-    { numero: '6', capacidad: 6, forma: 'CUADRADA', sector: 'Lateral', x: 500, y: 250 },
-    { numero: '7', capacidad: 8, forma: 'REDONDA', sector: 'Principal', x: 100, y: 400 },
-    { numero: '8', capacidad: 8, forma: 'REDONDA', sector: 'Principal', x: 250, y: 400 },
+    { numero: '1', capacidad: 8, forma: 'REDONDA', sector: 'Principal', posX: 100, posY: 100 },
+    { numero: '2', capacidad: 8, forma: 'REDONDA', sector: 'Principal', posX: 250, posY: 100 },
+    { numero: '3', capacidad: 8, forma: 'REDONDA', sector: 'Principal', posX: 400, posY: 100 },
+    { numero: '4', capacidad: 10, forma: 'RECTANGULAR', sector: 'VIP', posX: 100, posY: 250 },
+    { numero: '5', capacidad: 10, forma: 'RECTANGULAR', sector: 'VIP', posX: 300, posY: 250 },
+    { numero: '6', capacidad: 6, forma: 'CUADRADA', sector: 'Lateral', posX: 500, posY: 250 },
+    { numero: '7', capacidad: 8, forma: 'REDONDA', sector: 'Principal', posX: 100, posY: 400 },
+    { numero: '8', capacidad: 8, forma: 'REDONDA', sector: 'Principal', posX: 250, posY: 400 },
   ]
 
   const mesas = []
@@ -290,8 +290,8 @@ async function main() {
         capacidad: mesaData.capacidad,
         forma: mesaData.forma,
         sector: mesaData.sector,
-        x: mesaData.x,
-        y: mesaData.y,
+        posX: mesaData.posX,
+        posY: mesaData.posY,
         rotation: 0,
         createdBy: admin.id,
       },
