@@ -246,14 +246,7 @@ function CreatePersonModal({ onClose, onCreated, initialName = '' }: CreatePerso
       <div className="bg-white rounded-lg max-w-md w-full p-6" onClick={(e) => e.stopPropagation()}>
         <h2 className="text-xl font-bold text-gray-900 mb-4">Crear Nueva Persona</h2>
 
-        <form
-          onSubmit={(e) => {
-            e.preventDefault()
-            e.stopPropagation()
-            handleSubmit(e)
-          }}
-          className="space-y-4"
-        >
+        <div className="space-y-4">
           {error && (
             <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
               {error}
@@ -332,14 +325,19 @@ function CreatePersonModal({ onClose, onCreated, initialName = '' }: CreatePerso
               Cancelar
             </button>
             <button
-              type="submit"
+              type="button"
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                handleSubmit()
+              }}
               className="flex-1 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition disabled:opacity-50"
               disabled={isSubmitting}
             >
               {isSubmitting ? 'Creando...' : 'Crear'}
             </button>
           </div>
-        </form>
+        </div>
       </div>
     </div>
   )
