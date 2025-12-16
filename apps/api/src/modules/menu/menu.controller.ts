@@ -92,6 +92,29 @@ export class MenuController {
   }
 
   /**
+   * PATCH /api/events/:eventId/menu/dishes/:eventDishId/default
+   * Marca un plato como default en su categoría
+   */
+  async setDefault(req: Request, res: Response) {
+    try {
+      const { eventId, eventDishId } = req.params
+
+      const eventDish = await service.setDefault(eventId, eventDishId)
+
+      res.json({
+        success: true,
+        data: eventDish,
+      })
+    } catch (error: any) {
+      console.error('Error setting default:', error)
+      res.status(500).json({
+        success: false,
+        message: error.message || 'Error al marcar como default',
+      })
+    }
+  }
+
+  /**
    * POST /api/events/:eventId/menu/categories
    * Crea una categoría custom para el evento
    */

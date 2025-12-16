@@ -213,6 +213,57 @@ export class MenuService {
   }
 
   /**
+   * Marca un plato como default en su categoría
+   * Solo puede haber un default por categoría
+   */
+  async setDefault(eventId: string, eventDishId: string): Promise<EventDishResponse> {
+    // Obtener el eventDish
+    const eventDish = await prisma.eventDish.findFirst({
+      where: {
+        id: eventDishId,
+        eventId,
+      },
+      include: {
+        dish: true,
+        category: true,
+      },
+    })
+
+    if (!eventDish) {
+      throw new Error('Plato no encontrado en el menú del evento')
+    }
+
+    // Quitar default de otros platos de la misma categoría
+    await prisma.eventDish.updateMany({
+      where: {
+        eventId,
+        categoryId: eventDish.categoryId,
+        isDefault: true,
+      },
+      data: {
+        isDefault: false,
+      },
+    })
+
+    // Marcar este como default
+    const updated = await prisma.eventDish.update({
+      where: { id: eventDishId },
+      data: { isDefault: true },
+      include: {
+        dish: true,
+        category: true,
+        _count: {
+          select: {
+            guestDishes: true,
+          },
+        },
+      },
+    })
+
+    return this.sanitizeEventDish(updated)
+  }
+
+  /**
    * Obtiene el menú completo del evento agrupado por categorías
    */
   async getMenu(eventId: string): Promise<MenuResponse> {

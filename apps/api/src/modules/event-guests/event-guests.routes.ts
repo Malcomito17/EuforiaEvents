@@ -20,8 +20,9 @@ router.post('/', (req, res) => controller.addGuest(req, res))
 // GET /api/events/:eventId/guests - Listar guestlist
 router.get('/', (req, res) => controller.getGuestlist(req, res))
 
-// PUT /api/events/:eventId/guests/:guestId - Actualizar invitado
+// PUT/PATCH /api/events/:eventId/guests/:guestId - Actualizar invitado
 router.put('/:guestId', (req, res) => controller.updateGuest(req, res))
+router.patch('/:guestId', (req, res) => controller.updateGuest(req, res))
 
 // DELETE /api/events/:eventId/guests/:guestId - Quitar invitado
 router.delete('/:guestId', (req, res) => controller.removeGuest(req, res))

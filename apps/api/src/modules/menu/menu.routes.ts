@@ -31,6 +31,9 @@ router.post('/dishes', (req, res) => menuController.addDish(req, res))
 // DELETE /api/events/:eventId/menu/dishes/:dishId - Quitar plato del menú
 router.delete('/dishes/:dishId', (req, res) => menuController.removeDish(req, res))
 
+// PATCH /api/events/:eventId/menu/dishes/:eventDishId/default - Marcar como default
+router.patch('/dishes/:eventDishId/default', (req, res) => menuController.setDefault(req, res))
+
 // GET /api/events/:eventId/menu - Obtener menú completo
 router.get('/', (req, res) => menuController.getMenu(req, res))
 
